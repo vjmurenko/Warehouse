@@ -12,7 +12,7 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IBaseRep
     public virtual async Task<Guid> CreateAsync(T t)
     {
         DbContext.Add(t);
-        await Save();
+        await SaveAsync();
         return t.Id;
     }
     
@@ -31,16 +31,16 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IBaseRep
     public async Task<bool> UpdateAsync(T t)
     {
         DbContext.Set<T>().Update(t);
-        return await Save();
+        return await SaveAsync();
     }
 
     public async Task<bool> DeleteAsync(T t)
     {
         DbContext.Remove(t);
-        return await Save();
+        return await SaveAsync();
     }
 
-    public async Task<bool> Save()
+    public async Task<bool> SaveAsync()
     {
         var result = await DbContext.SaveChangesAsync();
         return result > 0;

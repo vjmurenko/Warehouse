@@ -20,6 +20,7 @@ public class ShipmentDocument(string number, Guid clientId, DateTime date, bool 
         {
             throw new ArgumentNullException(nameof(resource));
         }
+        resource.ShipmentDocumentId = Id;
         ShipmentResources.Add(resource);
     }
 

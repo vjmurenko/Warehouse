@@ -1,12 +1,26 @@
-﻿using WarehouseManagement.Domain.Common;
+using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
-public class ReceiptResource(Guid receiptDocumentId, Guid resourceId, Guid unitOfMeasureId, Quantity quantity) : Entity
+public class ReceiptResource : Entity
 {
-    public Guid ReceiptDocumentId { get; set; } = receiptDocumentId;
-    public Guid ResourceId { get; set; } = resourceId;
-    public Guid UnitOfMeasureId { get; set; } = unitOfMeasureId;
-    public Quantity Quantity { get; set; } = quantity;
+    // Конструктор для EF Core
+    private ReceiptResource()
+    {
+        Quantity = new Quantity(0);
+    }
+    
+    public ReceiptResource(Guid receiptDocumentId, Guid resourceId, Guid unitOfMeasureId, Quantity quantity)
+    {
+        ReceiptDocumentId = receiptDocumentId;
+        ResourceId = resourceId;
+        UnitOfMeasureId = unitOfMeasureId;
+        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
+    }
+
+    public Guid ReceiptDocumentId { get; set; }
+    public Guid ResourceId { get; set; }
+    public Guid UnitOfMeasureId { get; set; }
+    public Quantity Quantity { get; set; }
 }
