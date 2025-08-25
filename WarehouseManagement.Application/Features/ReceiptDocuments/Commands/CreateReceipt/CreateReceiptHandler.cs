@@ -19,7 +19,7 @@ public class CreateReceiptHandler : IRequestHandler<CreateReceiptCommand, Guid>
     public async Task<Guid> Handle(CreateReceiptCommand request, CancellationToken cancellationToken)
     {
         // Проверка уникальности номера документа
-        var existingDocument = await _context.Set<ReceiptDocument>()
+        var existingDocument = await _context.ReceiptDocuments
             .FirstOrDefaultAsync(d => d.Number == request.Number, cancellationToken);
 
         if (existingDocument != null)
@@ -45,7 +45,7 @@ public class CreateReceiptHandler : IRequestHandler<CreateReceiptCommand, Guid>
             }
         }
 
-        _context.Set<ReceiptDocument>().Add(receiptDocument);
+        _context.ReceiptDocuments.Add(receiptDocument);
         await _context.SaveChangesAsync(cancellationToken);
 
         // Обновление баланса
@@ -58,7 +58,7 @@ public class CreateReceiptHandler : IRequestHandler<CreateReceiptCommand, Guid>
     {
         foreach (var receiptResource in receiptDocument.ReceiptResources)
         {
-            var balance = await _context.Set<Balance>()
+            var balance = await _context.Balances
                 .FirstOrDefaultAsync(b =>
                     b.ResourceId == receiptResource.ResourceId &&
                     b.UnitOfMeasureId == receiptResource.UnitOfMeasureId,
@@ -72,7 +72,7 @@ public class CreateReceiptHandler : IRequestHandler<CreateReceiptCommand, Guid>
                     receiptResource.UnitOfMeasureId,
                     receiptResource.Quantity);
 
-                _context.Set<Balance>().Add(balance);
+                _context.Balances.Add(balance);
             }
             else
             {

@@ -12,16 +12,11 @@ public abstract class NamedEntityRepository<T> : RepositoryBase<T>, INamedEntity
     {
     }
 
-    public async Task<bool> ExistsWithNameAsync(string name, Guid? excludeId = null)
+    public async Task<bool> ExistsWithNameAsync(string name)
     {
         var query = DbContext.Set<T>().AsNoTracking()
             .Where(x => x.Name.ToLower() == name.ToLower());
-
-        if (excludeId.HasValue)
-        {
-            query = query.Where(x => x.Id != excludeId.Value);
-        }
-
+        
         return await query.AnyAsync();
     }
 

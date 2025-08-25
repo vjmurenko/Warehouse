@@ -18,7 +18,7 @@ public class CreateShipmentHandler : IRequestHandler<CreateShipmentCommand, Guid
     public async Task<Guid> Handle(CreateShipmentCommand request, CancellationToken cancellationToken)
     {
         // Проверка уникальности номера документа
-        var existingDocument = await _context.Set<ShipmentDocument>()
+        var existingDocument = await _context.ShipmentDocuments
             .FirstOrDefaultAsync(d => d.Number == request.Number, cancellationToken);
 
         if (existingDocument != null)
@@ -46,7 +46,7 @@ public class CreateShipmentHandler : IRequestHandler<CreateShipmentCommand, Guid
             shipmentDocument.AddResource(shipmentResource);
         }
         
-        _context.Set<ShipmentDocument>().Add(shipmentDocument);
+        _context.ShipmentDocuments.Add(shipmentDocument);
         await _context.SaveChangesAsync(cancellationToken);
 
         return shipmentDocument.Id;

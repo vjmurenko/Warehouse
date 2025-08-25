@@ -15,8 +15,4 @@
       <ProjectReference Include="..\WarehouseManagement.Infrastructure\WarehouseManagement.Infrastructure.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Features\Clients\" />
-    </ItemGroup>
-
 </Project>

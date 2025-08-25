@@ -16,13 +16,13 @@ public class ResourceService(INamedEntityRepository<Resource> repository) : Name
 
     public async Task<bool> UpdateResourceAsync(Guid id, string name)
     {
-        var resource = await repository.GetByIdAsync(id);
+        var resource = await GetByIdAsync(id);
         if (resource == null)
         {
             throw new ArgumentNullException(nameof(id));
         }
-
+        
         resource.Rename(name);
-        return await repository.UpdateAsync(resource);
+        return await UpdateAsync(resource);
     }
 }

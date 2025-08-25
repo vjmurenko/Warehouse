@@ -8,6 +8,11 @@ namespace WarehouseManagement.Infrastructure.Data;
 
 public class WarehouseDbContext : DbContext
 {
+
+    public WarehouseDbContext()
+    {
+        
+    }
     public WarehouseDbContext(DbContextOptions<WarehouseDbContext> options) : base(options)
     {
     }

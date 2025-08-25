@@ -18,9 +18,9 @@ public class GetBalanceHandler : IRequestHandler<GetBalanceQuery, List<BalanceDt
 
     public async Task<List<BalanceDto>> Handle(GetBalanceQuery request, CancellationToken cancellationToken)
     {
-        var query = _context.Set<Balance>()
-            .Include(b => _context.Set<Resource>().Where(r => r.Id == b.ResourceId).FirstOrDefault())
-            .Include(b => _context.Set<UnitOfMeasure>().Where(u => u.Id == b.UnitOfMeasureId).FirstOrDefault())
+        var query = _context.Balances
+            .Include(b => _context.Resources.Where(r => r.Id == b.ResourceId).FirstOrDefault())
+            .Include(b => _context.UnitsOfMeasure.Where(u => u.Id == b.UnitOfMeasureId).FirstOrDefault())
             .AsQueryable();
 
         if (request.ResourceIds != null && request.ResourceIds.Any())
@@ -37,11 +37,11 @@ public class GetBalanceHandler : IRequestHandler<GetBalanceQuery, List<BalanceDt
         var resourceIds = balances.Select(b => b.ResourceId).Distinct().ToList();
         var unitIds = balances.Select(b => b.UnitOfMeasureId).Distinct().ToList();
 
-        var resources = await _context.Set<Resource>()
+        var resources = await _context.Resources
             .Where(r => resourceIds.Contains(r.Id))
             .ToListAsync(cancellationToken);
 
-        var units = await _context.Set<UnitOfMeasure>()
+        var units = await _context.UnitsOfMeasure
             .Where(u => unitIds.Contains(u.Id))
             .ToListAsync(cancellationToken);
 

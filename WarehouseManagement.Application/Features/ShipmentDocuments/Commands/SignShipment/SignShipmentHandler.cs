@@ -17,7 +17,7 @@ public class SignShipmentHandler : IRequestHandler<SignShipmentCommand, bool>
 
     public async Task<bool> Handle(SignShipmentCommand request, CancellationToken cancellationToken)
     {
-        var shipmentDocument = await _context.Set<ShipmentDocument>()
+        var shipmentDocument = await _context.ShipmentDocuments
             .Include(s => s.ShipmentResources)
             .FirstOrDefaultAsync(s => s.Id == request.ShipmentDocumentId, cancellationToken);
 
@@ -49,7 +49,7 @@ public class SignShipmentHandler : IRequestHandler<SignShipmentCommand, bool>
     {
         foreach (var shipmentResource in shipmentDocument.ShipmentResources)
         {
-            var balance = await _context.Set<Balance>()
+            var balance = await _context.Balances
                 .FirstOrDefaultAsync(b =>
                     b.ResourceId == shipmentResource.ResourceId &&
                     b.UnitOfMeasureId == shipmentResource.UnitOfMeasureId,
@@ -68,7 +68,7 @@ public class SignShipmentHandler : IRequestHandler<SignShipmentCommand, bool>
     {
         foreach (var shipmentResource in shipmentDocument.ShipmentResources)
         {
-            var balance = await _context.Set<Balance>()
+            var balance = await _context.Balances
                 .FirstOrDefaultAsync(b =>
                     b.ResourceId == shipmentResource.ResourceId &&
                     b.UnitOfMeasureId == shipmentResource.UnitOfMeasureId,
