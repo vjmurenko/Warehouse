@@ -15,4 +15,11 @@
       <ProjectReference Include="..\WarehouseManagement.Infrastructure\WarehouseManagement.Infrastructure.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Features\BalanceQueries\" />
+      <Folder Include="Features\ReceiptDocuments\Commands\" />
+      <Folder Include="Features\ShipmentDocuments\Commands\CreateShipment\" />
+      <Folder Include="Features\ShipmentDocuments\DTOs\" />
+    </ItemGroup>
+
 </Project>
