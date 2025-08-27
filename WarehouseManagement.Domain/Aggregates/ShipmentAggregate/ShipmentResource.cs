@@ -17,6 +17,13 @@ public class ShipmentResource : Entity
         UnitOfMeasureId = unitOfMeasureId;
         Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
     }
+    
+    public ShipmentResource(Guid resourceId, Guid unitOfMeasureId, decimal quantity)
+    {
+        ResourceId = resourceId;
+        UnitOfMeasureId = unitOfMeasureId;
+        Quantity = new Quantity(quantity);
+    }
 
     public Guid ShipmentDocumentId { get; set; }
     public Guid ResourceId { get; set; }

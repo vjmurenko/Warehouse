@@ -2,38 +2,75 @@
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
-public class ShipmentDocument(string number, Guid clientId, DateTime date, bool isSigned = false)
-    : Entity, IAggregateRoot
+public class ShipmentDocument : Entity, IAggregateRoot
 {
-    public string Number { get;} = !string.IsNullOrWhiteSpace(number) ? number.Trim() : throw new ArgumentNullException(nameof(number));
-    public Guid ClientId { get;  } = clientId;
-    public DateTime Date { get; private set; } = date;
-    public bool IsSigned { get; private set; } = isSigned;
+    public string Number { get; private set; }
+    public Guid ClientId { get; private set; }
+    public DateTime Date { get; private set; }
+    public bool IsSigned { get; private set; }
     public List<ShipmentResource> ShipmentResources { get; } = new();
+    
+    // Private constructor for EF Core
+    private ShipmentDocument()
+    {
+    }
+    
+    // Public constructor with ID generation
+    public ShipmentDocument(string number, Guid clientId, DateTime date, bool isSigned = false)
+    {
+        Id = Guid.NewGuid();
+        Number = !string.IsNullOrWhiteSpace(number) ? number.Trim() : throw new ArgumentNullException(nameof(number));
+        ClientId = clientId;
+        Date = date;
+        IsSigned = isSigned;
+    }
     
     public void Revoke() => IsSigned = false;
 
-
-    public void AddResource(ShipmentResource resource)
+    public void UpdateNumber(string number)
     {
-        if (resource == null)
-        {
-            throw new ArgumentNullException(nameof(resource));
-        }
-        resource.ShipmentDocumentId = Id;
-        ShipmentResources.Add(resource);
+        if (string.IsNullOrWhiteSpace(number))
+            throw new ArgumentNullException(nameof(number));
+        Number = number.Trim();
     }
 
-    public void RemoveResource(ShipmentResource resource)
+    public void UpdateClientId(Guid clientId)
     {
-        ShipmentResources.Remove(resource);
+        ClientId = clientId;
     }
-    private void Validate()
+
+    public void UpdateDate(DateTime date)
     {
-        var a = ShipmentResources;
+        Date = date;
+    }
+
+    public void ClearResources()
+    {
+        ShipmentResources.Clear();
+    }
+    
+    public void ValidateNotEmpty()
+    {
         if (!ShipmentResources.Any())
         {
-            throw new ArgumentNullException("Shipment resources can't be empty");
+            throw new InvalidOperationException("Документ отгрузки не может быть пустым");
+        }
+    }
+
+    public void AddResource(Guid resourceId, Guid unitOfMeasureId, decimal quantity)
+    {
+        var resource = new ShipmentResource(resourceId, unitOfMeasureId, quantity)
+        {
+            ShipmentDocumentId = Id
+        };
+        ShipmentResources.Add(resource);
+    }
+    
+    private void Validate()
+    {
+        if (!ShipmentResources.Any())
+        {
+            throw new InvalidOperationException("Документ отгрузки не может быть пустым");
         }
     }
 
