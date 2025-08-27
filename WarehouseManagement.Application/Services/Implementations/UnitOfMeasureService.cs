@@ -24,6 +24,6 @@ public class UnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> reposito
         }
 
         unitOfMeasure.Rename(name);
-        return await repository.UpdateAsync(unitOfMeasure);
+        return await UpdateAsync(unitOfMeasure);
     }
 }

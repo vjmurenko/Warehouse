@@ -32,6 +32,10 @@ public class BalanceService : IBalanceService
     public async Task DecreaseBalance(Guid resourceId, Guid unitId, Quantity quantity, CancellationToken ct)
     {
         var balance = await _balanceRepository.GetForUpdateAsync(resourceId, unitId, ct);
+        
+        if (balance == null || balance.Quantity.Value < quantity.Value)
+            throw new InvalidOperationException(
+                $"Недостаточно ресурса на складе. Доступно: {balance?.Quantity.Value ?? 0}, требуется: {quantity.Value}");
 
         balance?.Decrease(quantity);
     }

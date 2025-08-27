@@ -28,4 +28,22 @@ public class ReceiptDocument : Entity, IAggregateRoot
         var resource = new ReceiptResource(Id, resourceId, unitId, new Quantity(quantity));
         _receiptResources.Add(resource);
     }
+    
+    // New methods for update operations
+    public void UpdateNumber(string number)
+    {
+        if (string.IsNullOrWhiteSpace(number))
+            throw new ArgumentException("Номер документа не может быть пустым", nameof(number));
+        Number = number;
+    }
+    
+    public void UpdateDate(DateTime date)
+    {
+        Date = date;
+    }
+    
+    public void ClearResources()
+    {
+        _receiptResources.Clear();
+    }
 }
