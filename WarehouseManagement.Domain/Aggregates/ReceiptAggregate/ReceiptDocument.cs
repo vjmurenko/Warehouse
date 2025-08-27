@@ -1,24 +1,31 @@
 ﻿using WarehouseManagement.Domain.Common;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
-public class ReceiptDocument(string number, DateTime date, List<ReceiptResource>? resources = null) : Entity, IAggregateRoot
+public class ReceiptDocument : Entity, IAggregateRoot
 {
-    public string Number { get; set; } = !string.IsNullOrWhiteSpace(number) ? number.Trim() : throw new ArgumentNullException(nameof(number));
-    public DateTime Date { get; set; } = date;
-    public List<ReceiptResource> ReceiptResources { get; set; } = resources ?? [];
+    private readonly List<ReceiptResource> _receiptResources = new();
+    public string Number { get; private set; }
+    public DateTime Date { get; private set; }
+    public IReadOnlyCollection<ReceiptResource> ReceiptResources => _receiptResources.AsReadOnly();
+    
+    // Конструктор для EF
+    private ReceiptDocument() { }
 
-    public void AddResource(ReceiptResource resource)
+    public ReceiptDocument(string number, DateTime date)
     {
-        if (resource == null)
-        {
-            throw new ArgumentNullException(nameof(resource));
-        }
-        ReceiptResources.Add(resource);
+        Id = Guid.NewGuid(); 
+        Number = number ?? throw new ArgumentNullException(nameof(number));
+        Date = date;
     }
-
-    public void RemoveResource(ReceiptResource resource)
+    
+    public void AddResource(Guid resourceId, Guid unitId, decimal quantity)
     {
-        ReceiptResources.Remove(resource);
+        if (quantity <= 0)
+            throw new InvalidOperationException("Количество должно быть больше 0");
+
+        var resource = new ReceiptResource(Id, resourceId, unitId, new Quantity(quantity));
+        _receiptResources.Add(resource);
     }
 }

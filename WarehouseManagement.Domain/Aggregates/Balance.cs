@@ -27,7 +27,7 @@ public class Balance(Guid resourceId, Guid unitOfMeasureId, Quantity quantity) :
 
         if (Quantity.Value < amount.Value)
         {
-            throw new InvalidOperationException($"Not enought money to decrease, balance is {Quantity}");
+            throw new InvalidOperationException($"Not enought money to decrease, balance is {Quantity.Value}");
         }
         Quantity = new Quantity(Quantity.Value - amount.Value);
     }
