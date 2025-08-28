@@ -1,0 +1,352 @@
+import {
+  BalanceDto,
+  ResourceDto,
+  UnitOfMeasureDto,
+  ReceiptDocumentDto,
+  ReceiptDocumentSummaryDto,
+  ShipmentDocumentDto,
+  ShipmentDocumentSummaryDto,
+  DocumentFilters,
+  CreateResourceDto,
+  UpdateResourceDto,
+  ClientDto,
+  CreateClientDto,
+  UpdateClientDto
+} from '../types/api';
+
+// For development with ASP.NET Core, make sure it matches launchSettings.json
+const API_BASE_URL = 'http://localhost:5072/api';
+
+class ApiService {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    
+    const config: RequestInit = {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+      // Add this to handle development certificates
+      mode: 'cors',
+      credentials: 'same-origin'
+    };
+
+    try {
+      console.log(`Making request to: ${url}`);
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        console.error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText || 'No error details'}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Successful response from ${endpoint}:`, data);
+      return data;
+    } catch (error) {
+      console.error(`API request failed for ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // Balance API
+  async getBalances(): Promise<BalanceDto[]> {
+    return this.request<BalanceDto[]>('/Balance');
+  }
+
+  async getFilteredBalances(resourceIds: string[] = [], unitIds: string[] = []): Promise<BalanceDto[]> {
+    const params = new URLSearchParams();
+    
+    resourceIds.forEach(id => params.append('resourceIds', id));
+    unitIds.forEach(id => params.append('unitIds', id));
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/Balance?${queryString}` : '/Balance';
+    
+    return this.request<BalanceDto[]>(endpoint);
+  }
+
+  // Resources API
+  async getResources(): Promise<ResourceDto[]> {
+    return this.request<ResourceDto[]>('/Resources');
+  }
+
+  async getActiveResources(): Promise<ResourceDto[]> {
+    return this.request<ResourceDto[]>('/Resources/active');
+  }
+
+  async getResourceById(id: string): Promise<ResourceDto> {
+    return this.request<ResourceDto>(`/Resources/${id}`);
+  }
+
+  async createResource(dto: CreateResourceDto): Promise<ResourceDto> {
+    return this.request<ResourceDto>('/Resources', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateResource(id: string, dto: UpdateResourceDto): Promise<ResourceDto> {
+    return this.request<ResourceDto>(`/Resources/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async archiveResource(id: string): Promise<void> {
+    return this.request<void>(`/Resources/${id}/archive`, {
+      method: 'POST',
+    });
+  }
+
+  async activateResource(id: string): Promise<void> {
+    return this.request<void>(`/Resources/${id}/activate`, {
+      method: 'POST',
+    });
+  }
+  
+  // Clients API
+  async getClients(): Promise<ClientDto[]> {
+    return this.request<ClientDto[]>('/Clients');
+  }
+
+  async getActiveClients(): Promise<ClientDto[]> {
+    return this.request<ClientDto[]>('/Clients/active');
+  }
+
+  async getClientById(id: string): Promise<ClientDto> {
+    return this.request<ClientDto>(`/Clients/${id}`);
+  }
+
+  async createClient(dto: CreateClientDto): Promise<ClientDto> {
+    return this.request<ClientDto>('/Clients', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateClient(id: string, dto: UpdateClientDto): Promise<ClientDto> {
+    return this.request<ClientDto>(`/Clients/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async archiveClient(id: string): Promise<void> {
+    return this.request<void>(`/Clients/${id}/archive`, {
+      method: 'POST',
+    });
+  }
+
+  async activateClient(id: string): Promise<void> {
+    return this.request<void>(`/Clients/${id}/activate`, {
+      method: 'POST',
+    });
+  }
+
+  // Units of Measure API
+  async getUnitsOfMeasure(): Promise<UnitOfMeasureDto[]> {
+    console.log('Calling getUnitsOfMeasure API method');
+    try {
+      const result = await this.request<UnitOfMeasureDto[]>('/UnitOfMeasure');
+      console.log('Units of measure fetched successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Failed to fetch units of measure:', error);
+      throw error;
+    }
+  }
+
+  async getActiveUnitsOfMeasure(): Promise<UnitOfMeasureDto[]> {
+    return this.request<UnitOfMeasureDto[]>('/UnitOfMeasure/active');
+  }
+  
+  async getUnitOfMeasureById(id: string): Promise<UnitOfMeasureDto> {
+    return this.request<UnitOfMeasureDto>(`/UnitOfMeasure/${id}`);
+  }
+
+  async createUnitOfMeasure(dto: { name: string }): Promise<UnitOfMeasureDto> {
+    return this.request<UnitOfMeasureDto>('/UnitOfMeasure', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async updateUnitOfMeasure(id: string, dto: { name: string }): Promise<UnitOfMeasureDto> {
+    return this.request<UnitOfMeasureDto>(`/UnitOfMeasure/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(dto),
+    });
+  }
+
+  async archiveUnitOfMeasure(id: string): Promise<void> {
+    return this.request<void>(`/UnitOfMeasure/${id}/archive`, {
+      method: 'POST',
+    });
+  }
+
+  async activateUnitOfMeasure(id: string): Promise<void> {
+    return this.request<void>(`/UnitOfMeasure/${id}/activate`, {
+      method: 'POST',
+    });
+  }
+
+  // Receipt Documents API
+  async getReceiptDocuments(): Promise<ReceiptDocumentSummaryDto[]> {
+    return this.request<ReceiptDocumentSummaryDto[]>('/ReceiptDocuments');
+  }
+
+  async getFilteredReceiptDocuments(filters: DocumentFilters = {}): Promise<ReceiptDocumentSummaryDto[]> {
+    const params = new URLSearchParams();
+    
+    // Support both naming conventions for compatibility during transition
+    if (filters.fromDate) params.append('fromDate', filters.fromDate);
+    else if (filters.startDate) params.append('fromDate', filters.startDate);
+    
+    if (filters.toDate) params.append('toDate', filters.toDate);
+    else if (filters.endDate) params.append('toDate', filters.endDate);
+    
+    if (filters.documentNumbers) filters.documentNumbers.forEach(num => params.append('documentNumbers', num));
+    else if (filters.numbers) filters.numbers.forEach(num => params.append('documentNumbers', num));
+    
+    if (filters.resourceIds) filters.resourceIds.forEach(id => params.append('resourceIds', id));
+    if (filters.unitIds) filters.unitIds.forEach(id => params.append('unitIds', id));
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/ReceiptDocuments?${queryString}` : '/ReceiptDocuments';
+    
+    return this.request<ReceiptDocumentSummaryDto[]>(endpoint);
+  }
+
+  async getReceiptDocumentById(id: string): Promise<ReceiptDocumentDto> {
+    return this.request<ReceiptDocumentDto>(`/ReceiptDocuments/${id}`);
+  }
+
+  async createReceiptDocument(data: { number: string; date: string; resources: Array<{ resourceId: string; unitId: string; quantity: number }> }): Promise<string> {
+    // Convert to the exact format expected by the backend CreateReceiptCommand
+    const command = {
+      number: data.number,
+      date: data.date,
+      resources: data.resources.map(r => ({
+        resourceId: r.resourceId,
+        unitId: r.unitId,
+        quantity: r.quantity
+      }))
+    };
+    
+    const response = await this.request<string>('/ReceiptDocuments', {
+      method: 'POST',
+      body: JSON.stringify(command),
+    });
+    return response;
+  }
+
+  async updateReceiptDocument(id: string, data: { id: string; number: string; date: string; resources: Array<{ id?: string; resourceId: string; unitId: string; quantity: number }> }): Promise<void> {
+    // Convert to the exact format expected by the backend UpdateReceiptCommand
+    const command = {
+      id: data.id,
+      number: data.number,
+      date: data.date,
+      resources: data.resources.map(r => ({
+        resourceId: r.resourceId,
+        unitId: r.unitId,
+        quantity: r.quantity
+      }))
+    };
+    
+    return this.request<void>(`/ReceiptDocuments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(command),
+    });
+  }
+
+  async deleteReceiptDocument(id: string): Promise<void> {
+    return this.request<void>(`/ReceiptDocuments/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Shipment Documents API
+  async getShipmentDocuments(): Promise<ShipmentDocumentSummaryDto[]> {
+    return this.request<ShipmentDocumentSummaryDto[]>('/ShipmentDocuments');
+  }
+
+  async getFilteredShipmentDocuments(filters: DocumentFilters = {}): Promise<ShipmentDocumentSummaryDto[]> {
+    const params = new URLSearchParams();
+    
+    // Support both naming conventions for compatibility during transition
+    if (filters.fromDate) params.append('fromDate', filters.fromDate);
+    else if (filters.startDate) params.append('fromDate', filters.startDate);
+    
+    if (filters.toDate) params.append('toDate', filters.toDate);
+    else if (filters.endDate) params.append('toDate', filters.endDate);
+    
+    if (filters.documentNumbers) filters.documentNumbers.forEach(num => params.append('documentNumbers', num));
+    else if (filters.numbers) filters.numbers.forEach(num => params.append('documentNumbers', num));
+    
+    if (filters.resourceIds) filters.resourceIds.forEach(id => params.append('resourceIds', id));
+    if (filters.unitIds) filters.unitIds.forEach(id => params.append('unitIds', id));
+    
+    const queryString = params.toString();
+    const endpoint = queryString ? `/ShipmentDocuments?${queryString}` : '/ShipmentDocuments';
+    
+    return this.request<ShipmentDocumentSummaryDto[]>(endpoint);
+  }
+
+  async getShipmentDocumentById(id: string): Promise<ShipmentDocumentDto> {
+    return this.request<ShipmentDocumentDto>(`/ShipmentDocuments/${id}`);
+  }
+
+  async createShipmentDocument(data: { number: string; clientId: string; date: string; sign: boolean; resources: Array<{ resourceId: string; unitId: string; quantity: number }> }): Promise<string> {
+    // Convert to the exact format expected by the backend CreateShipmentCommand
+    const command = {
+      number: data.number,
+      clientId: data.clientId,
+      date: data.date,
+      sign: data.sign,
+      resources: data.resources.map(r => ({
+        resourceId: r.resourceId,
+        unitId: r.unitId,
+        quantity: r.quantity
+      }))
+    };
+    
+    const response = await this.request<string>('/ShipmentDocuments', {
+      method: 'POST',
+      body: JSON.stringify(command),
+    });
+    return response;
+  }
+
+  async updateShipmentDocument(id: string, data: { id: string; number: string; clientId: string; date: string; sign: boolean; resources: Array<{ id?: string; resourceId: string; unitId: string; quantity: number }> }): Promise<void> {
+    // Convert to the exact format expected by the backend UpdateShipmentCommand
+    const command = {
+      id: data.id,
+      number: data.number,
+      clientId: data.clientId,
+      date: data.date,
+      sign: data.sign,
+      resources: data.resources.map(r => ({
+        resourceId: r.resourceId,
+        unitId: r.unitId,
+        quantity: r.quantity
+      }))
+    };
+    
+    return this.request<void>(`/ShipmentDocuments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(command),
+    });
+  }
+
+  async deleteShipmentDocument(id: string): Promise<void> {
+    return this.request<void>(`/ShipmentDocuments/${id}`, {
+      method: 'DELETE',
+    });
+  }
+}
+
+export default new ApiService();

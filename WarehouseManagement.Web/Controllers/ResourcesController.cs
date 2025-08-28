@@ -78,12 +78,25 @@ public class ResourcesController : ControllerBase
     /// Create a new resource
     /// </summary>
     /// <param name="request">Resource creation data</param>
-    /// <returns>ID of the created resource</returns>
+    /// <returns>Created resource DTO</returns>
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request)
+    public async Task<ActionResult<ResourceDto>> CreateResource([FromBody] CreateResourceRequest request)
     {
         var resourceId = await _resourceService.CreateResourceAsync(request.Name);
-        return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceId);
+        var resource = await _resourceService.GetByIdAsync(resourceId);
+        
+        if (resource == null)
+        {
+            return BadRequest("Failed to create resource");
+        }
+        
+        var resourceDto = new ResourceDto(
+            resource.Id,
+            resource.Name,
+            resource.IsActive
+        );
+        
+        return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceDto);
     }
 
     /// <summary>
@@ -91,9 +104,9 @@ public class ResourcesController : ControllerBase
     /// </summary>
     /// <param name="id">The resource ID</param>
     /// <param name="request">Resource update data</param>
-    /// <returns>No content if successful</returns>
+    /// <returns>Updated resource DTO</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request)
+    public async Task<ActionResult<ResourceDto>> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request)
     {
         var success = await _resourceService.UpdateResourceAsync(id, request.Name);
         
@@ -102,7 +115,19 @@ public class ResourcesController : ControllerBase
             return NotFound();
         }
         
-        return NoContent();
+        var resource = await _resourceService.GetByIdAsync(id);
+        if (resource == null)
+        {
+            return NotFound();
+        }
+        
+        var resourceDto = new ResourceDto(
+            resource.Id,
+            resource.Name,
+            resource.IsActive
+        );
+        
+        return Ok(resourceDto);
     }
 
     /// <summary>

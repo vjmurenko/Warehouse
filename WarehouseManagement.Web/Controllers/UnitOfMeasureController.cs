@@ -78,12 +78,25 @@ public class UnitOfMeasureController : ControllerBase
     /// Create a new unit of measure
     /// </summary>
     /// <param name="request">Unit of measure creation data</param>
-    /// <returns>ID of the created unit of measure</returns>
+    /// <returns>Created unit of measure DTO</returns>
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateUnitOfMeasure([FromBody] CreateUnitOfMeasureRequest request)
+    public async Task<ActionResult<UnitOfMeasureDto>> CreateUnitOfMeasure([FromBody] CreateUnitOfMeasureRequest request)
     {
         var unitId = await _unitOfMeasureService.CreateUnitOfMeasureAsync(request.Name);
-        return CreatedAtAction(nameof(GetUnitOfMeasureById), new { id = unitId }, unitId);
+        var unit = await _unitOfMeasureService.GetByIdAsync(unitId);
+        
+        if (unit == null)
+        {
+            return BadRequest("Failed to create unit of measure");
+        }
+        
+        var unitDto = new UnitOfMeasureDto(
+            unit.Id,
+            unit.Name,
+            unit.IsActive
+        );
+        
+        return CreatedAtAction(nameof(GetUnitOfMeasureById), new { id = unitId }, unitDto);
     }
 
     /// <summary>
@@ -91,9 +104,9 @@ public class UnitOfMeasureController : ControllerBase
     /// </summary>
     /// <param name="id">The unit of measure ID</param>
     /// <param name="request">Unit of measure update data</param>
-    /// <returns>No content if successful</returns>
+    /// <returns>Updated unit of measure DTO</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateUnitOfMeasure(Guid id, [FromBody] UpdateUnitOfMeasureRequest request)
+    public async Task<ActionResult<UnitOfMeasureDto>> UpdateUnitOfMeasure(Guid id, [FromBody] UpdateUnitOfMeasureRequest request)
     {
      
         var success = await _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, request.Name);
@@ -103,7 +116,19 @@ public class UnitOfMeasureController : ControllerBase
             return NotFound();
         }
         
-        return NoContent();
+        var unit = await _unitOfMeasureService.GetByIdAsync(id);
+        if (unit == null)
+        {
+            return NotFound();
+        }
+        
+        var unitDto = new UnitOfMeasureDto(
+            unit.Id,
+            unit.Name,
+            unit.IsActive
+        );
+        
+        return Ok(unitDto);
     }
 
     /// <summary>
