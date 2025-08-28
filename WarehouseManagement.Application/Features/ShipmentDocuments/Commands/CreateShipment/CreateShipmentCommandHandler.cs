@@ -37,10 +37,20 @@ public class CreateShipmentCommandHandler(
             // 3.1. Проверка что документ не пустой (бизнес-правило)
             shipmentDocument.ValidateNotEmpty();
 
-            // 4. Подписание документа если требуется (с проверкой доступности баланса)
-            if (command.SignImmediately)
+            // 4. Проверка доступности баланса (без списания)
+            foreach (var resource in shipmentDocument.ShipmentResources)
             {
-                // Проверка баланса и списание - DecreaseBalance автоматически проверяет наличие
+                await balanceService.ValidateBalanceAvailability(
+                    resource.ResourceId,
+                    resource.UnitOfMeasureId,
+                    resource.Quantity,
+                    cancellationToken);
+            }
+
+            // 5. Подписание документа и списание с баланса если требуется
+            if (command.Sign)
+            {
+                // Списание при подписании (проверка уже выполнена выше)
                 foreach (var resource in shipmentDocument.ShipmentResources)
                 {
                     await balanceService.DecreaseBalance(
@@ -52,7 +62,7 @@ public class CreateShipmentCommandHandler(
                 shipmentDocument.Sign();
             }
 
-            // 5. Сохранение документа
+            // 6. Сохранение документа
             await shipmentRepository.AddAsync(shipmentDocument, cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);

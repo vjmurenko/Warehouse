@@ -50,9 +50,20 @@ public class UpdateShipmentCommandHandler(
             // 6.1. Проверка что документ не пустой (бизнес-правило)
             document.ValidateNotEmpty();
 
-            // 7. Подписание если требуется (с проверкой баланса)
-            if (command.SignImmediately)
+            // 6.2. Проверка доступности баланса (без списания)
+            foreach (var resource in document.ShipmentResources)
             {
+                await balanceService.ValidateBalanceAvailability(
+                    resource.ResourceId,
+                    resource.UnitOfMeasureId,
+                    resource.Quantity,
+                    cancellationToken);
+            }
+
+            // 7. Подписание если требуется (с проверкой баланса)
+            if (command.Sign)
+            {
+                // Списание при подписании (проверка уже выполнена выше)
                 foreach (var resource in document.ShipmentResources)
                 {
                     await balanceService.DecreaseBalance(

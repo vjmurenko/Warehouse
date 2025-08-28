@@ -1,11 +1,15 @@
-﻿using WarehouseManagement.Domain.Common;
+﻿﻿using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
-public class UnitOfMeasure(string name) : NamedEntity(name)
+public class UnitOfMeasure : NamedEntity
 {
+    public UnitOfMeasure(string name) : base(name)
+    {
+    }
+
     // Конструктор для EF Core
-    private UnitOfMeasure() : this(string.Empty)
+    private UnitOfMeasure() : base()
     {
     }
 }

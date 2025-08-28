@@ -48,7 +48,7 @@ public abstract class NamedEntityService<T> : INamedEntityService<T> where T : N
 
     public virtual async Task<bool> UpdateAsync(T entity)
     {
-        if (await Repository.ExistsWithNameAsync(entity.Name))
+        if (await Repository.ExistsWithNameAsync(entity.Name, entity.Id))
         {
             throw new InvalidOperationException($"Entity with name '{entity.Name}' already exists.");
         }

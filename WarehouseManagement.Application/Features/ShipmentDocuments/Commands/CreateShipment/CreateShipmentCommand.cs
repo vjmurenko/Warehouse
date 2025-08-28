@@ -8,5 +8,5 @@ public record CreateShipmentCommand(
     Guid ClientId,
     DateTime Date,
     List<ShipmentResourceDto> Resources,
-    bool SignImmediately = false
+    bool Sign = false
 ) : IRequest<Guid>;

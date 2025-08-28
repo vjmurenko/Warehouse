@@ -1,0 +1,103 @@
+using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceipts;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceiptById;
+using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
+
+namespace WarehouseManagement.Web.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
+{
+    /// <summary>
+    /// Get all receipt documents with optional filtering
+    /// </summary>
+    /// <param name="fromDate">Filter documents from this date</param>
+    /// <param name="toDate">Filter documents to this date</param>
+    /// <param name="documentNumbers">Filter by specific document numbers</param>
+    /// <param name="resourceIds">Filter by specific resource IDs</param>
+    /// <param name="unitIds">Filter by specific unit of measure IDs</param>
+    /// <returns>List of receipt document summaries</returns>
+    [HttpGet]
+    public async Task<ActionResult<List<ReceiptDocumentSummaryDto>>> GetReceipts(
+        [FromQuery] DateTime? fromDate = null,
+        [FromQuery] DateTime? toDate = null,
+        [FromQuery] List<string>? documentNumbers = null,
+        [FromQuery] List<Guid>? resourceIds = null,
+        [FromQuery] List<Guid>? unitIds = null)
+    {
+        var query = new GetReceiptsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds);
+        var result = await mediator.Send(query);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get a specific receipt document by ID
+    /// </summary>
+    /// <param name="id">The receipt document ID</param>
+    /// <returns>Receipt document with detailed information</returns>
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ReceiptDocumentDto>> GetReceiptById(Guid id)
+    {
+        var result = await mediator.Send(new GetReceiptByIdQuery(id));
+        
+        if (result == null)
+        {
+            return NotFound();
+        }
+        
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Create a new receipt document
+    /// </summary>
+    /// <param name="request">Receipt document creation data</param>
+    /// <returns>ID of the created receipt document</returns>
+    [HttpPost]
+    public async Task<ActionResult<Guid>> CreateReceipt([FromBody] CreateReceiptCommand request)
+    {
+        try
+        {
+            var result = await mediator.Send(request);
+            return CreatedAtAction(nameof(GetReceiptById), new { id = result }, result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Update an existing receipt document
+    /// </summary>
+    /// <param name="id">The receipt document ID</param>
+    /// <param name="request">Receipt document update data</param>
+    /// <returns>No content if successful</returns>
+    [HttpPut("{id}")]
+    public async Task<ActionResult> UpdateReceipt([FromBody] UpdateReceiptCommand request)
+    {
+        await mediator.Send(request);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Delete a receipt document
+    /// </summary>
+    /// <param name="id">The receipt document ID</param>
+    /// <returns>No content if successful</returns>
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteReceipt(Guid id)
+    {
+        await mediator.Send(new DeleteReceiptCommand(id));
+        return NoContent();
+    }
+}

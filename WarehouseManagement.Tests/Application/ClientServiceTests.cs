@@ -20,10 +20,10 @@ public class ClientServiceTests
     {
         // arrange
         var name = "Test Client";
-        var address = new Address("Test Address");
+        var address = "Test Address";
         var guid = Guid.NewGuid();
         
-        _namedEntityRepository.CreateAsync(Arg.Is<Client>(c => c.Name == name && c.Address.Name == address.Name)).Returns(guid);
+        _namedEntityRepository.CreateAsync(Arg.Is<Client>(c => c.Name == name && c.Address.Name == address)).Returns(guid);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
 
         // act
@@ -38,7 +38,7 @@ public class ClientServiceTests
     {
         // arrange
         var name = "Test Client";
-        var address = new Address("Test Address");
+        var address = "Test Address";
         
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
 
@@ -51,7 +51,7 @@ public class ClientServiceTests
     {
         // arrange
         var name = "";
-        var address = new Address("Test Address");
+        var address = "Test Address";
 
         // assert
         await Assert.ThrowsAsync<ArgumentException>(() => _clientService.CreateClientAsync(name, address));
@@ -62,7 +62,7 @@ public class ClientServiceTests
     {
         // arrange
         var name = "Test Client";
-        Address address = null!;
+        var address = string.Empty;
 
         // assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => _clientService.CreateClientAsync(name, address));
@@ -75,8 +75,8 @@ public class ClientServiceTests
         // arrange
         var id = Guid.NewGuid();
         var name = "Updated Client";
-        var address = new Address("Updated Address");
-        var client = new Client("Original Client", new Address("Original Address"));
+        var address = "Updated Address";
+        var client = new Client("Original Client", "Original Address");
 
         _namedEntityRepository.GetByIdAsync(id).Returns(client);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
@@ -88,7 +88,7 @@ public class ClientServiceTests
         // assert
         Assert.True(result);
         Assert.Equal(name, client.Name);
-        Assert.Equal(address.Name, client.Address.Name);
+        Assert.Equal(address, client.Address.Name);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class ClientServiceTests
         // arrange
         var id = Guid.NewGuid();
         var name = "Updated Client";
-        var address = new Address("Updated Address");
+        var address ="Updated Address";
 
         _namedEntityRepository.GetByIdAsync(id).Returns((Client)null!);
 
@@ -112,11 +112,11 @@ public class ClientServiceTests
         // arrange
         var id = Guid.NewGuid();
         var name = "Duplicate Client";
-        var address = new Address("Test Address");
-        var client = new Client("Original Client", new Address("Original Address"));
+        var address = "Test Address";
+        var client = new Client("Original Client", "Original Address"){Id = id};
 
         _namedEntityRepository.GetByIdAsync(id).Returns(client);
-        _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
+        _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         // act & assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => _clientService.UpdateClientAsync(id, name, address));

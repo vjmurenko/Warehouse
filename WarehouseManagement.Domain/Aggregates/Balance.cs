@@ -3,11 +3,23 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates;
 
-public class Balance(Guid resourceId, Guid unitOfMeasureId, Quantity quantity) : Entity, IAggregateRoot
+public class Balance : Entity, IAggregateRoot
 {
-    public Guid ResourceId { get; set; } = resourceId;
-    public Guid UnitOfMeasureId { get; set; } = unitOfMeasureId;
-    public Quantity Quantity { get; set; } = quantity ?? throw new  ArgumentNullException(nameof(quantity));
+    public Guid ResourceId { get; set; }
+    public Guid UnitOfMeasureId { get; set; }
+    public Quantity Quantity { get; set; }
+    
+    public Balance(Guid resourceId, Guid unitOfMeasureId, Quantity quantity)
+    {
+        ResourceId = resourceId;
+        UnitOfMeasureId = unitOfMeasureId;
+        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
+    }
+    
+    private Balance()
+    {
+        Quantity = new Quantity(0);
+    }
 
     public void Increase(Quantity amount)
     {

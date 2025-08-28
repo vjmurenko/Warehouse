@@ -29,8 +29,7 @@ public class WarehouseDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Конфигурация для Named Entities
+        
         modelBuilder.Entity<Resource>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -53,10 +52,12 @@ public class WarehouseDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
             entity.Property(e => e.IsActive).IsRequired();
             entity.HasIndex(e => e.Name).IsUnique();
-            entity.OwnsOne(e => e.Address);
+            entity.OwnsOne(e => e.Address, a => 
+            {
+                a.Property(p => p.Name).HasColumnName("Address").HasMaxLength(500);
+            });
         });
-
-        // Конфигурация для Balance
+        
         modelBuilder.Entity<Balance>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -68,8 +69,7 @@ public class WarehouseDbContext : DbContext
             });
             entity.HasIndex(e => new { e.ResourceId, e.UnitOfMeasureId }).IsUnique();
         });
-
-        // Конфигурация для ReceiptDocument
+        
         modelBuilder.Entity<ReceiptDocument>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -81,8 +81,7 @@ public class WarehouseDbContext : DbContext
                 .HasForeignKey(r => r.ReceiptDocumentId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-
-        // Конфигурация для ReceiptResource
+        
         modelBuilder.Entity<ReceiptResource>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -94,8 +93,7 @@ public class WarehouseDbContext : DbContext
                 q.Property(p => p.Value).HasColumnName("Quantity").HasColumnType("decimal(18,6)");
             });
         });
-
-        // Конфигурация для ShipmentDocument
+        
         modelBuilder.Entity<ShipmentDocument>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -109,8 +107,7 @@ public class WarehouseDbContext : DbContext
                 .HasForeignKey("ShipmentDocumentId")
                 .OnDelete(DeleteBehavior.Cascade);
         });
-
-        // Конфигурация для ShipmentResource
+        
         modelBuilder.Entity<ShipmentResource>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -122,18 +119,5 @@ public class WarehouseDbContext : DbContext
                 q.Property(p => p.Value).HasColumnName("Quantity").HasColumnType("decimal(18,6)");
             });
         });
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await Database.EnsureCreatedAsync(cancellationToken);
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-        catch
-        {
-            throw;
-        }
     }
 }

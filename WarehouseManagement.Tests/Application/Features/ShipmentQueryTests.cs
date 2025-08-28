@@ -45,7 +45,7 @@ public class ShipmentQueryTests
         _defaultClientId = Guid.NewGuid();
         _defaultResource = new Resource("Test Resource") { Id = _defaultResourceId };
         _defaultUnitOfMeasure = new UnitOfMeasure("Test Unit") { Id = _defaultUnitOfMeasureId };
-        _defaultClient = new Client("Test Client", new WarehouseManagement.Domain.ValueObjects.Address("Test Address")) { Id = _defaultClientId };
+        _defaultClient = new Client("Test Client", "Test Address") { Id = _defaultClientId };
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class ShipmentQueryTests
     {
         // Arrange
         var client2Id = Guid.NewGuid();
-        var client2 = new Client("Second Client", new WarehouseManagement.Domain.ValueObjects.Address("Address 2")) { Id = client2Id };
+        var client2 = new Client("Second Client", "Address 2") { Id = client2Id };
         
         var document1 = new ShipmentDocument("SHIP_001", _defaultClientId, DateTime.Now.AddDays(-2));
         document1.AddResource(_defaultResourceId, _defaultUnitOfMeasureId, 10);

@@ -1,11 +1,15 @@
-﻿using WarehouseManagement.Domain.Common;
+﻿﻿using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
-public class Resource(string name) : NamedEntity(name)
+public class Resource : NamedEntity
 {
+    public Resource(string name) : base(name)
+    {
+    }
+
     // Конструктор для EF Core
-    private Resource() : this(string.Empty)
+    private Resource() : base()
     {
     }
 }

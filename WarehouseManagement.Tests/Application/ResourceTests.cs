@@ -100,10 +100,10 @@ public class ResourceTests
         //arrange
         var id = Guid.NewGuid();
         var name = "duplicate name";
-        var resource = new Resource("original name");
+        var resource = new Resource("original name"){Id = id};
 
         _namedEntityRepository.GetByIdAsync(id).Returns(resource);
-        _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
+        _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         //act & assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => _resourceService.UpdateResourceAsync(id, name));

@@ -119,7 +119,7 @@ public class UpdateShipmentDocumentTests
         var newResource = new Resource("New Resource") { Id = newResourceId };
         var shipmentDto = new ShipmentResourceDto(newResourceId, _defaultUnitOfMeasureId, 25);
         var command = new UpdateShipmentCommand(_defaultDocumentId, "NEW_SIGNED_IMM", _defaultClientId, DateTime.Now, 
-            new List<ShipmentResourceDto> { shipmentDto }, SignImmediately: true);
+            new List<ShipmentResourceDto> { shipmentDto }, Sign: true);
 
         _shipmentRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>()).Returns(originalDocument);
 
@@ -198,7 +198,7 @@ public class UpdateShipmentDocumentTests
         
         var shipmentDto = new ShipmentResourceDto(_defaultResourceId, _defaultUnitOfMeasureId, 1000); // Large quantity
         var command = new UpdateShipmentCommand(_defaultDocumentId, "TEST_BALANCE", _defaultClientId, DateTime.Now, 
-            new List<ShipmentResourceDto> { shipmentDto }, SignImmediately: true);
+            new List<ShipmentResourceDto> { shipmentDto }, Sign: true);
 
         _shipmentRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>()).Returns(originalDocument);
         _shipmentRepository.ExistsByNumberAsync("TEST_BALANCE", _defaultDocumentId, Arg.Any<CancellationToken>()).Returns(false);
@@ -245,7 +245,7 @@ public class UpdateShipmentDocumentTests
         originalDocument.AddResource(_defaultResourceId, _defaultUnitOfMeasureId, 5);
         
         var command = new UpdateShipmentCommand(_defaultDocumentId, "EMPTY_SIGN_TEST", _defaultClientId, DateTime.Now, 
-            new List<ShipmentResourceDto>(), SignImmediately: true);
+            new List<ShipmentResourceDto>(), Sign: true);
 
         _shipmentRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>()).Returns(originalDocument);
         _shipmentRepository.ExistsByNumberAsync("EMPTY_SIGN_TEST", _defaultDocumentId, Arg.Any<CancellationToken>()).Returns(false);

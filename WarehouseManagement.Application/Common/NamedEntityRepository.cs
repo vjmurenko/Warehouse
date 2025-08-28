@@ -5,17 +5,13 @@ using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Common;
 
-public abstract class NamedEntityRepository<T> : RepositoryBase<T>, INamedEntityRepository<T> 
+public abstract class NamedEntityRepository<T>(WarehouseDbContext dbContext) : RepositoryBase<T>(dbContext), INamedEntityRepository<T>
     where T : NamedEntity
 {
-    public NamedEntityRepository(WarehouseDbContext dbContext) : base(dbContext)
-    {
-    }
-
-    public async Task<bool> ExistsWithNameAsync(string name)
+    public async Task<bool> ExistsWithNameAsync(string name, Guid? excludeId = null)
     {
         var query = DbContext.Set<T>().AsNoTracking()
-            .Where(x => x.Name.ToLower() == name.ToLower());
+            .Where(x => x.Name.ToLower() == name.ToLower() && x.Id != excludeId);
         
         return await query.AnyAsync();
     }

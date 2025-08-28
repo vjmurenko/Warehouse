@@ -82,10 +82,10 @@ public class UnitOfMeasureTests
         // arrange
         var id = Guid.NewGuid();
         var name = "Duplicate Unit";
-        var unitOfMeasure = new UnitOfMeasure("Original Unit");
+        var unitOfMeasure = new UnitOfMeasure("Original Unit"){Id = id};
 
         _namedEntityRepository.GetByIdAsync(id).Returns(unitOfMeasure);
-        _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
+        _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         // act & assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, name));

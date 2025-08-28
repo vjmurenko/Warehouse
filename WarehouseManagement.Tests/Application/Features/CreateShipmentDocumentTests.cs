@@ -78,6 +78,7 @@ public class CreateShipmentDocumentTests
 
         await _validationService.Received(1).ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>());
         await _validationService.Received(1).ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>());
+        await _balanceService.Received(1).ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
         await _balanceService.DidNotReceive().DecreaseBalance(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Quantity>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
         Assert.NotEqual(Guid.Empty, resultId);
@@ -93,7 +94,7 @@ public class CreateShipmentDocumentTests
 
         var shipmentDto = new ShipmentResourceDto(_defaultResourceId, _defaultUnitOfMeasureId, quantity.Value);
         var command = new CreateShipmentCommand(documentNumber, _defaultClientId, date, 
-            new List<ShipmentResourceDto> { shipmentDto }, SignImmediately: true);
+            new List<ShipmentResourceDto> { shipmentDto }, Sign: true);
 
         _validationService.ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>()).Returns(_defaultResource);
         _validationService.ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>()).Returns(_defaultUnitOfMeasure);
@@ -110,6 +111,7 @@ public class CreateShipmentDocumentTests
             ),
             Arg.Any<CancellationToken>());
 
+        await _balanceService.Received(1).ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
         await _balanceService.Received(1).DecreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
         Assert.NotEqual(Guid.Empty, resultId);
@@ -217,6 +219,11 @@ public class CreateShipmentDocumentTests
             Arg.Is<ShipmentDocument>(s => s.Number == "SHIP_MULTI_123" && s.ShipmentResources.Count == 2),
             Arg.Any<CancellationToken>());
         
+        // Verify balance validation was called for both resources
+        await _balanceService.Received(1).ValidateBalanceAvailability(resource1Id, unit1Id, quantity1, Arg.Any<CancellationToken>());
+        await _balanceService.Received(1).ValidateBalanceAvailability(resource2Id, unit2Id, quantity2, Arg.Any<CancellationToken>());
+        await _balanceService.DidNotReceive().DecreaseBalance(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Quantity>(), Arg.Any<CancellationToken>());
+        
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
         Assert.NotEqual(Guid.Empty, resultId);
     }
@@ -229,12 +236,12 @@ public class CreateShipmentDocumentTests
         var documentNumber = "SHIP_BALANCE_TEST";
         var shipmentDto = new ShipmentResourceDto(_defaultResourceId, _defaultUnitOfMeasureId, quantity.Value);
         var command = new CreateShipmentCommand(documentNumber, _defaultClientId, DateTime.Now, 
-            new List<ShipmentResourceDto> { shipmentDto }, SignImmediately: true);
+            new List<ShipmentResourceDto> { shipmentDto }, Sign: true);
 
         _validationService.ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>()).Returns(_defaultResource);
         _validationService.ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>()).Returns(_defaultUnitOfMeasure);
         _shipmentRepository.ExistsByNumberAsync(documentNumber, cancellationToken: Arg.Any<CancellationToken>()).Returns(false);
-        _balanceService.DecreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>())
+        _balanceService.ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Недостаточно ресурсов на складе"));
 
         // Act & Assert
@@ -243,6 +250,10 @@ public class CreateShipmentDocumentTests
         
         Assert.Contains("Недостаточно ресурсов на складе", exception.Message);
         await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        
+        // Verify validation was called but decrease was not called due to validation failure
+        await _balanceService.Received(1).ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
+        await _balanceService.DidNotReceive().DecreaseBalance(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Quantity>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -263,11 +274,39 @@ public class CreateShipmentDocumentTests
     }
 
     [Fact]
+    public async Task CreateShipmentDocument_WithInsufficientBalance_ShouldThrowException()
+    {
+        // Arrange
+        var quantity = new Quantity(100);
+        var documentNumber = "SHIP_INSUFFICIENT_BALANCE";
+        var shipmentDto = new ShipmentResourceDto(_defaultResourceId, _defaultUnitOfMeasureId, quantity.Value);
+        var command = new CreateShipmentCommand(documentNumber, _defaultClientId, DateTime.Now, 
+            new List<ShipmentResourceDto> { shipmentDto });
+
+        _validationService.ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>()).Returns(_defaultResource);
+        _validationService.ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>()).Returns(_defaultUnitOfMeasure);
+        _shipmentRepository.ExistsByNumberAsync(documentNumber, cancellationToken: Arg.Any<CancellationToken>()).Returns(false);
+        _balanceService.ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("Недостаточно ресурса на складе. Доступно: 50, требуется: 100"));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _handler.Handle(command, CancellationToken.None));
+        
+        Assert.Contains("Недостаточно ресурса на складе", exception.Message);
+        await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        
+        // Verify that balance was not decreased (only validation was called)
+        await _balanceService.Received(1).ValidateBalanceAvailability(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
+        await _balanceService.DidNotReceive().DecreaseBalance(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Quantity>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task CreateShipmentDocument_WithEmptyResourcesAndImmediateSigning_ShouldThrowException()
     {
         // Arrange
         var command = new CreateShipmentCommand("SHIP_EMPTY_SIGN", _defaultClientId, DateTime.Now, 
-            new List<ShipmentResourceDto>(), SignImmediately: true);
+            new List<ShipmentResourceDto>(), Sign: true);
 
         _shipmentRepository.ExistsByNumberAsync("SHIP_EMPTY_SIGN", cancellationToken: Arg.Any<CancellationToken>()).Returns(false);
 
