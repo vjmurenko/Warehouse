@@ -23,7 +23,7 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     /// <param name="unitIds">Filter by specific unit of measure IDs</param>
     /// <returns>List of shipment document summaries</returns>
     [HttpGet]
-    public async Task<ActionResult<List<ShipmentDocumentSummaryDto>>> GetShipments(
+    public async Task<ActionResult<List<ShipmentDocumentDto>>> GetShipments(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] List<string>? documentNumbers = null,

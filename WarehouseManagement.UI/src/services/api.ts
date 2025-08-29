@@ -280,11 +280,11 @@ class ApiService {
   }
 
   // Shipment Documents API
-  async getShipmentDocuments(): Promise<ShipmentDocumentSummaryDto[]> {
-    return this.request<ShipmentDocumentSummaryDto[]>('/ShipmentDocuments');
+  async getShipmentDocuments(): Promise<ShipmentDocumentDto[]> {
+    return this.request<ShipmentDocumentDto[]>('/ShipmentDocuments');
   }
 
-  async getFilteredShipmentDocuments(filters: DocumentFilters = {}): Promise<ShipmentDocumentSummaryDto[]> {
+  async getFilteredShipmentDocuments(filters: DocumentFilters = {}): Promise<ShipmentDocumentDto[]> {
     const params = new URLSearchParams();
     
     // Support both naming conventions for compatibility during transition
@@ -303,7 +303,7 @@ class ApiService {
     const queryString = params.toString();
     const endpoint = queryString ? `/ShipmentDocuments?${queryString}` : '/ShipmentDocuments';
     
-    return this.request<ShipmentDocumentSummaryDto[]>(endpoint);
+    return this.request<ShipmentDocumentDto[]>(endpoint);
   }
 
   async getShipmentDocumentById(id: string): Promise<ShipmentDocumentDto> {

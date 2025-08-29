@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner, Card, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import DocumentFilters from '../../components/ReceiptDocumentFilters';
 import apiService from '../../services/api';
-import { DocumentFilters as DocumentFiltersType, ShipmentDocumentSummaryDto } from '../../types/api';
+import { DocumentFilters as DocumentFiltersType, ShipmentDocumentDto } from '../../types/api';
+import ShipmentDocumentFilterComponent from '../../components/ShipmentDocumentFilters';
 
 const ShipmentsPage: React.FC = () => {
-  const [shipments, setShipments] = useState<ShipmentDocumentSummaryDto[]>([]);
+  const [shipments, setShipments] = useState<ShipmentDocumentDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<DocumentFiltersType>({});
@@ -75,7 +75,7 @@ const ShipmentsPage: React.FC = () => {
 
       <Row className="mb-4">
         <Col>
-          <DocumentFilters onFiltersChange={handleFiltersChange} title="Filter Shipments" />
+        <ShipmentDocumentFilterComponent onFiltersChange={handleFiltersChange}></ShipmentDocumentFilterComponent>
         </Col>
       </Row>
 
@@ -108,6 +108,7 @@ const ShipmentsPage: React.FC = () => {
                       <th>Client</th>
                       <th>Status</th>
                       <th>Resources</th>
+                      <th>UnitOfMeasure</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -133,10 +134,15 @@ const ShipmentsPage: React.FC = () => {
                             </Badge>
                           </td>
                           <td>
-                            <Badge bg="info">
-                              {shipment.resourceCount} items
-                            </Badge>
+                           {shipment.resources.map(rserouce => (
+                            <Row>{rserouce.resourceName}</Row>
+                           ))}
                           </td>
+                           <td>
+                            {shipment.resources.map(resource => (
+                              <Row>{resource.unitName}</Row>
+                            ))}
+                           </td>
                         </tr>
                       ))
                     )}

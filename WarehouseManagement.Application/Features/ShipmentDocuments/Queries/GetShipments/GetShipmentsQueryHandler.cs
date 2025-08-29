@@ -7,9 +7,11 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.Get
 
 public class GetShipmentsQueryHandler(
     IShipmentRepository shipmentRepository,
-    IClientService clientService) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentSummaryDto>>
+    IClientService clientService,
+    IUnitOfMeasureService unitOfMeasureService,
+    IResourceService resourceService) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentDto>>
 {
-    public async Task<List<ShipmentDocumentSummaryDto>> Handle(GetShipmentsQuery request, CancellationToken cancellationToken)
+    public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken cancellationToken)
     {
         var documents = await shipmentRepository.GetFilteredAsync(
             request.FromDate,
@@ -19,21 +21,35 @@ public class GetShipmentsQueryHandler(
             request.UnitIds,
             cancellationToken);
 
-        var result = new List<ShipmentDocumentSummaryDto>();
-        
+        var result = new List<ShipmentDocumentDto>();
+
         foreach (var document in documents)
         {
             var client = await clientService.GetByIdAsync(document.ClientId);
             var clientName = client?.Name ?? "Unknown Client";
+            var shipmentResourceDetailDtos = new List<ShipmentResourceDetailDto>();
 
-            result.Add(new ShipmentDocumentSummaryDto(
+            foreach (var shipmentResource in document.ShipmentResources)
+            {
+                var unitOfMeasure = await unitOfMeasureService.GetByIdAsync(shipmentResource.UnitOfMeasureId);
+                var resource = await resourceService.GetByIdAsync(shipmentResource.ResourceId);
+                shipmentResourceDetailDtos.Add(new ShipmentResourceDetailDto(shipmentResource.Id,
+                    resource.Id,
+                    resource.Name,
+                    unitOfMeasure.Id,
+                    unitOfMeasure.Name,
+                    shipmentResource.Quantity.Value));
+            }
+
+            result.Add(new ShipmentDocumentDto(
                 document.Id,
                 document.Number,
                 document.ClientId,
                 clientName,
                 document.Date,
                 document.IsSigned,
-                document.ShipmentResources.Count));
+                shipmentResourceDetailDtos
+                ));
         }
 
         return result;
