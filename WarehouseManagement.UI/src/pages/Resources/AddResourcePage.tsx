@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../services/api';
-import { CreateResourceDto } from '../types/api';
+import apiService from '../../services/api';
+import { CreateResourceDto } from '../../types/api';
 
 const AddResourcePage: React.FC = () => {
   const [formData, setFormData] = useState<CreateResourceDto>({ name: '' });

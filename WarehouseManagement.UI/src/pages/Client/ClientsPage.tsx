@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../services/api';
-import { ClientDto } from '../types/api';
+import apiService from '../../services/api';
+import { ClientDto } from '../../types/api';
 
 const ClientsPage: React.FC = () => {
   const [clients, setClients] = useState<ClientDto[]>([]);

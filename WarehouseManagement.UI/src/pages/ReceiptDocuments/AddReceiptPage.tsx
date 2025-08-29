@@ -1,63 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Card, Spinner } from 'react-bootstrap';
-import { useNavigate, useParams } from 'react-router-dom';
-import apiService from '../services/api';
-import DocumentResources, { DocumentResourceItem } from '../components/DocumentResources';
-import { ReceiptDocumentDto } from '../types/api';
+import React, { useState } from 'react';
+import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import apiService from '../../services/api';
+import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
 
-const EditReceiptPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [receipt, setReceipt] = useState<ReceiptDocumentDto | null>(null);
+const AddReceiptPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
-  const [date, setDate] = useState<string>('');
+  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [resources, setResources] = useState<DocumentResourceItem[]>([]);
   
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (id) {
-      loadReceiptDocument(id);
-    } else {
-      setIsLoading(false);
-      setError('Receipt document ID is required');
-    }
-  }, [id]);
-
-  const loadReceiptDocument = async (receiptId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const data = await apiService.getReceiptDocumentById(receiptId);
-      setReceipt(data);
-      setNumber(data.number);
-      setDate(new Date(data.date).toISOString().split('T')[0]);
-      setResources(data.resources.map(item => ({
-        id: item.id,
-        resourceId: item.resourceId,
-        resourceName: item.resourceName,
-        unitId: item.unitId,
-        unitName: item.unitName,
-        quantity: item.quantity
-      })));
-    } catch (err) {
-      setError('Failed to load receipt document');
-      console.error('Error loading receipt document:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!id || !receipt) {
-      return;
-    }
     
     // Validation
     if (!number.trim()) {
@@ -96,12 +54,10 @@ const EditReceiptPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.updateReceiptDocument(id, {
-        id: id,
+      await apiService.createReceiptDocument({
         number: number.trim(),
         date: new Date(date).toISOString(),
         resources: resources.map(r => ({
-          id: r.id,
           resourceId: r.resourceId,
           unitId: r.unitId,
           quantity: r.quantity
@@ -110,31 +66,8 @@ const EditReceiptPage: React.FC = () => {
       
       navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to update receipt document');
-      console.error('Error updating receipt document:', err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!id || !receipt) {
-      return;
-    }
-    
-    if (!window.confirm('Are you sure you want to delete this receipt document?')) {
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      setError(null);
-      
-      await apiService.deleteReceiptDocument(id);
-      navigate('/receipts');
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete receipt document');
-      console.error('Error deleting receipt document:', err);
+      setError(err.message || 'Failed to create receipt document');
+      console.error('Error creating receipt document:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -144,36 +77,11 @@ const EditReceiptPage: React.FC = () => {
     navigate('/receipts');
   };
 
-  if (isLoading) {
-    return (
-      <Container fluid className="p-4">
-        <div className="text-center">
-          <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </Spinner>
-        </div>
-      </Container>
-    );
-  }
-
-  if (!receipt) {
-    return (
-      <Container fluid className="p-4">
-        <Alert variant="danger">
-          {error || 'Receipt document not found'}
-        </Alert>
-        <Button variant="primary" onClick={() => navigate('/receipts')}>
-          Back to Receipts
-        </Button>
-      </Container>
-    );
-  }
-
   return (
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Edit Receipt Document</h2>
+          <h2>Create Receipt Document</h2>
         </Col>
       </Row>
       
@@ -234,10 +142,7 @@ const EditReceiptPage: React.FC = () => {
         
         <div className="d-flex gap-2">
           <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-            Delete
+            {isSubmitting ? 'Creating...' : 'Create Receipt'}
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
@@ -248,4 +153,4 @@ const EditReceiptPage: React.FC = () => {
   );
 };
 
-export default EditReceiptPage;
+export default AddReceiptPage;

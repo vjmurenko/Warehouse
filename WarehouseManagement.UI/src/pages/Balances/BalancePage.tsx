@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge } from 'react-bootstrap';
-import BalanceFilters from '../components/BalanceFilters';
-import BalanceTable from '../components/BalanceTable';
-import apiService from '../services/api';
-import { BalanceDto, BalanceFilters as BalanceFiltersType } from '../types/api';
+import BalanceFilters from '../../components/BalanceFilters';
+import BalanceTable from '../../components/BalanceTable';
+import apiService from '../../services/api';
+import { BalanceDto, BalanceFilters as BalanceFiltersType } from '../../types/api';
 
 const BalancePage: React.FC = () => {
   const [balances, setBalances] = useState<BalanceDto[]>([]);
@@ -64,34 +64,9 @@ const BalancePage: React.FC = () => {
 
   return (
     <Container fluid className="p-4">
-      <Row className="mb-4">
-        <Col>
-          <div className="d-flex justify-content-between align-items-center">
-            <h2 className="mb-0">Balance</h2>
-            <div className="d-flex gap-3">
-              <div className="text-center">
-                <div className="text-muted small">Total Items</div>
-                <Badge bg="primary" className="fs-6">
-                  {balances.length}
-                </Badge>
-              </div>
-              <div className="text-center">
-                <div className="text-muted small">With Positive Balance</div>
-                <Badge bg="success" className="fs-6">
-                  {getPositiveBalancesCount()}
-                </Badge>
-              </div>
-              <div className="text-center">
-                <div className="text-muted small">Total Quantity</div>
-                <Badge bg="info" className="fs-6">
-                  {formatQuantity(getTotalQuantity())}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </Col>
+      <Row>
+        <h2>Balance</h2>
       </Row>
-
       <Row>
         <Col>
           <BalanceFilters onFiltersChange={handleFiltersChange} />

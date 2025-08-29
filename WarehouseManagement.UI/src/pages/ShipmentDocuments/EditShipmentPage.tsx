@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Container, Row, Col, Form, Button, Alert, Card, Spinner, Badge } from 'react-bootstrap';
+import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
-import apiService from '../services/api';
-import DocumentResources, { DocumentResourceItem } from '../components/DocumentResources';
-import { SelectOption, ClientDto } from '../types/api';
+import apiService from '../../services/api';
+import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
+import { SelectOption, ClientDto, ShipmentDocumentDto } from '../../types/api';
 
-const AddShipmentPage: React.FC = () => {
+const EditShipmentPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const [shipment, setShipment] = useState<ShipmentDocumentDto | null>(null);
   const [number, setNumber] = useState<string>('');
-  const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState<string>('');
   const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
   const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [isSigned, setIsSigned] = useState<boolean>(false);
   const [signDocument, setSignDocument] = useState<boolean>(false);
   
   const [clients, setClients] = useState<ClientDto[]>([]);
+  const [isLoadingClients, setIsLoadingClients] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,24 +27,63 @@ const AddShipmentPage: React.FC = () => {
   useEffect(() => {
     const loadClients = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        
+        setIsLoadingClients(true);
         const data = await apiService.getActiveClients();
         setClients(data);
       } catch (err) {
-        setError('Failed to load clients');
         console.error('Error loading clients:', err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingClients(false);
       }
     };
     
     loadClients();
   }, []);
 
+  useEffect(() => {
+    if (id) {
+      loadShipmentDocument(id);
+    } else {
+      setIsLoading(false);
+      setError('Shipment document ID is required');
+    }
+  }, [id]);
+
+  const loadShipmentDocument = async (shipmentId: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const data = await apiService.getShipmentDocumentById(shipmentId);
+      setShipment(data);
+      setNumber(data.number);
+      setDate(new Date(data.date).toISOString().split('T')[0]);
+      setSelectedClient({ value: data.clientId, label: data.clientName });
+      setIsSigned(data.isSigned);
+      setSignDocument(data.isSigned);
+      
+      setResources(data.resources.map(item => ({
+        id: item.id,
+        resourceId: item.resourceId,
+        resourceName: item.resourceName,
+        unitId: item.unitId,
+        unitName: item.unitName,
+        quantity: item.quantity
+      })));
+    } catch (err) {
+      setError('Failed to load shipment document');
+      console.error('Error loading shipment document:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!id || !shipment) {
+      return;
+    }
     
     // Validation
     if (!number.trim()) {
@@ -84,12 +127,14 @@ const AddShipmentPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.createShipmentDocument({
+      await apiService.updateShipmentDocument(id, {
+        id: id,
         number: number.trim(),
         clientId: selectedClient.value,
         date: new Date(date).toISOString(),
         sign: signDocument,
         resources: resources.map(r => ({
+          id: r.id,
           resourceId: r.resourceId,
           unitId: r.unitId,
           quantity: r.quantity
@@ -98,8 +143,31 @@ const AddShipmentPage: React.FC = () => {
       
       navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to create shipment document');
-      console.error('Error creating shipment document:', err);
+      setError(err.message || 'Failed to update shipment document');
+      console.error('Error updating shipment document:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!id || !shipment) {
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to delete this shipment document?')) {
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      await apiService.deleteShipmentDocument(id);
+      navigate('/shipments');
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete shipment document');
+      console.error('Error deleting shipment document:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -114,11 +182,41 @@ const AddShipmentPage: React.FC = () => {
     label: client.name
   }));
 
+  if (isLoading) {
+    return (
+      <Container fluid className="p-4">
+        <div className="text-center">
+          <Spinner animation="border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+        </div>
+      </Container>
+    );
+  }
+
+  if (!shipment) {
+    return (
+      <Container fluid className="p-4">
+        <Alert variant="danger">
+          {error || 'Shipment document not found'}
+        </Alert>
+        <Button variant="primary" onClick={() => navigate('/shipments')}>
+          Back to Shipments
+        </Button>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Create Shipment Document</h2>
+          <div className="d-flex justify-content-between align-items-center">
+            <h2>Edit Shipment Document</h2>
+            {isSigned && (
+              <Badge bg="success" className="fs-6">Signed</Badge>
+            )}
+          </div>
         </Col>
       </Row>
       
@@ -170,7 +268,7 @@ const AddShipmentPage: React.FC = () => {
                 options={clientOptions}
                 value={selectedClient}
                 onChange={(selected) => setSelectedClient(selected as SelectOption)}
-                isDisabled={isSubmitting || isLoading}
+                isDisabled={isSubmitting || isLoadingClients}
                 placeholder="Select client..."
               />
             </Form.Group>
@@ -184,6 +282,16 @@ const AddShipmentPage: React.FC = () => {
                 onChange={(e) => setSignDocument(e.target.checked)}
                 disabled={isSubmitting}
               />
+              {isSigned && !signDocument && (
+                <div className="text-danger small mt-1">
+                  Warning: Unsigning this document will reverse the balance changes
+                </div>
+              )}
+              {!isSigned && signDocument && (
+                <div className="text-success small mt-1">
+                  This will update warehouse balances
+                </div>
+              )}
             </Form.Group>
           </Card.Body>
         </Card>
@@ -201,7 +309,10 @@ const AddShipmentPage: React.FC = () => {
         
         <div className="d-flex gap-2">
           <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Shipment'}
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
+          <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
+            Delete
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
@@ -212,4 +323,4 @@ const AddShipmentPage: React.FC = () => {
   );
 };
 
-export default AddShipmentPage;
+export default EditShipmentPage;

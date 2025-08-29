@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Row, Col, Button, Card } from 'react-bootstrap';
 import Select from 'react-select';
-import { DocumentFilters, SelectOption, ResourceDto, UnitOfMeasureDto } from '../types/api';
+import {
+  DocumentFilters,
+  SelectOption,
+  ResourceDto,
+  UnitOfMeasureDto,
+  ReceiptDocumentDto,
+  ReceiptDocumentSummaryDto
+} from '../types/api'
 import apiService from '../services/api';
 
 interface DocumentFiltersProps {
@@ -9,15 +16,17 @@ interface DocumentFiltersProps {
   title?: string;
 }
 
-const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange, title = 'Filter Documents' }) => {
+const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange, title = 'Filter Documents' }) => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [documentNumbers, setDocumentNumbers] = useState<string>('');
   const [selectedResources, setSelectedResources] = useState<SelectOption[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<SelectOption[]>([]);
+  const [selectedReceiptDocuments, setSelectedDocumentNumbers] = useState<SelectOption[]>([]);
   
   const [resources, setResources] = useState<ResourceDto[]>([]);
   const [units, setUnits] = useState<UnitOfMeasureDto[]>([]);
+  const [receiptDocuments, setReceiptDocuments] = useState<ReceiptDocumentSummaryDto[]>([]);
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,13 +37,15 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
       setError(null);
       
       try {
-        const [resourcesData, unitsData] = await Promise.all([
+        const [resourcesData, unitsData, receiptDocumentsData] = await Promise.all([
           apiService.getActiveResources(),
-          apiService.getActiveUnitsOfMeasure()
+          apiService.getActiveUnitsOfMeasure(),
+          apiService.getReceiptDocuments()
         ]);
         
         setResources(resourcesData);
         setUnits(unitsData);
+        setReceiptDocuments(receiptDocumentsData);
       } catch (err) {
         setError('Failed to load filter data');
         console.error('Error loading filter data:', err);
@@ -50,7 +61,7 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
     const filters: DocumentFilters = {
       fromDate: fromDate || undefined,
       toDate: toDate || undefined,
-      documentNumbers: documentNumbers ? documentNumbers.split(',').map(n => n.trim()) : undefined,
+      documentNumbers: selectedReceiptDocuments.map(c => c.value),
       resourceIds: selectedResources.map(r => r.value),
       unitIds: selectedUnits.map(u => u.value)
     };
@@ -64,9 +75,15 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
     setDocumentNumbers('');
     setSelectedResources([]);
     setSelectedUnits([]);
+    setSelectedDocumentNumbers([]);
     
     onFiltersChange({});
   };
+
+  const receiptNumbersOptions: SelectOption[] = receiptDocuments.map(receipt => ({
+    value: receipt.number,
+    label: receipt.number
+  }))
 
   const resourceOptions: SelectOption[] = resources.map(resource => ({
     value: resource.id,
@@ -80,11 +97,10 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
 
   return (
     <Card className="mb-4">
-      <Card.Header>{title}</Card.Header>
       <Card.Body>
         <Form>
           <Row className="mb-3">
-            <Col md={6}>
+            <Col>
               <Form.Group className="mb-3">
                 <Form.Label>Start Date</Form.Label>
                 <Form.Control
@@ -95,7 +111,7 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col>
               <Form.Group className="mb-3">
                 <Form.Label>End Date</Form.Label>
                 <Form.Control
@@ -106,21 +122,22 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
                 />
               </Form.Group>
             </Col>
-          </Row>
-
-          <Form.Group className="mb-3">
-            <Form.Label>Document Numbers (comma-separated)</Form.Label>
-            <Form.Control
-              type="text"
-              value={documentNumbers}
-              onChange={(e) => setDocumentNumbers(e.target.value)}
-              placeholder="e.g. DOC-001, DOC-002"
-              disabled={isLoading}
-            />
-          </Form.Group>
-
-          <Row className="mb-3">
-            <Col md={6}>
+            <Col>
+              <Form.Group className="mb-3">
+                <Form.Label>Document Numbers (comma-separated)</Form.Label>
+                <Select
+                  isMulti
+                  options={receiptNumbersOptions}
+                  value={selectedReceiptDocuments}
+                  onChange={(selected) => setSelectedDocumentNumbers(selected as SelectOption[])}
+                  placeholder="Select document numbers"
+                  isDisabled={isLoading}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                />
+              </Form.Group>
+            </Col>
+            <Col>
               <Form.Group>
                 <Form.Label>Resources</Form.Label>
                 <Select
@@ -135,7 +152,7 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
                 />
               </Form.Group>
             </Col>
-            <Col md={6}>
+            <Col>
               <Form.Group>
                 <Form.Label>Units of Measure</Form.Label>
                 <Select
@@ -166,4 +183,4 @@ const DocumentFiltersComponent: React.FC<DocumentFiltersProps> = ({ onFiltersCha
   );
 };
 
-export default DocumentFiltersComponent;
+export default ReceiptDocumentFilterComponent;

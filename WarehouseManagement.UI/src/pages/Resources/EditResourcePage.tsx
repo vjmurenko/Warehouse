@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import apiService from '../services/api';
-import { ResourceDto, UpdateResourceDto } from '../types/api';
+import apiService from '../../services/api';
+import { ResourceDto, UpdateResourceDto } from '../../types/api';
 
 const EditResourcePage: React.FC = () => {
   const [resource, setResource] = useState<ResourceDto | null>(null);

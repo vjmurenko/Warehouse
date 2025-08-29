@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Form, Button, Alert, Card, Spinner, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Alert, Card, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import Select from 'react-select';
-import apiService from '../services/api';
-import DocumentResources, { DocumentResourceItem } from '../components/DocumentResources';
-import { SelectOption, ClientDto, ShipmentDocumentDto } from '../types/api';
+import apiService from '../../services/api';
+import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
+import { ReceiptDocumentDto } from '../../types/api';
 
-const EditShipmentPage: React.FC = () => {
+const EditReceiptPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const [shipment, setShipment] = useState<ShipmentDocumentDto | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptDocumentDto | null>(null);
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>('');
-  const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
   const [resources, setResources] = useState<DocumentResourceItem[]>([]);
-  const [isSigned, setIsSigned] = useState<boolean>(false);
-  const [signDocument, setSignDocument] = useState<boolean>(false);
   
-  const [clients, setClients] = useState<ClientDto[]>([]);
-  const [isLoadingClients, setIsLoadingClients] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,43 +19,23 @@ const EditShipmentPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadClients = async () => {
-      try {
-        setIsLoadingClients(true);
-        const data = await apiService.getActiveClients();
-        setClients(data);
-      } catch (err) {
-        console.error('Error loading clients:', err);
-      } finally {
-        setIsLoadingClients(false);
-      }
-    };
-    
-    loadClients();
-  }, []);
-
-  useEffect(() => {
     if (id) {
-      loadShipmentDocument(id);
+      loadReceiptDocument(id);
     } else {
       setIsLoading(false);
-      setError('Shipment document ID is required');
+      setError('Receipt document ID is required');
     }
   }, [id]);
 
-  const loadShipmentDocument = async (shipmentId: string) => {
+  const loadReceiptDocument = async (receiptId: string) => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const data = await apiService.getShipmentDocumentById(shipmentId);
-      setShipment(data);
+      const data = await apiService.getReceiptDocumentById(receiptId);
+      setReceipt(data);
       setNumber(data.number);
       setDate(new Date(data.date).toISOString().split('T')[0]);
-      setSelectedClient({ value: data.clientId, label: data.clientName });
-      setIsSigned(data.isSigned);
-      setSignDocument(data.isSigned);
-      
       setResources(data.resources.map(item => ({
         id: item.id,
         resourceId: item.resourceId,
@@ -71,8 +45,8 @@ const EditShipmentPage: React.FC = () => {
         quantity: item.quantity
       })));
     } catch (err) {
-      setError('Failed to load shipment document');
-      console.error('Error loading shipment document:', err);
+      setError('Failed to load receipt document');
+      console.error('Error loading receipt document:', err);
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +55,7 @@ const EditShipmentPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!id || !shipment) {
+    if (!id || !receipt) {
       return;
     }
     
@@ -93,11 +67,6 @@ const EditShipmentPage: React.FC = () => {
     
     if (!date) {
       setError('Date is required');
-      return;
-    }
-    
-    if (!selectedClient) {
-      setError('Client is required');
       return;
     }
     
@@ -127,12 +96,10 @@ const EditShipmentPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.updateShipmentDocument(id, {
+      await apiService.updateReceiptDocument(id, {
         id: id,
         number: number.trim(),
-        clientId: selectedClient.value,
         date: new Date(date).toISOString(),
-        sign: signDocument,
         resources: resources.map(r => ({
           id: r.id,
           resourceId: r.resourceId,
@@ -141,21 +108,21 @@ const EditShipmentPage: React.FC = () => {
         }))
       });
       
-      navigate('/shipments');
+      navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to update shipment document');
-      console.error('Error updating shipment document:', err);
+      setError(err.message || 'Failed to update receipt document');
+      console.error('Error updating receipt document:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!id || !shipment) {
+    if (!id || !receipt) {
       return;
     }
     
-    if (!window.confirm('Are you sure you want to delete this shipment document?')) {
+    if (!window.confirm('Are you sure you want to delete this receipt document?')) {
       return;
     }
     
@@ -163,24 +130,19 @@ const EditShipmentPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.deleteShipmentDocument(id);
-      navigate('/shipments');
+      await apiService.deleteReceiptDocument(id);
+      navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to delete shipment document');
-      console.error('Error deleting shipment document:', err);
+      setError(err.message || 'Failed to delete receipt document');
+      console.error('Error deleting receipt document:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/shipments');
+    navigate('/receipts');
   };
-
-  const clientOptions: SelectOption[] = clients.map(client => ({
-    value: client.id,
-    label: client.name
-  }));
 
   if (isLoading) {
     return (
@@ -194,14 +156,14 @@ const EditShipmentPage: React.FC = () => {
     );
   }
 
-  if (!shipment) {
+  if (!receipt) {
     return (
       <Container fluid className="p-4">
         <Alert variant="danger">
-          {error || 'Shipment document not found'}
+          {error || 'Receipt document not found'}
         </Alert>
-        <Button variant="primary" onClick={() => navigate('/shipments')}>
-          Back to Shipments
+        <Button variant="primary" onClick={() => navigate('/receipts')}>
+          Back to Receipts
         </Button>
       </Container>
     );
@@ -211,12 +173,7 @@ const EditShipmentPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <div className="d-flex justify-content-between align-items-center">
-            <h2>Edit Shipment Document</h2>
-            {isSigned && (
-              <Badge bg="success" className="fs-6">Signed</Badge>
-            )}
-          </div>
+          <h2>Edit Receipt Document</h2>
         </Col>
       </Row>
       
@@ -261,38 +218,6 @@ const EditShipmentPage: React.FC = () => {
                 </Form.Group>
               </Col>
             </Row>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Client</Form.Label>
-              <Select
-                options={clientOptions}
-                value={selectedClient}
-                onChange={(selected) => setSelectedClient(selected as SelectOption)}
-                isDisabled={isSubmitting || isLoadingClients}
-                placeholder="Select client..."
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Check
-                type="checkbox"
-                id="sign-document"
-                label="Sign document (will affect warehouse balance)"
-                checked={signDocument}
-                onChange={(e) => setSignDocument(e.target.checked)}
-                disabled={isSubmitting}
-              />
-              {isSigned && !signDocument && (
-                <div className="text-danger small mt-1">
-                  Warning: Unsigning this document will reverse the balance changes
-                </div>
-              )}
-              {!isSigned && signDocument && (
-                <div className="text-success small mt-1">
-                  This will update warehouse balances
-                </div>
-              )}
-            </Form.Group>
           </Card.Body>
         </Card>
         
@@ -323,4 +248,4 @@ const EditShipmentPage: React.FC = () => {
   );
 };
 
-export default EditShipmentPage;
+export default EditReceiptPage;

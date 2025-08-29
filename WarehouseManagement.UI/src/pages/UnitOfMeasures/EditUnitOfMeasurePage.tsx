@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
-import apiService from '../services/api';
-import { UnitOfMeasureDto } from '../types/api';
+import apiService from '../../services/api';
+import { UnitOfMeasureDto } from '../../types/api';
 
 const EditUnitOfMeasurePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();

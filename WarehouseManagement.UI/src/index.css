@@ -45,7 +45,7 @@ code {
 }
 
 .filter-section {
-  background-color: white;
+  background-color: #f8f9fa;
   border-radius: 0.375rem;
   box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }

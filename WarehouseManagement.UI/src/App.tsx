@@ -2,22 +2,22 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Container, Row, Col } from 'react-bootstrap';
 import Sidebar from './components/Sidebar';
-import BalancePage from './pages/BalancePage';
-import ReceiptsPage from './pages/ReceiptsPage';
-import AddReceiptPage from './pages/AddReceiptPage';
-import EditReceiptPage from './pages/EditReceiptPage';
-import ShipmentsPage from './pages/ShipmentsPage';
-import AddShipmentPage from './pages/AddShipmentPage';
-import EditShipmentPage from './pages/EditShipmentPage';
-import ResourcesPage from './pages/ResourcesPage';
-import AddResourcePage from './pages/AddResourcePage';
-import EditResourcePage from './pages/EditResourcePage';
-import ClientsPage from './pages/ClientsPage';
-import AddClientPage from './pages/AddClientPage';
-import EditClientPage from './pages/EditClientPage';
-import UnitsOfMeasurePage from './pages/UnitsOfMeasurePage';
-import AddUnitOfMeasurePage from './pages/AddUnitOfMeasurePage';
-import EditUnitOfMeasurePage from './pages/EditUnitOfMeasurePage';
+import BalancePage from './pages/Balances/BalancePage';
+import ReceiptsPage from './pages/ReceiptDocuments/ReceiptsPage';
+import AddReceiptPage from './pages/ReceiptDocuments/AddReceiptPage';
+import EditReceiptPage from './pages/ReceiptDocuments/EditReceiptPage';
+import ShipmentsPage from './pages/ShipmentDocuments/ShipmentsPage';
+import AddShipmentPage from './pages/ShipmentDocuments/AddShipmentPage';
+import EditShipmentPage from './pages/ShipmentDocuments/EditShipmentPage';
+import ResourcesPage from './pages/Resources/ResourcesPage';
+import AddResourcePage from './pages/Resources/AddResourcePage';
+import EditResourcePage from './pages/Resources/EditResourcePage';
+import ClientsPage from './pages/Client/ClientsPage';
+import AddClientPage from './pages/Client/AddClientPage';
+import EditClientPage from './pages/Client/EditClientPage';
+import UnitsOfMeasurePage from './pages/UnitOfMeasures/UnitsOfMeasurePage';
+import AddUnitOfMeasurePage from './pages/UnitOfMeasures/AddUnitOfMeasurePage';
+import EditUnitOfMeasurePage from './pages/UnitOfMeasures/EditUnitOfMeasurePage';
 
 function App() {
   return (

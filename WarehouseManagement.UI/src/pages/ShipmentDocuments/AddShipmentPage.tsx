@@ -1,18 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../services/api';
-import DocumentResources, { DocumentResourceItem } from '../components/DocumentResources';
+import Select from 'react-select';
+import apiService from '../../services/api';
+import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
+import { SelectOption, ClientDto } from '../../types/api';
 
-const AddReceiptPage: React.FC = () => {
+const AddShipmentPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
   const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [signDocument, setSignDocument] = useState<boolean>(false);
   
+  const [clients, setClients] = useState<ClientDto[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadClients = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        const data = await apiService.getActiveClients();
+        setClients(data);
+      } catch (err) {
+        setError('Failed to load clients');
+        console.error('Error loading clients:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadClients();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +50,11 @@ const AddReceiptPage: React.FC = () => {
     
     if (!date) {
       setError('Date is required');
+      return;
+    }
+    
+    if (!selectedClient) {
+      setError('Client is required');
       return;
     }
     
@@ -54,9 +84,11 @@ const AddReceiptPage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.createReceiptDocument({
+      await apiService.createShipmentDocument({
         number: number.trim(),
+        clientId: selectedClient.value,
         date: new Date(date).toISOString(),
+        sign: signDocument,
         resources: resources.map(r => ({
           resourceId: r.resourceId,
           unitId: r.unitId,
@@ -64,24 +96,29 @@ const AddReceiptPage: React.FC = () => {
         }))
       });
       
-      navigate('/receipts');
+      navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to create receipt document');
-      console.error('Error creating receipt document:', err);
+      setError(err.message || 'Failed to create shipment document');
+      console.error('Error creating shipment document:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/receipts');
+    navigate('/shipments');
   };
+
+  const clientOptions: SelectOption[] = clients.map(client => ({
+    value: client.id,
+    label: client.name
+  }));
 
   return (
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Create Receipt Document</h2>
+          <h2>Create Shipment Document</h2>
         </Col>
       </Row>
       
@@ -126,6 +163,28 @@ const AddReceiptPage: React.FC = () => {
                 </Form.Group>
               </Col>
             </Row>
+            
+            <Form.Group className="mb-3">
+              <Form.Label>Client</Form.Label>
+              <Select
+                options={clientOptions}
+                value={selectedClient}
+                onChange={(selected) => setSelectedClient(selected as SelectOption)}
+                isDisabled={isSubmitting || isLoading}
+                placeholder="Select client..."
+              />
+            </Form.Group>
+            
+            <Form.Group className="mb-3">
+              <Form.Check
+                type="checkbox"
+                id="sign-document"
+                label="Sign document (will affect warehouse balance)"
+                checked={signDocument}
+                onChange={(e) => setSignDocument(e.target.checked)}
+                disabled={isSubmitting}
+              />
+            </Form.Group>
           </Card.Body>
         </Card>
         
@@ -142,7 +201,7 @@ const AddReceiptPage: React.FC = () => {
         
         <div className="d-flex gap-2">
           <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Receipt'}
+            {isSubmitting ? 'Creating...' : 'Create Shipment'}
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
             Cancel
@@ -153,4 +212,4 @@ const AddReceiptPage: React.FC = () => {
   );
 };
 
-export default AddReceiptPage;
+export default AddShipmentPage;

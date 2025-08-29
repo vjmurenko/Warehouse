@@ -47,16 +47,6 @@ const BalanceTable: React.FC<BalanceTableProps> = ({ balances, loading, error })
     }).format(quantity);
   };
 
-  const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleString('ru-RU', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   return (
     <div className="table-responsive">
       <Table striped hover className="balance-table mb-0">
@@ -64,36 +54,22 @@ const BalanceTable: React.FC<BalanceTableProps> = ({ balances, loading, error })
           <tr>
             <th>Ресурс</th>
             <th>Единица измерения</th>
-            <th className="text-end">Количество</th>
-            <th>Создан</th>
-            <th>Обновлен</th>
+            <th>Количество</th>
           </tr>
         </thead>
         <tbody>
           {balances.map((balance) => (
             <tr key={balance.id}>
               <td>
-                <strong>{balance.resourceName}</strong>
+                {balance.resourceName}
               </td>
               <td>
-                <span className="badge bg-secondary">
+                <span>
                   {balance.unitOfMeasureName}
                 </span>
               </td>
-              <td className="text-end">
-                <strong className={balance.quantity > 0 ? 'text-success' : 'text-danger'}>
+              <td>
                   {formatQuantity(balance.quantity)}
-                </strong>
-              </td>
-              <td>
-                <small className="text-muted">
-                  {formatDate(balance.createdAt)}
-                </small>
-              </td>
-              <td>
-                <small className="text-muted">
-                  {balance.updatedAt ? formatDate(balance.updatedAt) : '—'}
-                </small>
               </td>
             </tr>
           ))}

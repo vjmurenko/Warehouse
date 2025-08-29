@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner, Card, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import DocumentFilters from '../components/DocumentFilters';
-import apiService from '../services/api';
-import { DocumentFilters as DocumentFiltersType, ShipmentDocumentSummaryDto } from '../types/api';
+import DocumentFilters from '../../components/ReceiptDocumentFilters';
+import apiService from '../../services/api';
+import { DocumentFilters as DocumentFiltersType, ShipmentDocumentSummaryDto } from '../../types/api';
 
 const ShipmentsPage: React.FC = () => {
   const [shipments, setShipments] = useState<ShipmentDocumentSummaryDto[]>([]);

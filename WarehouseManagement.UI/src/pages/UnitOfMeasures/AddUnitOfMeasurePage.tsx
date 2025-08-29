@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../services/api';
+import apiService from '../../services/api';
 
-const AddClientPage: React.FC = () => {
+const AddUnitOfMeasurePage: React.FC = () => {
   const [name, setName] = useState('');
-  const [address, setAddress] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -17,39 +16,33 @@ const AddClientPage: React.FC = () => {
       setError('Name is required');
       return;
     }
-    
-    if (!address.trim()) {
-      setError('Address is required');
-      return;
-    }
 
     try {
       setIsSubmitting(true);
       setError(null);
       
-      await apiService.createClient({
-        name: name.trim(),
-        address: address.trim()
+      await apiService.createUnitOfMeasure({
+        name: name.trim()
       });
       
-      navigate('/clients');
+      navigate('/units');
     } catch (err: any) {
-      setError(err.message || 'Failed to create client');
-      console.error('Error creating client:', err);
+      setError(err.message || 'Failed to create unit of measure');
+      console.error('Error creating unit of measure:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/clients');
+    navigate('/units');
   };
 
   return (
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Add New Client</h2>
+          <h2>Add New Unit of Measure</h2>
         </Col>
       </Row>
       
@@ -72,19 +65,7 @@ const AddClientPage: React.FC = () => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter client name"
-                disabled={isSubmitting}
-                required
-              />
-            </Form.Group>
-            
-            <Form.Group className="mb-3">
-              <Form.Label>Address</Form.Label>
-              <Form.Control
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter client address"
+                placeholder="Enter unit name"
                 disabled={isSubmitting}
                 required
               />
@@ -105,4 +86,4 @@ const AddClientPage: React.FC = () => {
   );
 };
 
-export default AddClientPage;
+export default AddUnitOfMeasurePage;

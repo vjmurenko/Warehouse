@@ -1,53 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import apiService from '../services/api';
-import { UnitOfMeasureDto } from '../types/api';
+import apiService from '../../services/api';
+import { ResourceDto } from '../../types/api';
 
-const UnitsOfMeasurePage: React.FC = () => {
-  const [units, setUnits] = useState<UnitOfMeasureDto[]>([]);
+const ResourcesPage: React.FC = () => {
+  const [resources, setResources] = useState<ResourceDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadUnits();
+    loadResources();
   }, [showArchived]);
 
-  const loadUnits = async () => {
+  const loadResources = async () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('Fetching units of measure...');
-      const data = await apiService.getUnitsOfMeasure();
-      console.log('Units data received:', data);
+      const data = await apiService.getResources();
 
-      // Filter units based on view mode
+      // Фильтруем ресурсы в зависимости от режима просмотра
       const filteredData = showArchived
-        ? data.filter(unit => !unit.isActive)
-        : data.filter(unit => unit.isActive);
+        ? data.filter(resource => !resource.isActive)
+        : data.filter(resource => resource.isActive);
 
-      console.log('Filtered units data:', filteredData);
-      setUnits(filteredData);
+      setResources(filteredData);
     } catch (err) {
-      console.error('Error loading units of measure:', err);
-      setError(`Error loading units of measure: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError('Ошибка при загрузке ресурсов');
+      console.error('Error loading resources:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddUnit = () => {
-    navigate('/units/add');
+  const handleAddResource = () => {
+    navigate('/resources/add');
   };
 
   const handleToggleArchived = () => {
     setShowArchived(!showArchived);
   };
 
-  const handleUnitClick = (unitId: string) => {
-    navigate(`/units/edit/${unitId}`);
+  const handleResourceClick = (resourceId: string) => {
+    navigate(`/resources/edit/${resourceId}`);
   };
 
   if (loading) {
@@ -55,7 +52,7 @@ const UnitsOfMeasurePage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка...</span>
           </Spinner>
         </div>
       </Container>
@@ -66,7 +63,7 @@ const UnitsOfMeasurePage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Units of Measure</h2>
+          <h2>Ресурсы</h2>
         </Col>
       </Row>
 
@@ -75,16 +72,16 @@ const UnitsOfMeasurePage: React.FC = () => {
           <div className="d-flex gap-2">
             {!showArchived ? (
               <>
-                <Button variant="success" onClick={handleAddUnit}>
-                  Add
+                <Button variant="success" onClick={handleAddResource}>
+                  добавить
                 </Button>
                 <Button variant="warning" onClick={handleToggleArchived}>
-                  Show Archived
+                  к архиву
                 </Button>
               </>
             ) : (
               <Button variant="primary" onClick={handleToggleArchived}>
-                Show Active
+                к рабочим
               </Button>
             )}
           </div>
@@ -106,24 +103,24 @@ const UnitsOfMeasurePage: React.FC = () => {
           <Table bordered className="mb-0">
             <thead>
               <tr>
-                <th>Name</th>
+                <th>Наименование</th>
               </tr>
             </thead>
             <tbody>
-              {units.length === 0 ? (
+              {resources.length === 0 ? (
                 <tr>
                   <td className="text-center text-muted py-4">
-                    {showArchived ? 'No archived units found' : 'No units found'}
+                    {showArchived ? 'Архивные ресурсы не найдены' : 'Ресурсы не найдены'}
                   </td>
                 </tr>
               ) : (
-                units.map((unit) => (
+                resources.map((resource) => (
                   <tr
-                    key={unit.id}
-                    onClick={() => handleUnitClick(unit.id)}
+                    key={resource.id}
+                    onClick={() => handleResourceClick(resource.id)}
                     style={{ cursor: 'pointer' }}
                   >
-                    <td>{unit.name}</td>
+                    <td>{resource.name}</td>
                   </tr>
                 ))
               )}
@@ -131,8 +128,10 @@ const UnitsOfMeasurePage: React.FC = () => {
           </Table>
         </Col>
       </Row>
+
+
     </Container>
   );
 };
 
-export default UnitsOfMeasurePage;
+export default ResourcesPage;
