@@ -103,6 +103,26 @@ const EditClientPage: React.FC = () => {
     navigate('/clients');
   };
 
+  const handleDelete = async () => {
+    if (!client) return;
+    if (!window.confirm(`Вы уверены, что хотить удалить клиента ${client.name} ? `)) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      await apiService.deleteClient(client.id);
+      navigate('/Clients');
+    }
+    catch (err){
+      console.log("Ошибка при удалении клиента", err);
+      setError("Ошибка при удалении клиента")
+    }
+    finally {
+      setIsSubmitting(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <Container fluid className="p-4">
@@ -177,7 +197,11 @@ const EditClientPage: React.FC = () => {
               <Button variant="primary" type="submit" disabled={isSubmitting}>
                 {isSubmitting ? 'Saving...' : 'Save'}
               </Button>
-              
+
+              <Button variant="danger" onClick={handleDelete}>
+                Delete
+              </Button>
+
               <Button 
                 variant={client.isActive ? "warning" : "success"} 
                 onClick={handleArchiveToggle} 

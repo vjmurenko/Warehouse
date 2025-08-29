@@ -95,6 +95,26 @@ const EditUnitOfMeasurePage: React.FC = () => {
     navigate('/units');
   };
 
+  const handleDelete = async () => {
+    if (!unit) return;
+    if (!window.confirm(`Вы уверены, что хотите удалить единицу измеререния ${unit?.name}?`)) return
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+
+      await apiService.deleteUnitOfMeasure(unit.id);
+      navigate('/units')
+    }
+    catch (err){
+      console.log('Невозможно удалить единицу измерения', err);
+      setError(`Невозможно удалить единицу измерения ${unit.name}`)
+    }
+    finally {
+      setIsSubmitting(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <Container fluid className="p-4">
@@ -165,7 +185,10 @@ const EditUnitOfMeasurePage: React.FC = () => {
               >
                 {unit.isActive ? 'Archive' : 'Activate'}
               </Button>
-              
+
+              <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
+                Delete
+              </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
                 Cancel
               </Button>

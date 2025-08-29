@@ -15,41 +15,35 @@ import {
 } from '../types/api';
 
 // For development with ASP.NET Core, make sure it matches launchSettings.json
-const API_BASE_URL = 'http://localhost:5072/api';
+const API_BASE_URL = 'https://localhost:7230/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
-    
+
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
       },
       ...options,
-      // Add this to handle development certificates
       mode: 'cors',
-      credentials: 'same-origin'
+      credentials: 'same-origin',
     };
 
-    try {
-      console.log(`Making request to: ${url}`);
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        console.error(`HTTP error! status: ${response.status}`);
-        const errorText = await response.text();
-        console.error(`Error response: ${errorText}`);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText || 'No error details'}`);
-      }
-      
-      const data = await response.json();
-      console.log(`Successful response from ${endpoint}:`, data);
-      return data;
-    } catch (error) {
-      console.error(`API request failed for ${endpoint}:`, error);
-      throw error;
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
     }
+
+    // Если 204 No Content → возвращаем "пустое значение"
+    if (response.status === 204) {
+      return null as unknown as T;
+    }
+
+    return (await response.json()) as T;
   }
 
   // Balance API
@@ -107,6 +101,11 @@ class ApiService {
       method: 'POST',
     });
   }
+  async  deleteResource(id: string): Promise<void> {
+    return  this.request<void>(`/Resources/${id}`, {
+      method: 'DELETE',
+    })
+  }
   
   // Clients API
   async getClients(): Promise<ClientDto[]> {
@@ -145,6 +144,12 @@ class ApiService {
     return this.request<void>(`/Clients/${id}/activate`, {
       method: 'POST',
     });
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    return this.request<void>(`/Clients/${id}`, {
+      method: 'DELETE'
+    })
   }
 
   // Units of Measure API
@@ -192,6 +197,11 @@ class ApiService {
     return this.request<void>(`/UnitOfMeasure/${id}/activate`, {
       method: 'POST',
     });
+  }
+  async deleteUnitOfMeasure(id: string): Promise<void> {
+    return this.request<void>(`/UnitOfMeasure/${id}`, {
+      method: 'DELETE'
+    })
   }
 
   // Receipt Documents API

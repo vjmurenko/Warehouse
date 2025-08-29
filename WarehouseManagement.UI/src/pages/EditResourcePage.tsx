@@ -65,8 +65,8 @@ const EditResourcePage: React.FC = () => {
       setSubmitting(true);
       setError(null);
       
-      // TODO: Implement delete functionality when API is available
-      alert('Функция удаления будет реализована');
+     await apiService.deleteResource(resource.id);
+     navigate('/resources');
     } catch (err) {
       console.error('Error deleting resource:', err);
       setError('Ошибка при удалении ресурса');
