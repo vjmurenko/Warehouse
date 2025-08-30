@@ -7,17 +7,15 @@ import {
   ResourceDto,
   UnitOfMeasureDto,
   ClientDto,
-  ShipmentDocumentSummaryDto,
   ShipmentDocumentDto
 } from '../types/api'
 import apiService from '../services/api';
 
 interface DocumentFiltersProps {
   onFiltersChange: (filters: DocumentFilters) => void;
-  title?: string;
 }
 
-const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange, title = 'Filter Documents' }) => {
+const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange }) => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
   const [selectedResources, setSelectedResources] = useState<SelectOption[]>([]);
@@ -31,12 +29,10 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
   const [clients, setClients] = useState<ClientDto[]>([])
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFilterData = async () => {
       setIsLoading(true);
-      setError(null);
       
       try {
         const [resourcesData, unitsData, shipmentDocumentsData, clientsData] = await Promise.all([
@@ -49,9 +45,8 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
         setResources(resourcesData);
         setUnits(unitsData);
         setShipmentDocuments(shipmentDocumentsData);
-        setClients(clientsData)
+        setClients(clientsData);
       } catch (err) {
-        setError('Failed to load filter data');
         console.error('Error loading filter data:', err);
       } finally {
         setIsLoading(false);

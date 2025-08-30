@@ -75,7 +75,7 @@ const ShipmentsPage: React.FC = () => {
 
       <Row className="mb-4">
         <Col>
-        <ShipmentDocumentFilterComponent onFiltersChange={handleFiltersChange}></ShipmentDocumentFilterComponent>
+        <ShipmentDocumentFilterComponent onFiltersChange={handleFiltersChange} />
         </Col>
       </Row>
 
@@ -107,14 +107,14 @@ const ShipmentsPage: React.FC = () => {
                       <th>Date</th>
                       <th>Client</th>
                       <th>Status</th>
+                      <th>Units of Measure</th>
                       <th>Resources</th>
-                      <th>UnitOfMeasure</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shipments.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="text-center text-muted py-4">
+                        <td colSpan={6} className="text-center text-muted py-4">
                           No shipment documents found
                         </td>
                       </tr>
@@ -134,15 +134,21 @@ const ShipmentsPage: React.FC = () => {
                             </Badge>
                           </td>
                           <td>
-                           {shipment.resources.map(rserouce => (
-                            <Row>{rserouce.resourceName}</Row>
-                           ))}
-                          </td>
-                           <td>
-                            {shipment.resources.map(resource => (
-                              <Row>{resource.unitName}</Row>
+                            {shipment.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1" />}
+                                {resource.unitName}
+                              </div>
                             ))}
-                           </td>
+                          </td>
+                          <td>
+                            {shipment.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1" />}
+                                {resource.resourceName}
+                              </div>
+                            ))}
+                          </td>
                         </tr>
                       ))
                     )}
