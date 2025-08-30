@@ -6,35 +6,30 @@ import {
   SelectOption,
   ResourceDto,
   UnitOfMeasureDto,
-  ReceiptDocumentDto,
-  ReceiptDocumentSummaryDto
+  ReceiptDocumentDto
 } from '../types/api'
 import apiService from '../services/api';
 
 interface DocumentFiltersProps {
   onFiltersChange: (filters: DocumentFilters) => void;
-  title?: string;
 }
 
-const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange, title = 'Filter Documents' }) => {
+const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFiltersChange }) => {
   const [fromDate, setFromDate] = useState<string>('');
   const [toDate, setToDate] = useState<string>('');
-  const [documentNumbers, setDocumentNumbers] = useState<string>('');
   const [selectedResources, setSelectedResources] = useState<SelectOption[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<SelectOption[]>([]);
   const [selectedReceiptDocuments, setSelectedDocumentNumbers] = useState<SelectOption[]>([]);
   
   const [resources, setResources] = useState<ResourceDto[]>([]);
   const [units, setUnits] = useState<UnitOfMeasureDto[]>([]);
-  const [receiptDocuments, setReceiptDocuments] = useState<ReceiptDocumentSummaryDto[]>([]);
+  const [receiptDocuments, setReceiptDocuments] = useState<ReceiptDocumentDto[]>([]);
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFilterData = async () => {
       setIsLoading(true);
-      setError(null);
       
       try {
         const [resourcesData, unitsData, receiptDocumentsData] = await Promise.all([
@@ -47,7 +42,6 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
         setUnits(unitsData);
         setReceiptDocuments(receiptDocumentsData);
       } catch (err) {
-        setError('Failed to load filter data');
         console.error('Error loading filter data:', err);
       } finally {
         setIsLoading(false);
@@ -72,7 +66,6 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
   const handleClearFilters = () => {
     setFromDate('');
     setToDate('');
-    setDocumentNumbers('');
     setSelectedResources([]);
     setSelectedUnits([]);
     setSelectedDocumentNumbers([]);

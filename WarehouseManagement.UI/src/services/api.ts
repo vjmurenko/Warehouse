@@ -3,9 +3,7 @@ import {
   ResourceDto,
   UnitOfMeasureDto,
   ReceiptDocumentDto,
-  ReceiptDocumentSummaryDto,
   ShipmentDocumentDto,
-  ShipmentDocumentSummaryDto,
   DocumentFilters,
   CreateResourceDto,
   UpdateResourceDto,
@@ -15,7 +13,7 @@ import {
 } from '../types/api';
 
 // For development with ASP.NET Core, make sure it matches launchSettings.json
-const API_BASE_URL = 'https://localhost:7230/api';
+const API_BASE_URL = 'http://localhost:5072/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -205,11 +203,11 @@ class ApiService {
   }
 
   // Receipt Documents API
-  async getReceiptDocuments(): Promise<ReceiptDocumentSummaryDto[]> {
-    return this.request<ReceiptDocumentSummaryDto[]>('/ReceiptDocuments');
+  async getReceiptDocuments(): Promise<ReceiptDocumentDto[]> {
+    return this.request<ReceiptDocumentDto[]>('/ReceiptDocuments');
   }
 
-  async getFilteredReceiptDocuments(filters: DocumentFilters = {}): Promise<ReceiptDocumentSummaryDto[]> {
+  async getFilteredReceiptDocuments(filters: DocumentFilters = {}): Promise<ReceiptDocumentDto[]> {
     const params = new URLSearchParams();
     
     // Support both naming conventions for compatibility during transition
@@ -228,7 +226,7 @@ class ApiService {
     const queryString = params.toString();
     const endpoint = queryString ? `/ReceiptDocuments?${queryString}` : '/ReceiptDocuments';
     
-    return this.request<ReceiptDocumentSummaryDto[]>(endpoint);
+    return this.request<ReceiptDocumentDto[]>(endpoint);
   }
 
   async getReceiptDocumentById(id: string): Promise<ReceiptDocumentDto> {

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Table, Alert, Spinner, Card, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Button, Table, Alert, Spinner, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import DocumentFilters from '../../components/ReceiptDocumentFilters';
 import apiService from '../../services/api';
-import { DocumentFilters as DocumentFiltersType, ReceiptDocumentSummaryDto } from '../../types/api';
+import { DocumentFilters as DocumentFiltersType, ReceiptDocumentDto } from '../../types/api';
 
 const ReceiptsPage: React.FC = () => {
-  const [receipts, setReceipts] = useState<ReceiptDocumentSummaryDto[]>([]);
+  const [receipts, setReceipts] = useState<ReceiptDocumentDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<DocumentFiltersType>({});
@@ -75,7 +75,7 @@ const ReceiptsPage: React.FC = () => {
 
       <Row className="mb-4">
         <Col>
-          <DocumentFilters onFiltersChange={handleFiltersChange} title="Filter Receipts" />
+          <DocumentFilters onFiltersChange={handleFiltersChange} />
         </Col>
       </Row>
 
@@ -105,13 +105,14 @@ const ReceiptsPage: React.FC = () => {
                     <tr>
                       <th>Number</th>
                       <th>Date</th>
+                      <th>Units of Measure</th>
                       <th>Resources</th>
                     </tr>
                   </thead>
                   <tbody>
                     {receipts.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="text-center text-muted py-4">
+                        <td colSpan={4} className="text-center text-muted py-4">
                           No receipt documents found
                         </td>
                       </tr>
@@ -125,9 +126,20 @@ const ReceiptsPage: React.FC = () => {
                           <td>{receipt.number}</td>
                           <td>{formatDate(receipt.date)}</td>
                           <td>
-                            <Badge bg="info">
-                              {receipt.resourceCount} items
-                            </Badge>
+                            {receipt.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1" />}
+                                {resource.unitName}
+                              </div>
+                            ))}
+                          </td>
+                          <td>
+                            {receipt.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1" />}
+                                {resource.resourceName}
+                              </div>
+                            ))}
                           </td>
                         </tr>
                       ))

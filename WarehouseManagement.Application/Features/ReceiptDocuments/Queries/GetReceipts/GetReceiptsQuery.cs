@@ -9,4 +9,4 @@ public record GetReceiptsQuery(
     List<string>? DocumentNumbers = null,
     List<Guid>? ResourceIds = null,
     List<Guid>? UnitIds = null
-) : IRequest<List<ReceiptDocumentSummaryDto>>;
+) : IRequest<List<ReceiptDocumentDto>>;

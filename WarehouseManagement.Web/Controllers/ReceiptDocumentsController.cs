@@ -21,9 +21,9 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     /// <param name="documentNumbers">Filter by specific document numbers</param>
     /// <param name="resourceIds">Filter by specific resource IDs</param>
     /// <param name="unitIds">Filter by specific unit of measure IDs</param>
-    /// <returns>List of receipt document summaries</returns>
+    /// <returns>List of receipt documents with full details</returns>
     [HttpGet]
-    public async Task<ActionResult<List<ReceiptDocumentSummaryDto>>> GetReceipts(
+    public async Task<ActionResult<List<ReceiptDocumentDto>>> GetReceipts(
         [FromQuery] DateTime? fromDate = null,
         [FromQuery] DateTime? toDate = null,
         [FromQuery] List<string>? documentNumbers = null,
