@@ -3,6 +3,7 @@ using MediatR;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;
+using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.RevokeShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipments;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipmentById;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
@@ -101,5 +102,24 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     {
         await mediator.Send(new DeleteShipmentCommand(id));
         return NoContent();
+    }
+
+    /// <summary>
+    /// Revoke a signed shipment document
+    /// </summary>
+    /// <param name="id">The shipment document ID</param>
+    /// <returns>No content if successful</returns>
+    [HttpPost("{id}/revoke")]
+    public async Task<ActionResult> RevokeShipment(Guid id)
+    {
+        try
+        {
+            await mediator.Send(new RevokeShipmentCommand(id));
+            return NoContent();
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 }

@@ -21,54 +21,140 @@ interface DocumentResourcesSelectorProps {
   mode: 'receipt' | 'shipment'; // receipt = empty start, shipment = only resources with balance > 0
 }
 
-const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({ 
-  resources, 
-  onResourcesChange, 
-  disabled = false,
-  mode = 'receipt'
-}) => {
-  const [availableResources, setAvailableResources] = useState<ResourceDto[]>([]);
-  const [availableUnits, setAvailableUnits] = useState<UnitOfMeasureDto[]>([]);
-  const [balances, setBalances] = useState<BalanceDto[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+// Component for shipment mode - shows all balance resources in a table
+const ShipmentResourcesTable: React.FC<{
+  balances: BalanceDto[];
+  resources: DocumentResourceItem[];
+  onResourcesChange: (resources: DocumentResourceItem[]) => void;
+  disabled: boolean;
+}> = ({ balances, resources, onResourcesChange, disabled }) => {
+  
+  const handleQuantityChange = (resourceId: string, unitId: string, quantity: number) => {
+    const updatedResources = [...resources];
+    const existingIndex = updatedResources.findIndex(r => r.resourceId === resourceId && r.unitId === unitId);
+    
+    if (quantity > 0) {
+      const balance = balances.find(b => b.resourceId === resourceId && b.unitOfMeasureId === unitId);
+      
+      if (existingIndex >= 0) {
+        // Update existing resource
+        updatedResources[existingIndex] = {
+          ...updatedResources[existingIndex],
+          quantity
+        };
+      } else {
+        // Add new resource
+        updatedResources.push({
+          resourceId,
+          resourceName: balance?.resourceName,
+          unitId,
+          unitName: balance?.unitOfMeasureName,
+          quantity,
+          availableQuantity: balance?.quantity || 0
+        });
+      }
+    } else {
+      // Remove resource if quantity is 0
+      if (existingIndex >= 0) {
+        updatedResources.splice(existingIndex, 1);
+      }
+    }
+    
+    onResourcesChange(updatedResources);
+  };
+  
+  const getResourceQuantity = (resourceId: string, unitId: string): number => {
+    const resource = resources.find(r => r.resourceId === resourceId && r.unitId === unitId);
+    return resource?.quantity || 0;
+  };
+  
+  const formatQuantity = (quantity: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3
+    }).format(quantity);
+  };
+  
+  return (
+    <div className="table-responsive">
+      <Table striped hover>
+        <thead>
+          <tr>
+            <th>Resource</th>
+            <th>Unit of Measure</th>
+            <th>Quantity</th>
+            <th>Available</th>
+          </tr>
+        </thead>
+        <tbody>
+          {balances.map((balance) => {
+            const currentQuantity = getResourceQuantity(balance.resourceId, balance.unitOfMeasureId);
+            const maxQuantity = balance.quantity;
+            
+            return (
+              <tr key={`${balance.resourceId}-${balance.unitOfMeasureId}`}>
+                <td>
+                  <strong>{balance.resourceName}</strong>
+                </td>
+                <td>
+                  {balance.unitOfMeasureName}
+                </td>
+                <td>
+                  <FormControl
+                    type="number"
+                    min="0"
+                    max={maxQuantity}
+                    step="0.001"
+                    value={currentQuantity}
+                    onChange={(e) => handleQuantityChange(
+                      balance.resourceId, 
+                      balance.unitOfMeasureId, 
+                      parseFloat(e.target.value) || 0
+                    )}
+                    disabled={disabled}
+                    placeholder="0"
+                  />
+                  {currentQuantity > maxQuantity && (
+                    <div className="text-danger small mt-1">
+                      Exceeds available quantity ({formatQuantity(maxQuantity)})
+                    </div>
+                  )}
+                </td>
+                <td className="text-center">
+                  <span className="badge bg-info fs-6">
+                    {formatQuantity(balance.quantity)}
+                  </span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </Table>
+      {balances.length === 0 && (
+        <div className="text-center text-muted py-3">
+          No resources with positive balance available
+        </div>
+      )}
+    </div>
+  );
+};
 
+// Original component for receipt mode - allows adding/removing resources
+const ReceiptResourcesTable: React.FC<{
+  resources: DocumentResourceItem[];
+  onResourcesChange: (resources: DocumentResourceItem[]) => void;
+  disabled: boolean;
+  availableResources: ResourceDto[];
+  availableUnits: UnitOfMeasureDto[];
+}> = ({ resources, onResourcesChange, disabled, availableResources, availableUnits }) => {
+  
   // Create a new empty resource item
   const emptyResource: DocumentResourceItem = {
     resourceId: '',
     unitId: '',
     quantity: 0
   };
-
-  useEffect(() => {
-    const loadReferenceData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const resourcesData = await apiService.getActiveResources();
-        const unitsData = await apiService.getActiveUnitsOfMeasure();
-
-        setAvailableResources(resourcesData);
-        setAvailableUnits(unitsData);
-        
-        if (mode === 'shipment') {
-          const balancesData = await apiService.getBalances();
-          // Filter balances to only show resources with positive quantities
-          const positiveBalances = balancesData.filter(b => b.quantity > 0);
-          setBalances(positiveBalances);
-        }
-      } catch (err) {
-        setError('Failed to load reference data');
-        console.error('Error loading reference data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadReferenceData();
-  }, [mode]);
-
+  
   const handleAddResource = () => {
     onResourcesChange([...resources, { ...emptyResource }]);
   };
@@ -84,27 +170,21 @@ const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({
     
     if (field === 'resourceId') {
       const selectedResource = availableResources.find(r => r.id === value);
-      const resourceBalance = balances.find(b => b.resourceId === value);
       
       updatedResources[index] = {
         ...updatedResources[index],
         resourceId: value,
         resourceName: selectedResource?.name,
         unitId: '', // Reset unit when resource changes
-        unitName: '',
-        availableQuantity: resourceBalance?.quantity || 0
+        unitName: ''
       };
     } else if (field === 'unitId') {
       const selectedUnit = availableUnits.find(u => u.id === value);
-      const resourceBalance = balances.find(b => 
-        b.resourceId === updatedResources[index].resourceId && b.unitOfMeasureId === value
-      );
       
       updatedResources[index] = {
         ...updatedResources[index],
         unitId: value,
-        unitName: selectedUnit?.name,
-        availableQuantity: resourceBalance?.quantity || 0
+        unitName: selectedUnit?.name
       };
     } else {
       updatedResources[index] = {
@@ -115,60 +195,16 @@ const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({
 
     onResourcesChange(updatedResources);
   };
-
-  // For shipments, only show resources that have positive balance
-  const getAvailableResourceOptions = () => {
-    if (mode === 'receipt') {
-      return availableResources.map(resource => ({
-        value: resource.id,
-        label: resource.name
-      }));
-    } else {
-      // For shipments, only show resources with positive balance
-      const resourcesWithBalance = availableResources.filter(resource =>
-        balances.some(balance => balance.resourceId === resource.id && balance.quantity > 0)
-      );
-      
-      return resourcesWithBalance.map(resource => ({
-        value: resource.id,
-        label: resource.name
-      }));
-    }
-  };
-
-  // For shipments, only show units that have positive balance for the selected resource
-  const getAvailableUnitOptions = (resourceId: string) => {
-    if (mode === 'receipt') {
-      return availableUnits.map(unit => ({
-        value: unit.id,
-        label: unit.name
-      }));
-    } else {
-      // For shipments, only show units with positive balance for this resource
-      const unitsWithBalance = availableUnits.filter(unit =>
-        balances.some(balance => 
-          balance.resourceId === resourceId && 
-          balance.unitOfMeasureId === unit.id && 
-          balance.quantity > 0
-        )
-      );
-      
-      return unitsWithBalance.map(unit => ({
-        value: unit.id,
-        label: unit.name
-      }));
-    }
-  };
-
-  const resourceOptions = getAvailableResourceOptions();
-
-  if (loading) {
-    return <div>Loading resources...</div>;
-  }
-
-  if (error) {
-    return <div className="text-danger">{error}</div>;
-  }
+  
+  const resourceOptions = availableResources.map(resource => ({
+    value: resource.id,
+    label: resource.name
+  }));
+  
+  const unitOptions = availableUnits.map(unit => ({
+    value: unit.id,
+    label: unit.name
+  }));
 
   return (
     <div>
@@ -176,80 +212,61 @@ const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({
         <thead>
           <tr>
             <th style={{ width: '35%' }}>Resource</th>
-            <th style={{ width: '20%' }}>Unit</th>
-            {mode === 'shipment' && <th style={{ width: '15%' }}>Available</th>}
-            <th style={{ width: mode === 'shipment' ? '20%' : '35%' }}>Quantity</th>
-            <th style={{ width: '10%' }}>Actions</th>
+            <th style={{ width: '25%' }}>Unit</th>
+            <th style={{ width: '25%' }}>Quantity</th>
+            <th style={{ width: '15%' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {resources.length === 0 ? (
             <tr>
-              <td colSpan={mode === 'shipment' ? 5 : 4} className="text-center text-muted py-3">
+              <td colSpan={4} className="text-center text-muted py-3">
                 No resources added yet
               </td>
             </tr>
           ) : (
-            resources.map((item, index) => {
-              const unitOptions = getAvailableUnitOptions(item.resourceId);
-              const maxQuantity = mode === 'shipment' ? item.availableQuantity || 0 : undefined;
-              
-              return (
-                <tr key={index}>
-                  <td>
-                    <Select
-                      options={resourceOptions}
-                      value={resourceOptions.find(option => option.value === item.resourceId)}
-                      onChange={(selected) => handleResourceChange(index, 'resourceId', selected?.value || '')}
-                      isDisabled={disabled}
-                      placeholder="Select resource..."
-                    />
-                  </td>
-                  <td>
-                    <Select
-                      options={unitOptions}
-                      value={unitOptions.find(option => option.value === item.unitId)}
-                      onChange={(selected) => handleResourceChange(index, 'unitId', selected?.value || '')}
-                      isDisabled={disabled || !item.resourceId}
-                      placeholder="Select unit..."
-                    />
-                  </td>
-                  {mode === 'shipment' && (
-                    <td className="text-center align-middle">
-                      <span className="badge bg-info">
-                        {item.availableQuantity?.toFixed(3) || '0.000'}
-                      </span>
-                    </td>
-                  )}
-                  <td>
-                    <FormControl
-                      type="number"
-                      min="0"
-                      max={maxQuantity}
-                      step="0.001"
-                      value={item.quantity}
-                      onChange={(e) => handleResourceChange(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      disabled={disabled}
-                    />
-                    {mode === 'shipment' && maxQuantity !== undefined && item.quantity > maxQuantity && (
-                      <div className="text-danger small mt-1">
-                        Exceeds available quantity ({maxQuantity.toFixed(3)})
-                      </div>
-                    )}
-                  </td>
-                  <td className="text-center">
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleRemoveResource(index)}
-                      disabled={disabled}
-                    >
-                      Remove
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })
+            resources.map((item, index) => (
+              <tr key={index}>
+                <td>
+                  <Select
+                    options={resourceOptions}
+                    value={resourceOptions.find(option => option.value === item.resourceId)}
+                    onChange={(selected) => handleResourceChange(index, 'resourceId', selected?.value || '')}
+                    isDisabled={disabled}
+                    placeholder="Select resource..."
+                  />
+                </td>
+                <td>
+                  <Select
+                    options={unitOptions}
+                    value={unitOptions.find(option => option.value === item.unitId)}
+                    onChange={(selected) => handleResourceChange(index, 'unitId', selected?.value || '')}
+                    isDisabled={disabled || !item.resourceId}
+                    placeholder="Select unit..."
+                  />
+                </td>
+                <td>
+                  <FormControl
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    value={item.quantity}
+                    onChange={(e) => handleResourceChange(index, 'quantity', parseFloat(e.target.value) || 0)}
+                    disabled={disabled}
+                  />
+                </td>
+                <td className="text-center">
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleRemoveResource(index)}
+                    disabled={disabled}
+                  >
+                    Remove
+                  </Button>
+                </td>
+              </tr>
+            ))
           )}
         </tbody>
       </Table>
@@ -264,6 +281,80 @@ const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({
       </div>
     </div>
   );
+};
+
+const DocumentResourcesSelector: React.FC<DocumentResourcesSelectorProps> = ({ 
+  resources, 
+  onResourcesChange, 
+  disabled = false,
+  mode = 'receipt'
+}) => {
+  const [availableResources, setAvailableResources] = useState<ResourceDto[]>([]);
+  const [availableUnits, setAvailableUnits] = useState<UnitOfMeasureDto[]>([]);
+  const [balances, setBalances] = useState<BalanceDto[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadReferenceData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        if (mode === 'shipment') {
+          // For shipments, only load balances (which include resource and unit names)
+          const balancesData = await apiService.getBalances();
+          // Filter balances to only show resources with positive quantities
+          const positiveBalances = balancesData.filter(b => b.quantity > 0);
+          setBalances(positiveBalances);
+        } else {
+          // For receipts, load resources and units for selection
+          const [resourcesData, unitsData] = await Promise.all([
+            apiService.getActiveResources(),
+            apiService.getActiveUnitsOfMeasure()
+          ]);
+          setAvailableResources(resourcesData);
+          setAvailableUnits(unitsData);
+        }
+      } catch (err) {
+        setError('Failed to load reference data');
+        console.error('Error loading reference data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReferenceData();
+  }, [mode]);
+
+  if (loading) {
+    return <div>Loading resources...</div>;
+  }
+
+  if (error) {
+    return <div className="text-danger">{error}</div>;
+  }
+
+  if (mode === 'shipment') {
+    return (
+      <ShipmentResourcesTable
+        balances={balances}
+        resources={resources}
+        onResourcesChange={onResourcesChange}
+        disabled={disabled}
+      />
+    );
+  } else {
+    return (
+      <ReceiptResourcesTable
+        resources={resources}
+        onResourcesChange={onResourcesChange}
+        disabled={disabled}
+        availableResources={availableResources}
+        availableUnits={availableUnits}
+      />
+    );
+  }
 };
 
 export default DocumentResourcesSelector;

@@ -78,12 +78,15 @@ const EditShipmentPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, signOption?: boolean) => {
     e.preventDefault();
     
     if (!id || !shipment) {
       return;
     }
+    
+    // Use the signOption parameter if provided, otherwise use the current state
+    const shouldSign = signOption !== undefined ? signOption : signDocument;
     
     // Validation
     if (!number.trim()) {
@@ -132,7 +135,7 @@ const EditShipmentPage: React.FC = () => {
         number: number.trim(),
         clientId: selectedClient.value,
         date: new Date(date).toISOString(),
-        sign: signDocument,
+        sign: shouldSign,
         resources: resources.map(r => ({
           id: r.id,
           resourceId: r.resourceId,
@@ -145,6 +148,29 @@ const EditShipmentPage: React.FC = () => {
     } catch (err: any) {
       setError(err.message || 'Failed to update shipment document');
       console.error('Error updating shipment document:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRevoke = async () => {
+    if (!id || !shipment) {
+      return;
+    }
+    
+    if (!window.confirm('Are you sure you want to revoke this shipment document? This will restore the warehouse balances.')) {
+      return;
+    }
+    
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      await apiService.revokeShipmentDocument(id);
+      navigate('/shipments');
+    } catch (err: any) {
+      setError(err.message || 'Failed to revoke shipment document');
+      console.error('Error revoking shipment document:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -230,37 +256,21 @@ const EditShipmentPage: React.FC = () => {
         </Row>
       )}
       
-      <Form onSubmit={handleSubmit}>
+      <Form>
         <Card className="mb-4">
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Document Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                    placeholder="Enter document number"
-                    disabled={isSubmitting}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Document Number</Form.Label>
+              <Form.Control
+                type="text"
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+                placeholder="Enter document number"
+                disabled={isSubmitting}
+                required
+              />
+            </Form.Group>
             
             <Form.Group className="mb-3">
               <Form.Label>Client</Form.Label>
@@ -274,24 +284,14 @@ const EditShipmentPage: React.FC = () => {
             </Form.Group>
             
             <Form.Group className="mb-3">
-              <Form.Check
-                type="checkbox"
-                id="sign-document"
-                label="Sign document (will affect warehouse balance)"
-                checked={signDocument}
-                onChange={(e) => setSignDocument(e.target.checked)}
+              <Form.Label>Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 disabled={isSubmitting}
+                required
               />
-              {isSigned && !signDocument && (
-                <div className="text-danger small mt-1">
-                  Warning: Unsigning this document will reverse the balance changes
-                </div>
-              )}
-              {!isSigned && signDocument && (
-                <div className="text-success small mt-1">
-                  This will update warehouse balances
-                </div>
-              )}
             </Form.Group>
           </Card.Body>
         </Card>
@@ -309,15 +309,41 @@ const EditShipmentPage: React.FC = () => {
         </Card>
         
         <div className="d-flex gap-2">
-          <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
-          </Button>
-          <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-            Delete
-          </Button>
-          <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
+          {isSigned ? (
+            // If document is signed, show only Revoke button
+            <>
+              <Button variant="warning" onClick={handleRevoke} disabled={isSubmitting}>
+                {isSubmitting ? 'Revoking...' : 'Revoke'}
+              </Button>
+              <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            // If document is not signed, show Save, Save & Sign, Delete buttons
+            <>
+              <Button 
+                variant="primary" 
+                onClick={(e) => handleSubmit(e, false)} 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving...' : 'Save'}
+              </Button>
+              <Button 
+                variant="success" 
+                onClick={(e) => handleSubmit(e, true)} 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving...' : 'Save & Sign'}
+              </Button>
+              <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
+                {isSubmitting ? 'Deleting...' : 'Delete'}
+              </Button>
+              <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </>
+          )}
         </div>
       </Form>
     </Container>

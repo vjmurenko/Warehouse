@@ -11,7 +11,6 @@ const AddShipmentPage: React.FC = () => {
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
   const [resources, setResources] = useState<DocumentResourceItem[]>([]);
-  const [signDocument, setSignDocument] = useState<boolean>(false);
   
   const [clients, setClients] = useState<ClientDto[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -39,7 +38,7 @@ const AddShipmentPage: React.FC = () => {
     loadClients();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent, signOption: boolean = false) => {
     e.preventDefault();
     
     // Validation
@@ -88,7 +87,7 @@ const AddShipmentPage: React.FC = () => {
         number: number.trim(),
         clientId: selectedClient.value,
         date: new Date(date).toISOString(),
-        sign: signDocument,
+        sign: signOption,
         resources: resources.map(r => ({
           resourceId: r.resourceId,
           unitId: r.unitId,
@@ -132,37 +131,21 @@ const AddShipmentPage: React.FC = () => {
         </Row>
       )}
       
-      <Form onSubmit={handleSubmit}>
+      <Form>
         <Card className="mb-4">
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
-            <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Document Number</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                    placeholder="Enter document number"
-                    disabled={isSubmitting}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
+            <Form.Group className="mb-3">
+              <Form.Label>Document Number</Form.Label>
+              <Form.Control
+                type="text"
+                value={number}
+                onChange={(e) => setNumber(e.target.value)}
+                placeholder="Enter document number"
+                disabled={isSubmitting}
+                required
+              />
+            </Form.Group>
             
             <Form.Group className="mb-3">
               <Form.Label>Client</Form.Label>
@@ -176,13 +159,13 @@ const AddShipmentPage: React.FC = () => {
             </Form.Group>
             
             <Form.Group className="mb-3">
-              <Form.Check
-                type="checkbox"
-                id="sign-document"
-                label="Sign document (will affect warehouse balance)"
-                checked={signDocument}
-                onChange={(e) => setSignDocument(e.target.checked)}
+              <Form.Label>Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
                 disabled={isSubmitting}
+                required
               />
             </Form.Group>
           </Card.Body>
@@ -201,8 +184,19 @@ const AddShipmentPage: React.FC = () => {
         </Card>
         
         <div className="d-flex gap-2">
-          <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Shipment'}
+          <Button 
+            variant="primary" 
+            onClick={(e) => handleSubmit(e, false)} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating...' : 'Save'}
+          </Button>
+          <Button 
+            variant="success" 
+            onClick={(e) => handleSubmit(e, true)} 
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating...' : 'Save & Sign'}
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
             Cancel

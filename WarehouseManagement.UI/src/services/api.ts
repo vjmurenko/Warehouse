@@ -13,7 +13,7 @@ import {
 } from '../types/api';
 
 // For development with ASP.NET Core, make sure it matches launchSettings.json
-const API_BASE_URL = 'http://localhost:5072/api';
+const API_BASE_URL = 'https://localhost:7230/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -353,6 +353,12 @@ class ApiService {
   async deleteShipmentDocument(id: string): Promise<void> {
     return this.request<void>(`/ShipmentDocuments/${id}`, {
       method: 'DELETE',
+    });
+  }
+
+  async revokeShipmentDocument(id: string): Promise<void> {
+    return this.request<void>(`/ShipmentDocuments/${id}/revoke`, {
+      method: 'POST',
     });
   }
 }
