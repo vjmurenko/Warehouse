@@ -59,12 +59,18 @@ public class ShipmentRepository(WarehouseDbContext context) : IShipmentRepositor
         // Date range filtering
         if (fromDate.HasValue)
         {
-            query = query.Where(s => s.Date >= fromDate.Value);
+            var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc)
+                : fromDate.Value.ToUniversalTime();
+            query = query.Where(s => s.Date >= fromDateUtc);
         }
 
         if (toDate.HasValue)
         {
-            query = query.Where(s => s.Date <= toDate.Value);
+            var toDateUtc = toDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(toDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                : toDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
+            query = query.Where(s => s.Date <= toDateUtc);
         }
 
         // Document numbers filtering

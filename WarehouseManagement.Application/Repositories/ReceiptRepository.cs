@@ -65,12 +65,18 @@ public class ReceiptRepository(WarehouseDbContext context) : IReceiptRepository
         // Date range filtering
         if (fromDate.HasValue)
         {
-            query = query.Where(r => r.Date >= fromDate.Value);
+            var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc)
+                : fromDate.Value.ToUniversalTime();
+            query = query.Where(r => r.Date >= fromDateUtc);
         }
 
         if (toDate.HasValue)
         {
-            query = query.Where(r => r.Date <= toDate.Value);
+            var toDateUtc = toDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(toDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                : toDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
+            query = query.Where(r => r.Date <= toDateUtc);
         }
 
         // Document numbers filtering
