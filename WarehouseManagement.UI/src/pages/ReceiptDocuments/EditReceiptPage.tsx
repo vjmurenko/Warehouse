@@ -228,6 +228,7 @@ const EditReceiptPage: React.FC = () => {
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
+              mode="receipt"
             />
           </Card.Body>
         </Card>

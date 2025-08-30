@@ -195,6 +195,7 @@ const AddShipmentPage: React.FC = () => {
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
+              mode="shipment"
             />
           </Card.Body>
         </Card>
