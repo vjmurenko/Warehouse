@@ -6,6 +6,7 @@ using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.ValueObjects;
+using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Features;
 
@@ -71,10 +72,10 @@ public class DeleteReceiptDocumentTests
             .Returns((ReceiptDocument?)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<EntityNotFoundException>(
             () => _handler.Handle(command, CancellationToken.None));
         
-        Assert.Contains($"Документ с ID {nonExistentId} не найден", exception.Message);
+        Assert.Contains($"ReceiptDocument with ID {nonExistentId} was not found", exception.Message);
         await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
     }
 

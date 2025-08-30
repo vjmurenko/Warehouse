@@ -9,7 +9,9 @@ import {
   UpdateResourceDto,
   ClientDto,
   CreateClientDto,
-  UpdateClientDto
+  UpdateClientDto,
+  ErrorResponse,
+  ApiError
 } from '../types/api';
 
 // For development with ASP.NET Core, make sure it matches launchSettings.json
@@ -32,8 +34,21 @@ class ApiService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      throw new Error(`HTTP ${response.status}: ${errorText || 'Unknown error'}`);
+      let errorResponse: ErrorResponse;
+      
+      try {
+        errorResponse = await response.json() as ErrorResponse;
+      } catch {
+        // Fallback for non-JSON error responses
+        const errorText = await response.text().catch(() => 'Unknown error');
+        errorResponse = {
+          code: 'UNKNOWN_ERROR',
+          message: errorText || `HTTP ${response.status} error`,
+          timestamp: new Date().toISOString()
+        };
+      }
+      
+      throw new ApiError(response.status, errorResponse);
     }
 
     // Если 204 No Content → возвращаем "пустое значение"

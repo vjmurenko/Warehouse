@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Services.Implementations;
@@ -19,7 +20,7 @@ public class ResourceService(INamedEntityRepository<Resource> repository) : Name
         var resource = await GetByIdAsync(id);
         if (resource == null)
         {
-            throw new ArgumentNullException(nameof(id));
+            throw new EntityNotFoundException("Resource", id);
         }
         
         resource.Rename(name);

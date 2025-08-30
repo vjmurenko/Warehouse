@@ -3,6 +3,7 @@ using NSubstitute.ExceptionExtensions;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
+using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Features;
 
@@ -67,10 +68,10 @@ public class DeleteShipmentDocumentTests
         _shipmentRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>()).Returns(signedDocument);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<SignedDocumentException>(
             () => _handler.Handle(command, CancellationToken.None));
         
-        Assert.Contains("Нельзя удалить подписанный документ отгрузки. Сначала отзовите документ.", exception.Message);
+        Assert.Contains("Cannot delete signed shipment document", exception.Message);
         
         await _shipmentRepository.DidNotReceive().DeleteAsync(Arg.Any<ShipmentDocument>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
@@ -85,10 +86,10 @@ public class DeleteShipmentDocumentTests
         _shipmentRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>()).Returns((ShipmentDocument?)null);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+        var exception = await Assert.ThrowsAsync<EntityNotFoundException>(
             () => _handler.Handle(command, CancellationToken.None));
         
-        Assert.Contains($"Документ с ID {_defaultDocumentId} не найден", exception.Message);
+        Assert.Contains($"ShipmentDocument with ID {_defaultDocumentId} was not found", exception.Message);
         
         await _shipmentRepository.DidNotReceive().DeleteAsync(Arg.Any<ShipmentDocument>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());

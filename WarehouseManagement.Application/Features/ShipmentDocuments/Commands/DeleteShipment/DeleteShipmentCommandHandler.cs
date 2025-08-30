@@ -1,5 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;
 
@@ -15,11 +16,11 @@ public class DeleteShipmentCommandHandler(
             // 1. Получение документа
             var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
             if (document == null)
-                throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
+                throw new EntityNotFoundException("ShipmentDocument", command.Id);
 
             // 2. Проверка что документ не подписан
             if (document.IsSigned)
-                throw new InvalidOperationException("Нельзя удалить подписанный документ отгрузки. Сначала отзовите документ.");
+                throw new SignedDocumentException("delete", "shipment", document.Number);
 
             // 3. Удаление документа
             await shipmentRepository.DeleteAsync(document, cancellationToken);

@@ -1,3 +1,63 @@
+export interface ErrorResponse {
+  code: string;
+  message: string;
+  details?: string;
+  parameters?: Record<string, any>;
+  timestamp: string;
+  traceId?: string;
+}
+
+export interface ValidationErrorResponse extends ErrorResponse {
+  errors: Record<string, string[]>;
+}
+
+export class ApiError extends Error {
+  public readonly code: string;
+  public readonly statusCode: number;
+  public readonly details?: string;
+  public readonly parameters?: Record<string, any>;
+  public readonly traceId?: string;
+
+  constructor(
+    statusCode: number,
+    errorResponse: ErrorResponse,
+    originalMessage?: string
+  ) {
+    super(errorResponse.message || originalMessage || 'An error occurred');
+    this.name = 'ApiError';
+    this.code = errorResponse.code;
+    this.statusCode = statusCode;
+    this.details = errorResponse.details;
+    this.parameters = errorResponse.parameters;
+    this.traceId = errorResponse.traceId;
+  }
+
+  // Helper methods for common error types
+  isEntityNotFound(): boolean {
+    return this.code === 'ENTITY_NOT_FOUND';
+  }
+
+  isEntityInUse(): boolean {
+    return this.code === 'ENTITY_IN_USE';
+  }
+
+  isDuplicateEntity(): boolean {
+    return this.code === 'DUPLICATE_ENTITY';
+  }
+
+  isInsufficientBalance(): boolean {
+    return this.code === 'INSUFFICIENT_BALANCE';
+  }
+
+  isSignedDocumentError(): boolean {
+    return this.code === 'SIGNED_DOCUMENT_OPERATION';
+  }
+
+  isValidationError(): boolean {
+    return this.code === 'VALIDATION_ERROR';
+  }
+}
+
 export interface BalanceDto {
   id: string;
   resourceId: string;

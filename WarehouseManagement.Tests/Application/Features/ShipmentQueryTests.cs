@@ -36,7 +36,7 @@ public class ShipmentQueryTests
         
         // Initialize handlers
         _getByIdHandler = new GetShipmentByIdQueryHandler(_shipmentRepository, _resourceService, _unitOfMeasureService, _clientService);
-        _getShipmentsHandler = new GetShipmentsQueryHandler(_shipmentRepository, _clientService);
+        _getShipmentsHandler = new GetShipmentsQueryHandler(_shipmentRepository, _clientService, _unitOfMeasureService, _resourceService);
         
         // Initialize common test data
         _defaultDocumentId = Guid.NewGuid();
@@ -141,6 +141,8 @@ public class ShipmentQueryTests
 
         _shipmentRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
         _clientService.GetByIdAsync(_defaultClientId).Returns(_defaultClient);
+        _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);
+        _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId).Returns(_defaultUnitOfMeasure);
 
         // Act
         var result = await _getShipmentsHandler.Handle(query, CancellationToken.None);
@@ -222,6 +224,9 @@ public class ShipmentQueryTests
         _shipmentRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
         _clientService.GetByIdAsync(_defaultClientId).Returns(_defaultClient);
         _clientService.GetByIdAsync(client2Id).Returns(client2);
+        _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);
+        _resourceService.GetByIdAsync(Arg.Any<Guid>()).Returns(_defaultResource);
+        _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId).Returns(_defaultUnitOfMeasure);
 
         // Act
         var result = await _getShipmentsHandler.Handle(query, CancellationToken.None);

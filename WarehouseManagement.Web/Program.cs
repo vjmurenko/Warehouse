@@ -6,6 +6,7 @@ using WarehouseManagement.Application.Repositories;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,6 +56,9 @@ builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IUnitOfMeasureService, UnitOfMeasureService>();
 
 var app = builder.Build();
+
+// Add global exception handling middleware
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

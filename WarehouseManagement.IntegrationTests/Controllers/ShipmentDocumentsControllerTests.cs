@@ -316,10 +316,10 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         Assert.Equal(HttpStatusCode.BadRequest, createResponse.StatusCode);
         
         // Read the error message as properly formatted JSON
-        var errorResponse = await createResponse.Content.ReadFromJsonAsync<Dictionary<string, string>>();
+        var errorResponse = await createResponse.Content.ReadFromJsonAsync<WarehouseManagement.Application.Common.Models.ErrorResponse>();
         Assert.NotNull(errorResponse);
-        Assert.True(errorResponse.ContainsKey("error"));
-        Assert.Contains("Недостаточно ресурса", errorResponse["error"]);
+        Assert.Equal("INSUFFICIENT_BALANCE", errorResponse.Code);
+        Assert.Contains("Insufficient balance", errorResponse.Message);
 
         // Verify balance was not affected
         var balances = await GetAsync<List<WarehouseManagement.Application.Features.Balances.DTOs.BalanceDto>>("/api/Balance");

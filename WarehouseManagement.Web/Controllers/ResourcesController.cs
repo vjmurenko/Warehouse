@@ -78,25 +78,12 @@ public class ResourcesController : ControllerBase
     /// Create a new resource
     /// </summary>
     /// <param name="request">Resource creation data</param>
-    /// <returns>Created resource DTO</returns>
+    /// <returns>ID of the created resource</returns>
     [HttpPost]
-    public async Task<ActionResult<ResourceDto>> CreateResource([FromBody] CreateResourceRequest request)
+    public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request)
     {
         var resourceId = await _resourceService.CreateResourceAsync(request.Name);
-        var resource = await _resourceService.GetByIdAsync(resourceId);
-        
-        if (resource == null)
-        {
-            return BadRequest("Failed to create resource");
-        }
-        
-        var resourceDto = new ResourceDto(
-            resource.Id,
-            resource.Name,
-            resource.IsActive
-        );
-        
-        return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceDto);
+        return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceId);
     }
 
     /// <summary>
@@ -104,9 +91,9 @@ public class ResourcesController : ControllerBase
     /// </summary>
     /// <param name="id">The resource ID</param>
     /// <param name="request">Resource update data</param>
-    /// <returns>Updated resource DTO</returns>
+    /// <returns>No content if successful</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ResourceDto>> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request)
+    public async Task<ActionResult> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request)
     {
         var success = await _resourceService.UpdateResourceAsync(id, request.Name);
         
@@ -115,19 +102,7 @@ public class ResourcesController : ControllerBase
             return NotFound();
         }
         
-        var resource = await _resourceService.GetByIdAsync(id);
-        if (resource == null)
-        {
-            return NotFound();
-        }
-        
-        var resourceDto = new ResourceDto(
-            resource.Id,
-            resource.Name,
-            resource.IsActive
-        );
-        
-        return Ok(resourceDto);
+        return NoContent();
     }
 
     /// <summary>
@@ -138,13 +113,7 @@ public class ResourcesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteResource(Guid id)
     {
-        var success = await _resourceService.DeleteAsync(id);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
-        
+        await _resourceService.DeleteAsync(id);
         return NoContent();
     }
 

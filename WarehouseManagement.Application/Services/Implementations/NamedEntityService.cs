@@ -2,6 +2,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Common;
+using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
@@ -38,7 +39,7 @@ public abstract class NamedEntityService<T> : INamedEntityService<T> where T : N
     {
         if (await Repository.ExistsWithNameAsync(entity.Name))
         {
-            throw new InvalidOperationException($"Entity with name '{entity.Name}' already exists.");
+            throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }
 
         var a = await Repository.CreateAsync(entity);
@@ -50,7 +51,7 @@ public abstract class NamedEntityService<T> : INamedEntityService<T> where T : N
     {
         if (await Repository.ExistsWithNameAsync(entity.Name, entity.Id))
         {
-            throw new InvalidOperationException($"Entity with name '{entity.Name}' already exists.");
+            throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }
 
         return await Repository.UpdateAsync(entity);
@@ -60,11 +61,14 @@ public abstract class NamedEntityService<T> : INamedEntityService<T> where T : N
     {
         if (await Repository.IsUsingInDocuments(id))
         {
-            throw new InvalidOperationException("Cannot delete entity - it is used in documents.");
+            throw new EntityInUseException(typeof(T).Name, id, "documents");
         }
 
         var entity = await Repository.GetByIdAsync(id);
-        if (entity == null) return false;
+        if (entity == null)
+        {
+            throw new EntityNotFoundException(typeof(T).Name, id);
+        }
 
         return await Repository.DeleteAsync(entity);
     }

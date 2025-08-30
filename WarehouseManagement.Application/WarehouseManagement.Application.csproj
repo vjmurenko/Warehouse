@@ -20,12 +20,6 @@
     <ItemGroup>
       <Folder Include="Features\BalanceQueries\" />
       <Folder Include="Features\ReceiptDocuments\Commands\" />
-      <Folder Include="Features\ShipmentDocuments\Commands\CreateShipment\" />
-      <Folder Include="Features\ShipmentDocuments\Commands\SignShipment\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Features\ShipmentDocuments\Commands\SignShipment\SignShipmentCommand.cs" />
     </ItemGroup>
 
 </Project>

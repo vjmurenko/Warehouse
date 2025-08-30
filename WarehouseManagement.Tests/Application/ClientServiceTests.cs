@@ -3,6 +3,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.ValueObjects;
+using WarehouseManagement.Domain.Exceptions;
 
 public class ClientServiceTests
 {
@@ -43,7 +44,7 @@ public class ClientServiceTests
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
 
         // assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _clientService.CreateClientAsync(name, address));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _clientService.CreateClientAsync(name, address));
     }
 
     [Fact]
@@ -119,6 +120,6 @@ public class ClientServiceTests
         _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         // act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _clientService.UpdateClientAsync(id, name, address));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _clientService.UpdateClientAsync(id, name, address));
     }
 }

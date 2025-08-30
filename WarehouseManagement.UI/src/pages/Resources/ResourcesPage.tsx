@@ -3,6 +3,7 @@ import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootst
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 import { ResourceDto } from '../../types/api';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const ResourcesPage: React.FC = () => {
   const [resources, setResources] = useState<ResourceDto[]>([]);
@@ -28,7 +29,7 @@ const ResourcesPage: React.FC = () => {
 
       setResources(filteredData);
     } catch (err) {
-      setError('Ошибка при загрузке ресурсов');
+      setError(getErrorMessage(err));
       console.error('Error loading resources:', err);
     } finally {
       setLoading(false);

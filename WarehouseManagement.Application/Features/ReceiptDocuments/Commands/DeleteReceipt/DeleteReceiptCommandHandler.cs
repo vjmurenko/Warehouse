@@ -1,6 +1,7 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
 
@@ -17,7 +18,7 @@ public class DeleteReceiptCommandHandler(
             // 1. Получение документа для удаления
             var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
             if (document == null)
-                throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
+                throw new EntityNotFoundException("ReceiptDocument", command.Id);
 
             // 2. Откат изменений баланса (уменьшение баланса на количество поступивших ресурсов)
             // Валидация возможности удаления происходит внутри DecreaseBalance

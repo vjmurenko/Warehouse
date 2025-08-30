@@ -33,12 +33,16 @@ public class GetShipmentsQueryHandler(
             {
                 var unitOfMeasure = await unitOfMeasureService.GetByIdAsync(shipmentResource.UnitOfMeasureId);
                 var resource = await resourceService.GetByIdAsync(shipmentResource.ResourceId);
-                shipmentResourceDetailDtos.Add(new ShipmentResourceDetailDto(shipmentResource.Id,
-                    resource.Id,
-                    resource.Name,
-                    unitOfMeasure.Id,
-                    unitOfMeasure.Name,
-                    shipmentResource.Quantity.Value));
+                
+                if (resource != null && unitOfMeasure != null)
+                {
+                    shipmentResourceDetailDtos.Add(new ShipmentResourceDetailDto(shipmentResource.Id,
+                        resource.Id,
+                        resource.Name,
+                        unitOfMeasure.Id,
+                        unitOfMeasure.Name,
+                        shipmentResource.Quantity.Value));
+                }
             }
 
             result.Add(new ShipmentDocumentDto(

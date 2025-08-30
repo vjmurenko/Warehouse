@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getErrorMessage, isEntityInUseError } from '../../utils/errorUtils';
 import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiService from '../../services/api';
@@ -107,8 +108,13 @@ const EditUnitOfMeasurePage: React.FC = () => {
       navigate('/units')
     }
     catch (err){
-      console.log('Невозможно удалить единицу измерения', err);
-      setError(`Невозможно удалить единицу измерения ${unit.name}`)
+      console.error('Error deleting unit of measure:', err);
+      
+      if (isEntityInUseError(err)) {
+        setError('Cannot delete this unit of measure because it is currently being used in documents.');
+      } else {
+        setError(getErrorMessage(err));
+      }
     }
     finally {
       setIsSubmitting(false);

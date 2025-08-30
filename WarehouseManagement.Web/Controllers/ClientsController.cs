@@ -74,26 +74,12 @@ public class ClientsController(IClientService clientService) : ControllerBase
     /// Create a new client
     /// </summary>
     /// <param name="request">Client creation data</param>
-    /// <returns>Created client DTO</returns>
+    /// <returns>ID of the created client</returns>
     [HttpPost]
-    public async Task<ActionResult<ClientDto>> CreateClient([FromBody] CreateClientRequest request)
+    public async Task<ActionResult<Guid>> CreateClient([FromBody] CreateClientRequest request)
     {
         var clientId = await clientService.CreateClientAsync(request.Name, request.Address);
-        var client = await clientService.GetByIdAsync(clientId);
-        
-        if (client == null)
-        {
-            return BadRequest("Failed to create client");
-        }
-        
-        var clientDto = new ClientDto(
-            client.Id,
-            client.Name,
-            client.Address.Name,
-            client.IsActive
-        );
-        
-        return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientDto);
+        return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientId);
     }
 
     /// <summary>
@@ -101,9 +87,9 @@ public class ClientsController(IClientService clientService) : ControllerBase
     /// </summary>
     /// <param name="id">The client ID</param>
     /// <param name="request">Client update data</param>
-    /// <returns>Updated client DTO</returns>
+    /// <returns>No content if successful</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult<ClientDto>> UpdateClient(Guid id, [FromBody] UpdateClientRequest request)
+    public async Task<ActionResult> UpdateClient(Guid id, [FromBody] UpdateClientRequest request)
     {
         var success = await clientService.UpdateClientAsync(id, request.Name, request.Address);
         
@@ -112,20 +98,7 @@ public class ClientsController(IClientService clientService) : ControllerBase
             return NotFound();
         }
         
-        var client = await clientService.GetByIdAsync(id);
-        if (client == null)
-        {
-            return NotFound();
-        }
-        
-        var clientDto = new ClientDto(
-            client.Id,
-            client.Name,
-            client.Address.Name,
-            client.IsActive
-        );
-        
-        return Ok(clientDto);
+        return NoContent();
     }
 
     /// <summary>

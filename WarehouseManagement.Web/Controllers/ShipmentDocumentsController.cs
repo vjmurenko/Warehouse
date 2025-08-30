@@ -86,11 +86,20 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateShipment([FromBody] UpdateShipmentCommand request)
     {
-        await mediator.Send(request);
-        return NoContent();
+        try
+        {
+            await mediator.Send(request);
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
-
-    // Signing is handled during creation or update, no separate endpoint needed
 
     /// <summary>
     /// Delete a shipment document
@@ -100,8 +109,19 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteShipment(Guid id)
     {
-        await mediator.Send(new DeleteShipmentCommand(id));
-        return NoContent();
+        try
+        {
+            await mediator.Send(new DeleteShipmentCommand(id));
+            return NoContent();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
     }
 
     /// <summary>

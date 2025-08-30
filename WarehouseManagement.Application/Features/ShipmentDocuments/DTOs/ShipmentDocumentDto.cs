@@ -8,7 +8,10 @@ public record ShipmentDocumentDto(
     DateTime Date,
     bool IsSigned,
     List<ShipmentResourceDetailDto> Resources
-);
+)
+{
+    public int ResourceCount => Resources?.Count ?? 0;
+};
 
 public record ShipmentResourceDetailDto(
     Guid Id,

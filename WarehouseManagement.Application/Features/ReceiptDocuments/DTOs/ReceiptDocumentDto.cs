@@ -5,7 +5,10 @@ public record ReceiptDocumentDto(
     string Number,
     DateTime Date,
     List<ReceiptResourceDetailDto> Resources
-);
+)
+{
+    public int ResourceCount => Resources?.Count ?? 0;
+};
 
 public record ReceiptDocumentSummaryDto(
     Guid Id,

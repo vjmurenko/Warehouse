@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Infrastructure.Data;
@@ -9,6 +9,6 @@ public class UnitOfMeasureRepository(WarehouseDbContext dbContext) : NamedEntity
 {
     public override async Task<bool> IsUsingInDocuments(Guid id)
     {
-        return await DbContext.ReceiptResources.AnyAsync(c => c.ResourceId == id) || await DbContext.ShipmentResources.AnyAsync(c => c.ResourceId == id);
+        return await DbContext.ReceiptResources.AnyAsync(c => c.UnitOfMeasureId == id) || await DbContext.ShipmentResources.AnyAsync(c => c.UnitOfMeasureId == id);
     }
 }

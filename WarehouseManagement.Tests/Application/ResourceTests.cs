@@ -1,7 +1,8 @@
-﻿using NSubstitute;
+﻿﻿﻿﻿using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Exceptions;
 
 public class ResourceTests
 {
@@ -41,7 +42,7 @@ public class ResourceTests
         _namedEntityRepository.ExistsWithNameAsync("name").Returns(true);
 
         //act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _resourceService.CreateResourceAsync(name));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _resourceService.CreateResourceAsync(name));
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class ResourceTests
         _namedEntityRepository.GetByIdAsync(id).Returns((Resource)null!);
 
         //act & assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => _resourceService.UpdateResourceAsync(id, name));
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => _resourceService.UpdateResourceAsync(id, name));
     }
 
     [Fact]
@@ -106,7 +107,7 @@ public class ResourceTests
         _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         //act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _resourceService.UpdateResourceAsync(id, name));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _resourceService.UpdateResourceAsync(id, name));
     }
 
     [Fact]
@@ -236,11 +237,8 @@ public class ResourceTests
 
         _namedEntityRepository.GetByIdAsync(id).Returns((Resource)null!);
 
-        //act
-        var result = await _resourceService.DeleteAsync(id);
-
-        //assert
-        Assert.False(result);
+        //act & assert
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => _resourceService.DeleteAsync(id));
     }
 
     [Fact]
@@ -252,6 +250,6 @@ public class ResourceTests
         _namedEntityRepository.IsUsingInDocuments(id).Returns(true);
 
         //act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _resourceService.DeleteAsync(id));
+        await Assert.ThrowsAsync<EntityInUseException>(() => _resourceService.DeleteAsync(id));
     }
 }

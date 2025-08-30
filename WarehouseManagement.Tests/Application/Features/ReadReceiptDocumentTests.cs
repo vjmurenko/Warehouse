@@ -35,7 +35,7 @@ public class ReadReceiptDocumentTests
         
         // Initialize handlers
         _getByIdHandler = new GetReceiptByIdQueryHandler(_receiptRepository, _resourceService, _unitOfMeasureService);
-        _getReceiptsHandler = new GetReceiptsQueryHandler(_receiptRepository);
+        _getReceiptsHandler = new GetReceiptsQueryHandler(_receiptRepository, _resourceService, _unitOfMeasureService);
         
         // Initialize common test data
         _defaultDocumentId = Guid.NewGuid();
@@ -131,6 +131,8 @@ public class ReadReceiptDocumentTests
 
         _receiptRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
             .Returns(documents);
+        _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);
+        _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId).Returns(_defaultUnitOfMeasure);
 
         // Act
         var result = await _getReceiptsHandler.Handle(query, CancellationToken.None);
@@ -241,6 +243,8 @@ public class ReadReceiptDocumentTests
 
         _receiptRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
             .Returns(documents);
+        _resourceService.GetByIdAsync(Arg.Any<Guid>()).Returns(_defaultResource);
+        _unitOfMeasureService.GetByIdAsync(Arg.Any<Guid>()).Returns(_defaultUnitOfMeasure);
 
         // Act
         var result = await _getReceiptsHandler.Handle(query, CancellationToken.None);

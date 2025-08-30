@@ -2,6 +2,7 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Exceptions;
 
 public class UnitOfMeasureTests
 {
@@ -40,7 +41,7 @@ public class UnitOfMeasureTests
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(true);
 
         // assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfMeasureService.CreateUnitOfMeasureAsync(name));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _unitOfMeasureService.CreateUnitOfMeasureAsync(name));
     }
 
     [Fact]
@@ -88,6 +89,6 @@ public class UnitOfMeasureTests
         _namedEntityRepository.ExistsWithNameAsync(name, id).Returns(true);
 
         // act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, name));
+        await Assert.ThrowsAsync<DuplicateEntityException>(() => _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, name));
     }
 }

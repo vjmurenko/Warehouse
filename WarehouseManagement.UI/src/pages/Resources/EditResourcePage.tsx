@@ -3,6 +3,7 @@ import { Container, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstr
 import { useNavigate, useParams } from 'react-router-dom';
 import apiService from '../../services/api';
 import { ResourceDto, UpdateResourceDto } from '../../types/api';
+import { getErrorMessage, isEntityInUseError, isDuplicateEntityError } from '../../utils/errorUtils';
 
 const EditResourcePage: React.FC = () => {
   const [resource, setResource] = useState<ResourceDto | null>(null);
@@ -28,7 +29,7 @@ const EditResourcePage: React.FC = () => {
       setResource(foundResource);
       setFormData({ name: foundResource.name });
     } catch (err) {
-      setError('Ошибка при загрузке ресурса');
+      setError(getErrorMessage(err));
       console.error('Error loading resource:', err);
     } finally {
       setLoading(false);
@@ -48,7 +49,12 @@ const EditResourcePage: React.FC = () => {
       navigate('/resources');
     } catch (err) {
       console.error('Error updating resource:', err);
-      setError('Ошибка при обновлении ресурса');
+      
+      if (isDuplicateEntityError(err)) {
+        setError('A resource with this name already exists.');
+      } else {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -69,7 +75,12 @@ const EditResourcePage: React.FC = () => {
      navigate('/resources');
     } catch (err) {
       console.error('Error deleting resource:', err);
-      setError('Ошибка при удалении ресурса');
+      
+      if (isEntityInUseError(err)) {
+        setError('Cannot delete this resource because it is currently being used in documents.');
+      } else {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setSubmitting(false);
     }
@@ -90,7 +101,7 @@ const EditResourcePage: React.FC = () => {
       navigate('/resources');
     } catch (err) {
       console.error('Error archiving resource:', err);
-      setError('Ошибка при архивировании ресурса');
+      setError(getErrorMessage(err));
     } finally {
       setSubmitting(false);
     }

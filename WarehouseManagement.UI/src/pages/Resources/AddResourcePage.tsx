@@ -3,6 +3,7 @@ import { Container, Row, Col, Button, Form, Alert, Spinner } from 'react-bootstr
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 import { CreateResourceDto } from '../../types/api';
+import { getErrorMessage, isDuplicateEntityError } from '../../utils/errorUtils';
 
 const AddResourcePage: React.FC = () => {
   const [formData, setFormData] = useState<CreateResourceDto>({ name: '' });
@@ -28,7 +29,12 @@ const AddResourcePage: React.FC = () => {
       navigate('/resources');
     } catch (err) {
       console.error('Error creating resource:', err);
-      setError('Ошибка при создании ресурса');
+      
+      if (isDuplicateEntityError(err)) {
+        setError('A resource with this name already exists.');
+      } else {
+        setError(getErrorMessage(err));
+      }
     } finally {
       setSubmitting(false);
     }
