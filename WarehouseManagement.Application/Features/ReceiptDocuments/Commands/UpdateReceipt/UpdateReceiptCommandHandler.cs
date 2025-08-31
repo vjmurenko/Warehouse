@@ -39,7 +39,9 @@ public class UpdateReceiptCommandHandler(
             }
 
             // 5. Валидация новых ресурсов
-            foreach (var dto in command.Resources)
+            foreach (var dto in command.Resources
+                         .Where(c => !oldResources.
+                             Exists(o => o.ResourceId == c.ResourceId && o.UnitOfMeasureId == c.UnitId)))
             {
                 await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
                 await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);

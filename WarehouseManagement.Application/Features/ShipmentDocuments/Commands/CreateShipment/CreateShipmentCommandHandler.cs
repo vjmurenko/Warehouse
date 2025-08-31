@@ -9,6 +9,7 @@ public class CreateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IBalanceService balanceService,
     IReceiptValidationService validationService,
+    IReceiptRepository receiptRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateShipmentCommand, Guid>
 {
     public async Task<Guid> Handle(CreateShipmentCommand command, CancellationToken cancellationToken)
@@ -23,18 +24,27 @@ public class CreateShipmentCommandHandler(
             // 2. Создание документа
             var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
 
+            
             // 3. Валидация и добавление ресурсов (проверяем всё до итерации)
-            foreach (var dto in command.Resources)
+            var receiptDocuments = await receiptRepository.GetFilteredAsync(cancellationToken: cancellationToken);
+            var receiptResources = receiptDocuments.SelectMany(c => c.ReceiptResources).Distinct().ToList();
+            
+            //3.1 исключаем из проверки ресурсы и единицы измерения, которые уже добавлены в документы приемки
+            foreach (var dto in command.Resources
+                         .Where(c => !receiptResources
+                             .Exists( r => r.ResourceId == c.ResourceId && r.UnitOfMeasureId == c.UnitId)))
             {
                 // Валидация через validation service
                 await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
                 await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
-                
-                // Добавление через доменную модель
+            }
+            
+            foreach (var dto in command.Resources)
+            {
                 shipmentDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
             }
             
-            // 3.1. Проверка что документ не пустой (бизнес-правило)
+            // 3.2. Проверка что документ не пустой (бизнес-правило)
             shipmentDocument.ValidateNotEmpty();
 
             // 4. Проверка доступности баланса (без списания)

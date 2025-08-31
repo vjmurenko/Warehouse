@@ -89,15 +89,17 @@ const EditResourcePage: React.FC = () => {
   const handleArchive = async () => {
     if (!resource) return;
 
-    if (!window.confirm(`Вы уверены, что хотите архивировать ресурс "${resource.name}"?`)) {
-      return;
-    }
-
     try {
       setSubmitting(true);
       setError(null);
-      
-      await apiService.archiveResource(resource.id);
+
+      if(resource.isActive){
+        await apiService.archiveResource(resource.id);
+      }
+      else  {
+        await apiService.activateResource(resource.id);
+      }
+
       navigate('/resources');
     } catch (err) {
       console.error('Error archiving resource:', err);
@@ -162,16 +164,14 @@ const EditResourcePage: React.FC = () => {
             >
               Удалить
             </Button>
-            
-            {resource.isActive && (
-              <Button 
+            <Button
                 variant="warning" 
                 onClick={handleArchive}
                 disabled={submitting}
               >
-                В архив
+                {resource.isActive ? 'Archive' : 'Activate'}
               </Button>
-            )}
+
           </div>
         </Col>
       </Row>
