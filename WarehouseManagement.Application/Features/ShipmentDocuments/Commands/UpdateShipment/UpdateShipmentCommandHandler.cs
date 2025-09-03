@@ -7,7 +7,7 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Up
 public class UpdateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IBalanceService balanceService,
-    IReceiptValidationService validationService,
+    IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateShipmentCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateShipmentCommand command, CancellationToken cancellationToken)
@@ -28,29 +28,29 @@ public class UpdateShipmentCommandHandler(
             if (await shipmentRepository.ExistsByNumberAsync(command.Number, command.Id, cancellationToken))
                 throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
-            // 4. Валидация новых ресурсов до их добавления
-            foreach (var dto in command.Resources)
-            {
-                await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
-                await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
-            }
+            // 4. Валидация клиента (исключая текущий вариант)
+            await validationService.ValidateClient(command.ClientId, document.ClientId);
 
-            // 5. Обновление свойств документа
+            // 5. Валидация новых ресурсов до их добавления
+
+            await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken, document);
+            
+            // 6. Обновление свойств документа
             document.UpdateNumber(command.Number);
             document.UpdateClientId(command.ClientId);
             document.UpdateDate(command.Date);
 
-            // 6. Очистка и добавление новых ресурсов
+            // 7. Очистка и добавление новых ресурсов
             document.ClearResources();
             foreach (var dto in command.Resources)
             {
                 document.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
             }
             
-            // 6.1. Проверка что документ не пустой (бизнес-правило)
+            // 7.1. Проверка что документ не пустой (бизнес-правило)
             document.ValidateNotEmpty();
 
-            // 6.2. Проверка доступности баланса (без списания)
+            // 7.2. Проверка доступности баланса (без списания)
             foreach (var resource in document.ShipmentResources)
             {
                 await balanceService.ValidateBalanceAvailability(
@@ -60,7 +60,7 @@ public class UpdateShipmentCommandHandler(
                     cancellationToken);
             }
 
-            // 7. Подписание если требуется (с проверкой баланса)
+            // 8. Подписание если требуется (с проверкой баланса)
             if (command.Sign)
             {
                 // Списание при подписании (проверка уже выполнена выше)
@@ -75,7 +75,7 @@ public class UpdateShipmentCommandHandler(
                 document.Sign();
             }
 
-            // 8. Сохранение изменений
+            // 9. Сохранение изменений
             await shipmentRepository.UpdateAsync(document, cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);

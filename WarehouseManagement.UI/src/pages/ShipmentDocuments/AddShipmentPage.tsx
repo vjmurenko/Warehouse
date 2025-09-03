@@ -3,14 +3,14 @@ import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import apiService from '../../services/api';
-import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
 import { SelectOption, ClientDto } from '../../types/api';
+import ShipmentResourcesTable, { ShipmentResourceItem } from '../../components/ShipmentResourcesTable'
 
 const AddShipmentPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
-  const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [resources, setResources] = useState<ShipmentResourceItem[]>([]);
   
   const [clients, setClients] = useState<ClientDto[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -25,7 +25,7 @@ const AddShipmentPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        const data = await apiService.getActiveClients();
+        const data = await apiService.getClients();
         setClients(data);
       } catch (err) {
         setError('Failed to load clients');
@@ -174,11 +174,10 @@ const AddShipmentPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
-            <DocumentResources
+            <ShipmentResourcesTable
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
-              mode="shipment"
             />
           </Card.Body>
         </Card>

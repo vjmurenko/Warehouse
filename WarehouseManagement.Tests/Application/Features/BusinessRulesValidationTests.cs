@@ -24,7 +24,7 @@ public class BusinessRulesValidationTests
     private readonly IReceiptRepository _receiptRepository;
     private readonly IShipmentRepository _shipmentRepository;
     private readonly IBalanceService _balanceService;
-    private readonly IReceiptValidationService _validationService;
+    private readonly INamedEntityValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IClientService _clientService;
     private readonly IResourceService _resourceService;
@@ -44,7 +44,7 @@ public class BusinessRulesValidationTests
         _receiptRepository = Substitute.For<IReceiptRepository>();
         _shipmentRepository = Substitute.For<IShipmentRepository>();
         _balanceService = Substitute.For<IBalanceService>();
-        _validationService = Substitute.For<IReceiptValidationService>();
+        _validationService = Substitute.For<INamedEntityValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _clientService = Substitute.For<IClientService>();
         _resourceService = Substitute.For<IResourceService>();

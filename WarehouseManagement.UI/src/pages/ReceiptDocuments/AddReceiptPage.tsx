@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Card } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
-import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
+import ReceiptResources, { ReceiptResourceItem } from '../../components/ReceiptResources'
 
 const AddReceiptPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
-  const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [resources, setResources] = useState<ReceiptResourceItem[]>([]);
   
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -132,11 +132,10 @@ const AddReceiptPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
-            <DocumentResources
+            <ReceiptResources
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
-              mode="receipt"
             />
           </Card.Body>
         </Card>

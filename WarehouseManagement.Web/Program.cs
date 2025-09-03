@@ -50,7 +50,8 @@ builder.Services.AddScoped<INamedEntityRepository<UnitOfMeasure>, UnitOfMeasureR
 // Register services
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<IReceiptDocumentService, ReceiptDocumentService>();
-builder.Services.AddScoped<IReceiptValidationService, ReceiptValidationService>();
+builder.Services.AddScoped<INamedEntityValidationService, NamedEntityValidationService>();
+builder.Services.AddScoped<IShipmentValidationService, ShipmentValidationService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IUnitOfMeasureService, UnitOfMeasureService>();

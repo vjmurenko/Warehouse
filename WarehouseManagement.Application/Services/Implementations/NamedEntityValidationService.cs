@@ -4,9 +4,9 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class ReceiptValidationService(
+public class NamedEntityValidationService(
     INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitRepository) : IReceiptValidationService
+    INamedEntityRepository<UnitOfMeasure> unitRepository) : INamedEntityValidationService
 {
     public async Task<Resource> ValidateResourceAsync(Guid resourceId, CancellationToken cancellationToken)
     {

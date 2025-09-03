@@ -8,7 +8,7 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Cre
 public class CreateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     IBalanceService balanceService,
-    IReceiptValidationService validationService,
+    INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateReceiptCommand, Guid>
 {
     public async Task<Guid> Handle(CreateReceiptCommand command, CancellationToken cancellationToken)

@@ -13,7 +13,7 @@ namespace WarehouseManagement.Tests.Application.Features;
 public class UpdateShipmentDocumentTests
 {
     private readonly IShipmentRepository _shipmentRepository;
-    private readonly IReceiptValidationService _validationService;
+    private readonly INamedEntityValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBalanceService _balanceService;
     private readonly UpdateShipmentCommandHandler _handler;
@@ -30,7 +30,7 @@ public class UpdateShipmentDocumentTests
     {
         // Initialize mocks
         _shipmentRepository = Substitute.For<IShipmentRepository>();
-        _validationService = Substitute.For<IReceiptValidationService>();
+        _validationService = Substitute.For<INamedEntityValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _balanceService = Substitute.For<IBalanceService>();
         

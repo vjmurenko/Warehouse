@@ -36,8 +36,8 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
       
       try {
         const [resourcesData, unitsData, shipmentDocumentsData, clientsData] = await Promise.all([
-          apiService.getActiveResources(),
-          apiService.getActiveUnitsOfMeasure(),
+          apiService.getResources(),
+          apiService.getUnitsOfMeasure(),
           apiService.getShipmentDocuments(),
           apiService.getClients()
         ]);

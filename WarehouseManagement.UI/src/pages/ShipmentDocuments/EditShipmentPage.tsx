@@ -3,8 +3,8 @@ import { Container, Row, Col, Form, Button, Alert, Card, Spinner, Badge } from '
 import { useNavigate, useParams } from 'react-router-dom';
 import Select from 'react-select';
 import apiService from '../../services/api';
-import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
 import { SelectOption, ClientDto, ShipmentDocumentDto } from '../../types/api';
+import ShipmentResourcesTable, { ShipmentResourceItem } from '../../components/ShipmentResourcesTable'
 
 const EditShipmentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +12,7 @@ const EditShipmentPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [selectedClient, setSelectedClient] = useState<SelectOption | null>(null);
-  const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [resources, setResources] = useState<ShipmentResourceItem[]>([]);
   const [isSigned, setIsSigned] = useState<boolean>(false);
   const [signDocument, setSignDocument] = useState<boolean>(false);
   
@@ -84,11 +84,8 @@ const EditShipmentPage: React.FC = () => {
     if (!id || !shipment) {
       return;
     }
-    
-    // Use the signOption parameter if provided, otherwise use the current state
     const shouldSign = signOption !== undefined ? signOption : signDocument;
-    
-    // Validation
+
     if (!number.trim()) {
       setError('Document number is required');
       return;
@@ -299,11 +296,10 @@ const EditShipmentPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
-            <DocumentResources
+            <ShipmentResourcesTable
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
-              mode="shipment"
             />
           </Card.Body>
         </Card>

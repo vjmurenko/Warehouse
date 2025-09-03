@@ -8,8 +8,7 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Cr
 public class CreateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IBalanceService balanceService,
-    IReceiptValidationService validationService,
-    IReceiptRepository receiptRepository,
+    IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateShipmentCommand, Guid>
 {
     public async Task<Guid> Handle(CreateShipmentCommand command, CancellationToken cancellationToken)
@@ -21,33 +20,25 @@ public class CreateShipmentCommandHandler(
             if (await shipmentRepository.ExistsByNumberAsync(command.Number, cancellationToken: cancellationToken))
                 throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
-            // 2. Создание документа
+            // 2. Валидация клиента 
+            await validationService.ValidateClient(command.ClientId);
+            
+            // 3. Создание документа
             var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
-
             
-            // 3. Валидация и добавление ресурсов (проверяем всё до итерации)
-            var receiptDocuments = await receiptRepository.GetFilteredAsync(cancellationToken: cancellationToken);
-            var receiptResources = receiptDocuments.SelectMany(c => c.ReceiptResources).Distinct().ToList();
             
-            //3.1 исключаем из проверки ресурсы и единицы измерения, которые уже добавлены в документы приемки
-            foreach (var dto in command.Resources
-                         .Where(c => !receiptResources
-                             .Exists( r => r.ResourceId == c.ResourceId && r.UnitOfMeasureId == c.UnitId)))
-            {
-                // Валидация через validation service
-                await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
-                await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
-            }
+            // 4. Валидация ресурсов 
+            await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken);
             
             foreach (var dto in command.Resources)
             {
                 shipmentDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
             }
             
-            // 3.2. Проверка что документ не пустой (бизнес-правило)
+            // 4.2. Проверка что документ не пустой (бизнес-правило)
             shipmentDocument.ValidateNotEmpty();
 
-            // 4. Проверка доступности баланса (без списания)
+            // 5. Проверка доступности баланса (без списания)
             foreach (var resource in shipmentDocument.ShipmentResources)
             {
                 await balanceService.ValidateBalanceAvailability(
@@ -57,7 +48,7 @@ public class CreateShipmentCommandHandler(
                     cancellationToken);
             }
 
-            // 5. Подписание документа и списание с баланса если требуется
+            // 6. Подписание документа и списание с баланса если требуется
             if (command.Sign)
             {
                 // Списание при подписании (проверка уже выполнена выше)
@@ -72,7 +63,7 @@ public class CreateShipmentCommandHandler(
                 shipmentDocument.Sign();
             }
 
-            // 6. Сохранение документа
+            // 7. Сохранение документа
             await shipmentRepository.AddAsync(shipmentDocument, cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);

@@ -2,15 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Alert, Card, Spinner } from 'react-bootstrap';
 import { useNavigate, useParams } from 'react-router-dom';
 import apiService from '../../services/api';
-import DocumentResources, { DocumentResourceItem } from '../../components/DocumentResources';
 import { ReceiptDocumentDto } from '../../types/api';
+import ReceiptResources, { ReceiptResourceItem } from '../../components/ReceiptResources'
 
 const EditReceiptPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [receipt, setReceipt] = useState<ReceiptDocumentDto | null>(null);
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>('');
-  const [resources, setResources] = useState<DocumentResourceItem[]>([]);
+  const [resources, setResources] = useState<ReceiptResourceItem[]>([]);
+  const [originalResources, setOriginalResources] = useState<ReceiptResourceItem[]>([]); // Store original resources for conditional validation
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -36,14 +37,16 @@ const EditReceiptPage: React.FC = () => {
       setReceipt(data);
       setNumber(data.number);
       setDate(new Date(data.date).toISOString().split('T')[0]);
-      setResources(data.resources.map(item => ({
+      const loadedResources = data.resources.map(item => ({
         id: item.id,
         resourceId: item.resourceId,
         resourceName: item.resourceName,
         unitId: item.unitId,
         unitName: item.unitName,
         quantity: item.quantity
-      })));
+      }));
+      setResources(loadedResources);
+      setOriginalResources(loadedResources); // Store original resources for conditional validation
     } catch (err) {
       setError('Failed to load receipt document');
       console.error('Error loading receipt document:', err);
@@ -224,11 +227,11 @@ const EditReceiptPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
-            <DocumentResources
+            <ReceiptResources
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
-              mode="receipt"
+              existingResources={originalResources}
             />
           </Card.Body>
         </Card>

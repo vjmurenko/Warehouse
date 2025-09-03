@@ -33,8 +33,8 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
       
       try {
         const [resourcesData, unitsData, receiptDocumentsData] = await Promise.all([
-          apiService.getActiveResources(),
-          apiService.getActiveUnitsOfMeasure(),
+          apiService.getResources(),
+          apiService.getUnitsOfMeasure(),
           apiService.getReceiptDocuments()
         ]);
         

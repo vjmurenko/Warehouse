@@ -1,0 +1,184 @@
+import React, { useState, useEffect } from 'react';
+import { Table, FormControl } from 'react-bootstrap';
+import { BalanceDto } from '../types/api';
+import apiService from '../services/api';
+
+export interface ShipmentResourceItem {
+  id?: string;
+  resourceId: string;
+  resourceName?: string;
+  unitId: string;
+  unitName?: string;
+  quantity: number;
+  availableQuantity?: number;
+}
+
+interface ShipmentResourcesTableProps {
+  resources: ShipmentResourceItem[];
+  onResourcesChange: (resources: ShipmentResourceItem[]) => void;
+  disabled?: boolean;
+}
+
+const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({ 
+  resources, 
+  onResourcesChange, 
+  disabled = false 
+}) => {
+  const [balances, setBalances] = useState<BalanceDto[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const loadBalances = async () => {
+      try {
+        const balancesData = await apiService.getBalances();
+        const positiveBalances = balancesData.filter(b => b.quantity > 0);
+        setBalances(positiveBalances);
+      } catch (error) {
+        console.error('Error loading balances:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBalances();
+  }, []);
+
+  const handleQuantityChange = (resourceId: string, unitId: string, quantity: number) => {
+    const updated = [...resources];
+    const existingIndex = updated.findIndex(r => r.resourceId === resourceId && r.unitId === unitId);
+    
+    if (quantity > 0) {
+      const balance = balances.find(b => b.resourceId === resourceId && b.unitOfMeasureId === unitId);
+      
+      if (existingIndex >= 0) {
+        updated[existingIndex] = {
+          ...updated[existingIndex],
+          quantity
+        };
+      } else {
+        updated.push({
+          resourceId,
+          resourceName: balance?.resourceName,
+          unitId,
+          unitName: balance?.unitOfMeasureName,
+          quantity,
+          availableQuantity: balance?.quantity || 0
+        });
+      }
+    } else {
+      if (existingIndex >= 0) {
+        updated.splice(existingIndex, 1);
+      }
+    }
+    
+    onResourcesChange(updated);
+  };
+
+  const getResourceQuantity = (resourceId: string, unitId: string): number => {
+    const resource = resources.find(r => r.resourceId === resourceId && r.unitId === unitId);
+    return resource?.quantity || 0;
+  };
+
+  const formatQuantity = (quantity: number): string => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 3
+    }).format(quantity);
+  };
+
+  if (loading) {
+    return <div>Loading available resources...</div>;
+  }
+
+  return (
+    <div>
+      <div className="mb-3">
+        <h6>Available Resources for Shipment</h6>
+        <small className="text-muted">
+          Only resources with positive balance are shown. Enter quantities to include in shipment.
+        </small>
+      </div>
+      
+      <div className="table-responsive">
+        <Table striped hover>
+          <thead>
+            <tr>
+              <th>Resource</th>
+              <th>Unit of Measure</th>
+              <th>Shipment Quantity</th>
+              <th>Available Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {balances.map((balance) => {
+              const currentQuantity = getResourceQuantity(balance.resourceId, balance.unitOfMeasureId);
+              const maxQuantity = balance.quantity;
+              const hasError = currentQuantity > maxQuantity;
+              
+              return (
+                <tr key={`${balance.resourceId}-${balance.unitOfMeasureId}`} className={currentQuantity > 0 ? 'table-warning' : ''}>
+                  <td>
+                    <strong>{balance.resourceName}</strong>
+                  </td>
+                  <td>
+                    {balance.unitOfMeasureName}
+                  </td>
+                  <td>
+                    <FormControl
+                      type="number"
+                      min="0"
+                      max={maxQuantity}
+                      step="0.001"
+                      value={currentQuantity}
+                      onChange={(e) => handleQuantityChange(
+                        balance.resourceId, 
+                        balance.unitOfMeasureId, 
+                        parseFloat(e.target.value) || 0
+                      )}
+                      disabled={disabled}
+                      placeholder="0"
+                      className={hasError ? 'is-invalid' : ''}
+                    />
+                    {hasError && (
+                      <div className="invalid-feedback">
+                        Exceeds available quantity ({formatQuantity(maxQuantity)})
+                      </div>
+                    )}
+                  </td>
+                  <td className="text-end">
+                    <span className={`badge ${hasError ? 'bg-danger' : 'bg-success'} fs-6`}>
+                      {formatQuantity(balance.quantity)}
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </Table>
+        
+        {balances.length === 0 && (
+          <div className="text-center text-muted py-4">
+            <p>No resources with positive balance available for shipment</p>
+            <small>Add receipt documents to increase inventory balance</small>
+          </div>
+        )}
+      </div>
+      
+      {resources.length > 0 && (
+        <div className="mt-3">
+          <h6>Selected Resources Summary:</h6>
+          <ul className="list-group list-group-flush">
+            {resources.map((resource, index) => (
+              <li key={index} className="list-group-item d-flex justify-content-between">
+                <span>{resource.resourceName} ({resource.unitName})</span>
+                <span className="badge bg-primary">{formatQuantity(resource.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ShipmentResourcesTable;

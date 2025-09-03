@@ -5,17 +5,17 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Tests.Application.Services;
 
-public class ReceiptValidationServiceTests
+public class NamedEntityValidationServiceTests
 {
     private readonly INamedEntityRepository<Resource> _resourceRepository;
     private readonly INamedEntityRepository<UnitOfMeasure> _unitRepository;
-    private readonly ReceiptValidationService _validationService;
+    private readonly NamedEntityValidationService _validationService;
 
-    public ReceiptValidationServiceTests()
+    public NamedEntityValidationServiceTests()
     {
         _resourceRepository = Substitute.For<INamedEntityRepository<Resource>>();
         _unitRepository = Substitute.For<INamedEntityRepository<UnitOfMeasure>>();
-        _validationService = new ReceiptValidationService(_resourceRepository, _unitRepository);
+        _validationService = new NamedEntityValidationService(_resourceRepository, _unitRepository);
     }
 
     [Fact]

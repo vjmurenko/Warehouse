@@ -13,10 +13,11 @@ namespace WarehouseManagement.Tests.Application.Features;
 public class CreateShipmentDocumentTests
 {
     private readonly IShipmentRepository _shipmentRepository;
-    private readonly IReceiptValidationService _validationService;
+    private readonly INamedEntityValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IBalanceService _balanceService;
     private readonly CreateShipmentCommandHandler _handler;
+    private readonly IReceiptRepository _receiptRepository;
     
     // Common test data
     private readonly Guid _defaultResourceId;
@@ -29,12 +30,14 @@ public class CreateShipmentDocumentTests
     {
         // Initialize mocks
         _shipmentRepository = Substitute.For<IShipmentRepository>();
-        _validationService = Substitute.For<IReceiptValidationService>();
+        _validationService = Substitute.For<INamedEntityValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _balanceService = Substitute.For<IBalanceService>();
+        _receiptRepository = Substitute.For<IReceiptRepository>();
+        
         
         // Initialize handler
-        _handler = new CreateShipmentCommandHandler(_shipmentRepository, _balanceService, _validationService, _unitOfWork);
+        _handler = new CreateShipmentCommandHandler(_shipmentRepository, _balanceService, _validationService,  _receiptRepository, _unitOfWork);
         
         // Initialize common test data
         _defaultResourceId = Guid.NewGuid();

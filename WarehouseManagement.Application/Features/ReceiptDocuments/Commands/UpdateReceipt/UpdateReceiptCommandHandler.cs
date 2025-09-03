@@ -8,7 +8,7 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Upd
 public class UpdateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     IBalanceService balanceService,
-    IReceiptValidationService validationService,
+    INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken cancellationToken)
