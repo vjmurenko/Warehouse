@@ -25,44 +25,46 @@ const EditShipmentPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadClients = async () => {
-      try {
-        setIsLoadingClients(true);
-        const data = await apiService.getActiveClients();
-        setClients(data);
-      } catch (err) {
-        console.error('Error loading clients:', err);
-      } finally {
-        setIsLoadingClients(false);
-      }
-    };
-    
-    loadClients();
-  }, []);
-
-  useEffect(() => {
     if (id) {
-      loadShipmentDocument(id);
+      loadData(id);
     } else {
       setIsLoading(false);
       setError('Shipment document ID is required');
     }
   }, [id]);
 
-  const loadShipmentDocument = async (shipmentId: string) => {
+  const loadData = async (shipmentId: string) => {
     try {
       setIsLoading(true);
+      setIsLoadingClients(true);
       setError(null);
       
-      const data = await apiService.getShipmentDocumentById(shipmentId);
-      setShipment(data);
-      setNumber(data.number);
-      setDate(new Date(data.date).toISOString().split('T')[0]);
-      setSelectedClient({ value: data.clientId, label: data.clientName });
-      setIsSigned(data.isSigned);
-      setSignDocument(data.isSigned);
+      const [activeClientsData, shipmentData] = await Promise.all([
+        apiService.getActiveClients(),
+        apiService.getShipmentDocumentById(shipmentId)
+      ]);
       
-      setResources(data.resources.map(item => ({
+      const isClientActive = activeClientsData.find(c => c.id === shipmentData.clientId);
+      let allClients = [...activeClientsData];
+      
+      if (!isClientActive) {
+        try {
+          const documentClient = await apiService.getClientById(shipmentData.clientId);
+          allClients = [...activeClientsData, documentClient];
+        } catch (err) {
+          console.error('Error loading document client:', err);
+        }
+      }
+
+      setClients(allClients);
+      setShipment(shipmentData);
+      setNumber(shipmentData.number);
+      setDate(new Date(shipmentData.date).toISOString().split('T')[0]);
+      setSelectedClient({ value: shipmentData.clientId, label: shipmentData.clientName });
+      setIsSigned(shipmentData.isSigned);
+      setSignDocument(shipmentData.isSigned);
+      
+      setResources(shipmentData.resources.map(item => ({
         id: item.id,
         resourceId: item.resourceId,
         resourceName: item.resourceName,
@@ -75,6 +77,7 @@ const EditShipmentPage: React.FC = () => {
       console.error('Error loading shipment document:', err);
     } finally {
       setIsLoading(false);
+      setIsLoadingClients(false);
     }
   };
 
@@ -257,53 +260,64 @@ const EditShipmentPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Document Number</Form.Label>
               <Form.Control
                 type="text"
                 value={number}
                 onChange={(e) => setNumber(e.target.value)}
                 placeholder="Enter document number"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSigned}
                 required
               />
             </Form.Group>
             
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Client</Form.Label>
               <Select
                 options={clientOptions}
                 value={selectedClient}
                 onChange={(selected) => setSelectedClient(selected as SelectOption)}
-                isDisabled={isSubmitting || isLoadingClients}
+                isDisabled={isSubmitting || isLoadingClients || isSigned}
                 placeholder="Select client..."
               />
             </Form.Group>
             
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Date</Form.Label>
               <Form.Control
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSigned}
                 required
               />
             </Form.Group>
           </Card.Body>
         </Card>
-        
-        <Card className="mb-4">
+
+        {
+          !isSigned &&
+          <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
             <ShipmentResourcesTable
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
+              existingDocumentResources={shipment?.resources?.map(r => ({
+                id: r.id,
+                resourceId: r.resourceId,
+                resourceName: r.resourceName,
+                unitId: r.unitId,
+                unitName: r.unitName,
+                quantity: r.quantity
+              })) || []}
             />
           </Card.Body>
         </Card>
-        
+      }
+
         <div className="d-flex gap-2">
           {isSigned ? (
             // If document is signed, show only Revoke button

@@ -62,19 +62,8 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateShipment([FromBody] CreateShipmentCommand request)
     {
-        try
-        {
-            var result = await mediator.Send(request);
-            return CreatedAtAction(nameof(GetShipmentById), new { id = result }, result);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var result = await mediator.Send(request);
+        return CreatedAtAction(nameof(GetShipmentById), new { id = result }, result);
     }
 
     /// <summary>
@@ -86,19 +75,8 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateShipment([FromBody] UpdateShipmentCommand request)
     {
-        try
-        {
-            await mediator.Send(request);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        await mediator.Send(request);
+        return NoContent();
     }
 
     /// <summary>
@@ -109,19 +87,8 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteShipment(Guid id)
     {
-        try
-        {
-            await mediator.Send(new DeleteShipmentCommand(id));
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        await mediator.Send(new DeleteShipmentCommand(id));
+        return NoContent();
     }
 
     /// <summary>
@@ -132,14 +99,7 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost("{id}/revoke")]
     public async Task<ActionResult> RevokeShipment(Guid id)
     {
-        try
-        {
-            await mediator.Send(new RevokeShipmentCommand(id));
-            return NoContent();
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        await mediator.Send(new RevokeShipmentCommand(id));
+        return NoContent();
     }
 }

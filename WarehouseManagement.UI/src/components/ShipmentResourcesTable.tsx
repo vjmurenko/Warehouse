@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, FormControl } from 'react-bootstrap';
-import { BalanceDto } from '../types/api';
+import { BalanceDto, ReceiptDocumentDto } from '../types/api';
 import apiService from '../services/api';
 
 export interface ShipmentResourceItem {
@@ -17,30 +17,58 @@ interface ShipmentResourcesTableProps {
   resources: ShipmentResourceItem[];
   onResourcesChange: (resources: ShipmentResourceItem[]) => void;
   disabled?: boolean;
+  existingDocumentResources?: ShipmentResourceItem[]; // Resources already in document (for edit mode)
 }
 
 const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({ 
   resources, 
   onResourcesChange, 
-  disabled = false 
+  disabled = false,
+  existingDocumentResources = []
 }) => {
   const [balances, setBalances] = useState<BalanceDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadBalances = async () => {
+    const loadData = async () => {
       try {
-        const balancesData = await apiService.getBalances();
+        const [balancesData, receiptDocuments] = await Promise.all([
+          apiService.getBalances(),
+          apiService.getReceiptDocuments()
+        ]);
+        
         const positiveBalances = balancesData.filter(b => b.quantity > 0);
-        setBalances(positiveBalances);
+
+        const allowedResourceCombinations = new Set<string>();
+
+        receiptDocuments.forEach(receipt => {
+          if (receipt.resources) {
+            receipt.resources.forEach(resource => {
+              const key = `${resource.resourceId}:${resource.unitId}`;
+              allowedResourceCombinations.add(key);
+            });
+          }
+        });
+        
+        existingDocumentResources.forEach(resource => {
+          const key = `${resource.resourceId}:${resource.unitId}`;
+          allowedResourceCombinations.add(key);
+        });
+        
+        const filteredBalances = positiveBalances.filter(balance => {
+          const key = `${balance.resourceId}:${balance.unitOfMeasureId}`;
+          return allowedResourceCombinations.has(key);
+        });
+        
+        setBalances(filteredBalances);
       } catch (error) {
-        console.error('Error loading balances:', error);
+        console.error('Error loading data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadBalances();
+    loadData();
   }, []);
 
   const handleQuantityChange = (resourceId: string, unitId: string, quantity: number) => {
@@ -92,13 +120,6 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
 
   return (
     <div>
-      <div className="mb-3">
-        <h6>Available Resources for Shipment</h6>
-        <small className="text-muted">
-          Only resources with positive balance are shown. Enter quantities to include in shipment.
-        </small>
-      </div>
-      
       <div className="table-responsive">
         <Table striped hover>
           <thead>
@@ -158,8 +179,7 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
         
         {balances.length === 0 && (
           <div className="text-center text-muted py-4">
-            <p>No resources with positive balance available for shipment</p>
-            <small>Add receipt documents to increase inventory balance</small>
+            <p>No resources available</p>
           </div>
         )}
       </div>

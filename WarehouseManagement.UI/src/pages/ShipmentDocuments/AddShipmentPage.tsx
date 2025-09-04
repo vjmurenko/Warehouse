@@ -25,7 +25,7 @@ const AddShipmentPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        const data = await apiService.getClients();
+        const data = await apiService.getActiveClients();
         setClients(data);
       } catch (err) {
         setError('Failed to load clients');
@@ -135,7 +135,7 @@ const AddShipmentPage: React.FC = () => {
         <Card className="mb-4">
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Document Number</Form.Label>
               <Form.Control
                 type="text"
@@ -147,7 +147,7 @@ const AddShipmentPage: React.FC = () => {
               />
             </Form.Group>
             
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Client</Form.Label>
               <Select
                 options={clientOptions}
@@ -158,7 +158,7 @@ const AddShipmentPage: React.FC = () => {
               />
             </Form.Group>
             
-            <Form.Group className="mb-3">
+            <Form.Group className="mb-3 col-2">
               <Form.Label>Date</Form.Label>
               <Form.Control
                 type="date"

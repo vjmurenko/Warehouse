@@ -100,8 +100,8 @@ const AddReceiptPage: React.FC = () => {
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
             <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group className="mb-3">
+              <Col className="col-2">
+                <Form.Group>
                   <Form.Label>Document Number</Form.Label>
                   <Form.Control
                     type="text"
@@ -113,8 +113,10 @@ const AddReceiptPage: React.FC = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
+            </Row>
+            <Row className="mb-3">
+              <Col className="col-2">
+                <Form.Group>
                   <Form.Label>Date</Form.Label>
                   <Form.Control
                     type="date"

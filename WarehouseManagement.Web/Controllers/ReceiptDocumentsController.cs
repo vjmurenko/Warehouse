@@ -61,19 +61,8 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateReceipt([FromBody] CreateReceiptCommand request)
     {
-        try
-        {
-            var result = await mediator.Send(request);
-            return CreatedAtAction(nameof(GetReceiptById), new { id = result }, result);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var result = await mediator.Send(request);
+        return CreatedAtAction(nameof(GetReceiptById), new { id = result }, result);
     }
 
     /// <summary>

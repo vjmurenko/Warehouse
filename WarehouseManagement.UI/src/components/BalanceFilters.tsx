@@ -23,8 +23,8 @@ const BalanceFiltersComponent: React.FC<BalanceFiltersProps> = ({ onFiltersChang
     try {
       setLoading(true);
       const [resourcesData, unitsData] = await Promise.all([
-        apiService.getActiveResources(),
-        apiService.getActiveUnitsOfMeasure()
+        apiService.getResources(),
+        apiService.getUnitsOfMeasure()
       ]);
       
       setResources(resourcesData.map(r => ({ value: r.id, label: r.name })));

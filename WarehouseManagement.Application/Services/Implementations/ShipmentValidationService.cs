@@ -31,12 +31,15 @@ public class ShipmentValidationService(
                 .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity.Value)));
         }
         
-        updatedShipmentResources = updatedShipmentResources.Except(resourcesForExclude.Distinct()).ToList();
+        updatedShipmentResources = updatedShipmentResources
+            .Where(u => 
+                !resourcesForExclude.Any(r => r.UnitId == u.UnitId && r.ResourceId == u.ResourceId))
+            .ToList();
         
         foreach (var documentReceiptResource in updatedShipmentResources)
         {
-            namedEntityValidationService.ValidateResourceAsync(documentReceiptResource.ResourceId, token);
-            namedEntityValidationService.ValidateUnitOfMeasureAsync(documentReceiptResource.UnitId, token);
+            await namedEntityValidationService.ValidateResourceAsync(documentReceiptResource.ResourceId, token);
+            await namedEntityValidationService.ValidateUnitOfMeasureAsync(documentReceiptResource.UnitId, token);
         }
     }
 

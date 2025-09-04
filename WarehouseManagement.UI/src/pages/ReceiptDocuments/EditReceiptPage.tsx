@@ -195,8 +195,8 @@ const EditReceiptPage: React.FC = () => {
           <Card.Header>Document Details</Card.Header>
           <Card.Body>
             <Row className="mb-3">
-              <Col md={6}>
-                <Form.Group className="mb-3">
+              <Col className="col-2">
+                <Form.Group>
                   <Form.Label>Document Number</Form.Label>
                   <Form.Control
                     type="text"
@@ -208,22 +208,24 @@ const EditReceiptPage: React.FC = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Date</Form.Label>
-                  <Form.Control
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    disabled={isSubmitting}
-                    required
-                  />
-                </Form.Group>
-              </Col>
             </Row>
+              <Row className="mb-3">
+                <Col className="col-2">
+                  <Form.Group>
+                    <Form.Label>Date</Form.Label>
+                    <Form.Control
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      disabled={isSubmitting}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
           </Card.Body>
         </Card>
-        
+
         <Card className="mb-4">
           <Card.Header>Resources</Card.Header>
           <Card.Body>
