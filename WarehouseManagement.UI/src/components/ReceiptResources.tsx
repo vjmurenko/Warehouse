@@ -73,16 +73,16 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
     const updated = [...resources];
     
     if (field === 'resourceId') {
-      const resource = availableResources.find(r => r.id === value);
+      // Find resource from all resources (including archived)
+      const resource = allResources.find(r => r.id === value);
       updated[index] = {
         ...updated[index],
         resourceId: value,
-        resourceName: resource?.name,
-        unitId: '',
-        unitName: ''
+        resourceName: resource?.name
       };
     } else if (field === 'unitId') {
-      const unit = availableUnits.find(u => u.id === value);
+      // Find unit from all units (including archived)
+      const unit = allUnits.find(u => u.id === value);
       updated[index] = {
         ...updated[index],
         unitId: value,
@@ -99,59 +99,67 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
   };
 
   if (loading) {
-    return <div>Loading resources...</div>;
+    return <div>Загрузка ресурсов...</div>;
   }
 
-  const isExistingResourceUnit = (resourceId: string, unitId: string): boolean => {
-    return existingResources.some(er => er.resourceId === resourceId && er.unitId === unitId);
+  const isExistingResource = (resourceId: string): boolean => {
+    return existingResources.some(er => er.resourceId === resourceId);
   };
 
-  const getResourceOptionsForRow = (currentResourceId: string, currentUnitId: string) => {
-    const shouldIncludeArchived = currentResourceId && currentUnitId && isExistingResourceUnit(currentResourceId, currentUnitId);
-    const resourcesToUse = shouldIncludeArchived ? allResources : availableResources;
+  const isExistingUnit = (unitId: string): boolean => {
+    return existingResources.some(er => er.unitId === unitId);
+  };
+
+  const getResourceOptionsForRow = (currentResourceId: string) => {
+    // Include archived resources if they are currently selected or were in the original document
+    const resourcesToShow = allResources.filter(r => 
+      r.isActive || r.id === currentResourceId || isExistingResource(r.id)
+    );
     
-    return resourcesToUse.map(r => ({
+    return resourcesToShow.map(r => ({
       value: r.id,
-      label: r.name + (!r.isActive ? ' (Archived)' : '')
+      label: r.name
     }));
   };
 
-  const getUnitOptionsForRow = (currentResourceId: string, currentUnitId: string) => {
-    const shouldIncludeArchived = currentResourceId && currentUnitId && isExistingResourceUnit(currentResourceId, currentUnitId);
-    const unitsToUse = shouldIncludeArchived ? allUnits : availableUnits;
+  const getUnitOptionsForRow = (currentUnitId: string) => {
+    // Include archived units if they are currently selected or were in the original document
+    const unitsToShow = allUnits.filter(u => 
+      u.isActive || u.id === currentUnitId || isExistingUnit(u.id)
+    );
 
-    return unitsToUse.map(u => ({
+    return unitsToShow.map(u => ({
       value: u.id,
-      label: u.name + (!u.isActive ? ' (Archived)' : '')
+      label: u.name
     }));
   };
 
   return (
     <div>
       <div className="mb-3">
-        <h6>Receipt Resources</h6>
+        <h6>Ресурсы поступления</h6>
       </div>
       
       <Table bordered>
         <thead>
           <tr>
-            <th>Resource</th>
-            <th>Unit</th>
-            <th>Quantity</th>
-            <th>Actions</th>
+            <th>Ресурс</th>
+            <th>Единица измерения</th>
+            <th>Количество</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           {resources.length === 0 ? (
             <tr>
               <td colSpan={4} className="text-center text-muted py-3">
-                No resources added yet
+                Ресурсы не добавлены
               </td>
             </tr>
           ) : (
             resources.map((item, index) => {
-              const resourceOptionsForRow = getResourceOptionsForRow(item.resourceId, item.unitId);
-              const unitOptionsForRow = getUnitOptionsForRow(item.resourceId, item.unitId);
+              const resourceOptionsForRow = getResourceOptionsForRow(item.resourceId);
+              const unitOptionsForRow = getUnitOptionsForRow(item.unitId);
               
               return (
               <tr key={index}>
@@ -161,7 +169,7 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
                     value={resourceOptionsForRow.find(opt => opt.value === item.resourceId)}
                     onChange={(selected) => handleResourceChange(index, 'resourceId', selected?.value || '')}
                     isDisabled={disabled}
-                    placeholder="Select resource..."
+                    placeholder="Выберите ресурс..."
                   />
                 </td>
                 <td>
@@ -169,8 +177,8 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
                     options={unitOptionsForRow}
                     value={unitOptionsForRow.find(opt => opt.value === item.unitId)}
                     onChange={(selected) => handleResourceChange(index, 'unitId', selected?.value || '')}
-                    isDisabled={disabled || !item.resourceId}
-                    placeholder="Select unit..."
+                    isDisabled={disabled}
+                    placeholder="Выберите единицу измерения..."
                   />
                 </td>
                 <td>
@@ -191,7 +199,7 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
                     onClick={() => handleRemoveResource(index)}
                     disabled={disabled}
                   >
-                    Remove
+                    Удалить
                   </Button>
                 </td>
               </tr>
@@ -207,7 +215,7 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
           onClick={handleAddResource}
           disabled={disabled}
         >
-          Add Resource
+          Добавить ресурс
         </Button>
       </div>
     </div>

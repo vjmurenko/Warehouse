@@ -32,7 +32,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
       setUnit(data);
       setName(data.name);
     } catch (err) {
-      setError('Failed to load unit data');
+      setError('Не удалось загрузить данные единицы измерения');
       console.error('Error loading unit:', err);
     } finally {
       setIsLoading(false);
@@ -47,7 +47,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
     }
     
     if (!name.trim()) {
-      setError('Name is required');
+      setError('Название обязательно');
       return;
     }
 
@@ -61,7 +61,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
       
       navigate('/units');
     } catch (err: any) {
-      setError(err.message || 'Failed to update unit of measure');
+      setError(err.message || 'Не удалось обновить единицу измерения');
       console.error('Error updating unit of measure:', err);
     } finally {
       setIsSubmitting(false);
@@ -85,7 +85,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
       
       navigate('/units');
     } catch (err: any) {
-      setError(err.message || `Failed to ${unit.isActive ? 'archive' : 'activate'} unit`);
+      setError(err.message || `Не удалось ${unit.isActive ? 'архивировать' : 'активировать'} единицу измерения`);
       console.error(`Error ${unit.isActive ? 'archiving' : 'activating'} unit:`, err);
     } finally {
       setIsSubmitting(false);
@@ -111,7 +111,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
       console.error('Error deleting unit of measure:', err);
       
       if (isEntityInUseError(err)) {
-        setError('Cannot delete this unit of measure because it is currently being used in documents.');
+        setError('Невозможно удалить эту единицу измерения, поскольку она используется в документах.');
       } else {
         setError(getErrorMessage(err));
       }
@@ -126,7 +126,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка...</span>
           </Spinner>
         </div>
       </Container>
@@ -137,10 +137,10 @@ const EditUnitOfMeasurePage: React.FC = () => {
     return (
       <Container fluid className="p-4">
         <Alert variant="danger">
-          {error || 'Unit not found'}
+          {error || 'Единица измерения не найдена'}
         </Alert>
         <Button variant="primary" onClick={() => navigate('/units')}>
-          Back to Units
+          Назад к списку единиц
         </Button>
       </Container>
     );
@@ -150,7 +150,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Edit Unit of Measure</h2>
+          <h2>Редактирование единицы измерения</h2>
         </Col>
       </Row>
       
@@ -168,12 +168,12 @@ const EditUnitOfMeasurePage: React.FC = () => {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Название</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter unit name"
+                placeholder="Введите название единицы"
                 disabled={isSubmitting}
                 required
               />
@@ -181,7 +181,7 @@ const EditUnitOfMeasurePage: React.FC = () => {
             
             <div className="d-flex gap-2">
               <Button variant="primary" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? 'Сохранение...' : 'Сохранить'}
               </Button>
               
               <Button 
@@ -189,14 +189,14 @@ const EditUnitOfMeasurePage: React.FC = () => {
                 onClick={handleArchiveToggle} 
                 disabled={isSubmitting}
               >
-                {unit.isActive ? 'Archive' : 'Activate'}
+                {unit.isActive ? 'Архивировать' : 'Активировать'}
               </Button>
 
               <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-                Delete
+                Удалить
               </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </div>
           </Form>

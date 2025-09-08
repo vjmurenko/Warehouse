@@ -28,7 +28,7 @@ const AddShipmentPage: React.FC = () => {
         const data = await apiService.getActiveClients();
         setClients(data);
       } catch (err) {
-        setError('Failed to load clients');
+        setError('Не удалось загрузить клиентов');
         console.error('Error loading clients:', err);
       } finally {
         setIsLoading(false);
@@ -43,38 +43,38 @@ const AddShipmentPage: React.FC = () => {
     
     // Validation
     if (!number.trim()) {
-      setError('Document number is required');
+      setError('Необходимо указать номер документа');
       return;
     }
     
     if (!date) {
-      setError('Date is required');
+      setError('Необходимо указать дату');
       return;
     }
     
     if (!selectedClient) {
-      setError('Client is required');
+      setError('Необходимо выбрать клиента');
       return;
     }
     
     if (resources.length === 0) {
-      setError('At least one resource must be added');
+      setError('Необходимо добавить хотя бы один ресурс');
       return;
     }
     
     for (const resource of resources) {
       if (!resource.resourceId) {
-        setError('All resources must have a resource type selected');
+        setError('Необходимо выбрать ресурс');
         return;
       }
       
       if (!resource.unitId) {
-        setError('All resources must have a unit of measure selected');
+        setError('Необходимо выбрать единицу измерения');
         return;
       }
       
       if (resource.quantity <= 0) {
-        setError('All resources must have a positive quantity');
+        setError('Количество должно быть больше нуля');
         return;
       }
     }
@@ -97,7 +97,7 @@ const AddShipmentPage: React.FC = () => {
       
       navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to create shipment document');
+      setError(err.message || 'Не удалось создать документ отгрузки');
       console.error('Error creating shipment document:', err);
     } finally {
       setIsSubmitting(false);
@@ -117,7 +117,7 @@ const AddShipmentPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Create Shipment Document</h2>
+          <h2>Создание документа отгрузки</h2>
         </Col>
       </Row>
       
@@ -133,33 +133,33 @@ const AddShipmentPage: React.FC = () => {
       
       <Form>
         <Card className="mb-4">
-          <Card.Header>Document Details</Card.Header>
+          <Card.Header>Детали документа</Card.Header>
           <Card.Body>
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Document Number</Form.Label>
+              <Form.Label>Номер документа</Form.Label>
               <Form.Control
                 type="text"
                 value={number}
                 onChange={(e) => setNumber(e.target.value)}
-                placeholder="Enter document number"
+                placeholder="Введите номер документа"
                 disabled={isSubmitting}
                 required
               />
             </Form.Group>
             
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Client</Form.Label>
+              <Form.Label>Клиент</Form.Label>
               <Select
                 options={clientOptions}
                 value={selectedClient}
                 onChange={(selected) => setSelectedClient(selected as SelectOption)}
                 isDisabled={isSubmitting || isLoading}
-                placeholder="Select client..."
+                placeholder="Выберите клиента..."
               />
             </Form.Group>
             
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Date</Form.Label>
+              <Form.Label>Дата</Form.Label>
               <Form.Control
                 type="date"
                 value={date}
@@ -172,7 +172,7 @@ const AddShipmentPage: React.FC = () => {
         </Card>
         
         <Card className="mb-4">
-          <Card.Header>Resources</Card.Header>
+          <Card.Header>Ресурсы</Card.Header>
           <Card.Body>
             <ShipmentResourcesTable
               resources={resources}
@@ -188,17 +188,17 @@ const AddShipmentPage: React.FC = () => {
             onClick={(e) => handleSubmit(e, false)} 
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Save'}
+            {isSubmitting ? 'Создание...' : 'Сохранить'}
           </Button>
           <Button 
             variant="success" 
             onClick={(e) => handleSubmit(e, true)} 
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Creating...' : 'Save & Sign'}
+            {isSubmitting ? 'Создание...' : 'Сохранить и подписать'}
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
+            Отмена
           </Button>
         </div>
       </Form>

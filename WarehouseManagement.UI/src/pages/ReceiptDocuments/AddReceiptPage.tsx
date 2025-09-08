@@ -19,33 +19,36 @@ const AddReceiptPage: React.FC = () => {
     
     // Validation
     if (!number.trim()) {
-      setError('Document number is required');
+      setError('Необходимо указать номер документа');
       return;
     }
     
     if (!date) {
-      setError('Date is required');
+      setError('Необходимо указать дату');
       return;
     }
+
+    // Only validate resources that have any data entered
+    const resourcesWithData = resources.filter(r => r.resourceId || r.unitId || r.quantity > 0);
     
-    if (resources.length === 0) {
-      setError('At least one resource must be added');
+    if (resourcesWithData.length === 0) {
+      setError('Необходимо добавить хотя бы один ресурс');
       return;
     }
-    
-    for (const resource of resources) {
+
+    for (const resource of resourcesWithData) {
       if (!resource.resourceId) {
-        setError('All resources must have a resource type selected');
+        setError('Необходимо выбрать ресурс');
         return;
       }
       
       if (!resource.unitId) {
-        setError('All resources must have a unit of measure selected');
+        setError('Необходимо выбрать единицу измерения');
         return;
       }
       
       if (resource.quantity <= 0) {
-        setError('All resources must have a positive quantity');
+        setError('Количество должно быть больше нуля');
         return;
       }
     }
@@ -57,7 +60,7 @@ const AddReceiptPage: React.FC = () => {
       await apiService.createReceiptDocument({
         number: number.trim(),
         date: new Date(date).toISOString(),
-        resources: resources.map(r => ({
+        resources: resourcesWithData.map(r => ({
           resourceId: r.resourceId,
           unitId: r.unitId,
           quantity: r.quantity
@@ -66,8 +69,8 @@ const AddReceiptPage: React.FC = () => {
       
       navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to create receipt document');
-      console.error('Error creating receipt document:', err);
+      setError(err.message || 'Не удалось создать документ поступления');
+      console.error('Ошибка при создании документа поступления:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -81,7 +84,7 @@ const AddReceiptPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Create Receipt Document</h2>
+          <h2>Создание документа поступления</h2>
         </Col>
       </Row>
       
@@ -97,17 +100,17 @@ const AddReceiptPage: React.FC = () => {
       
       <Form onSubmit={handleSubmit}>
         <Card className="mb-4">
-          <Card.Header>Document Details</Card.Header>
+          <Card.Header>Детали документа</Card.Header>
           <Card.Body>
             <Row className="mb-3">
               <Col className="col-2">
                 <Form.Group>
-                  <Form.Label>Document Number</Form.Label>
+                  <Form.Label>Номер документа</Form.Label>
                   <Form.Control
                     type="text"
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
-                    placeholder="Enter document number"
+                    placeholder="Введите номер документа"
                     disabled={isSubmitting}
                     required
                   />
@@ -117,7 +120,7 @@ const AddReceiptPage: React.FC = () => {
             <Row className="mb-3">
               <Col className="col-2">
                 <Form.Group>
-                  <Form.Label>Date</Form.Label>
+                  <Form.Label>Дата</Form.Label>
                   <Form.Control
                     type="date"
                     value={date}
@@ -132,7 +135,7 @@ const AddReceiptPage: React.FC = () => {
         </Card>
         
         <Card className="mb-4">
-          <Card.Header>Resources</Card.Header>
+          <Card.Header>Ресурсы</Card.Header>
           <Card.Body>
             <ReceiptResources
               resources={resources}
@@ -144,10 +147,10 @@ const AddReceiptPage: React.FC = () => {
         
         <div className="d-flex gap-2">
           <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Receipt'}
+            {isSubmitting ? 'Создание...' : 'Создать поступление'}
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
+            Отмена
           </Button>
         </div>
       </Form>

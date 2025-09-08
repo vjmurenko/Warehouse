@@ -31,8 +31,8 @@ const ReceiptsPage: React.FC = () => {
       
       setReceipts(data);
     } catch (err) {
-      setError('Error loading receipt documents');
-      console.error('Error loading receipts:', err);
+      setError('Ошибка при загрузке документов поступления');
+      console.error('Ошибка при загрузке поступлений:', err);
     } finally {
       setLoading(false);
     }
@@ -65,9 +65,9 @@ const ReceiptsPage: React.FC = () => {
       <Row className="mb-3">
         <Col>
           <div className="d-flex justify-content-between align-items-center">
-            <h2 className="mb-0">Receipt Documents</h2>
+            <h2 className="mb-0">Поступления</h2>
             <Button variant="success" onClick={handleAddReceipt}>
-              Add Receipt
+              Добавить
             </Button>
           </div>
         </Col>
@@ -96,24 +96,25 @@ const ReceiptsPage: React.FC = () => {
               {loading ? (
                 <div className="text-center py-5">
                   <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
+                    <span className="visually-hidden">Загрузка...</span>
                   </Spinner>
                 </div>
               ) : (
                 <Table bordered hover className="mb-0">
-                  <thead>
+                  <thead className="table-secondary">
                     <tr>
-                      <th>Number</th>
-                      <th>Date</th>
-                      <th>Units of Measure</th>
-                      <th>Resources</th>
+                      <th>Номер</th>
+                      <th>Дата</th>
+                      <th>Ресурс</th>
+                      <th>Единица измерения</th>
+                      <th>Количество</th>
                     </tr>
                   </thead>
                   <tbody>
                     {receipts.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="text-center text-muted py-4">
-                          No receipt documents found
+                          Документы поступления не найдены
                         </td>
                       </tr>
                     ) : (
@@ -129,7 +130,7 @@ const ReceiptsPage: React.FC = () => {
                             {receipt.resources.map((resource, index) => (
                               <div key={resource.id}>
                                 {index > 0 && <hr className="my-1" />}
-                                {resource.unitName}
+                                {resource.resourceName}
                               </div>
                             ))}
                           </td>
@@ -137,7 +138,15 @@ const ReceiptsPage: React.FC = () => {
                             {receipt.resources.map((resource, index) => (
                               <div key={resource.id}>
                                 {index > 0 && <hr className="my-1" />}
-                                {resource.resourceName}
+                                {resource.unitName}
+                              </div>
+                            ))}
+                          </td>
+                          <td>
+                            {receipt.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1"/>}
+                                {resource.quantity}
                               </div>
                             ))}
                           </td>

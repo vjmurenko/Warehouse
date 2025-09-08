@@ -124,10 +124,10 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
         <Table striped hover>
           <thead>
             <tr>
-              <th>Resource</th>
-              <th>Unit of Measure</th>
-              <th>Shipment Quantity</th>
-              <th>Available Balance</th>
+              <th>Ресурс</th>
+              <th>Единица измерения</th>
+              <th>Количество</th>
+              <th>Доступный баланс</th>
             </tr>
           </thead>
           <tbody>
@@ -166,8 +166,8 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
                       </div>
                     )}
                   </td>
-                  <td className="text-end">
-                    <span className={`badge ${hasError ? 'bg-danger' : 'bg-success'} fs-6`}>
+                  <td>
+                    <span>
                       {formatQuantity(balance.quantity)}
                     </span>
                   </td>
@@ -183,20 +183,6 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
           </div>
         )}
       </div>
-      
-      {resources.length > 0 && (
-        <div className="mt-3">
-          <h6>Selected Resources Summary:</h6>
-          <ul className="list-group list-group-flush">
-            {resources.map((resource, index) => (
-              <li key={index} className="list-group-item d-flex justify-content-between">
-                <span>{resource.resourceName} ({resource.unitName})</span>
-                <span className="badge bg-primary">{formatQuantity(resource.quantity)}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };

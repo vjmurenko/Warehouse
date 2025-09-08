@@ -95,35 +95,33 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
           <Row className="mb-3">
             <Col>
               <Form.Group className="mb-3">
-                <Form.Label>Start Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                  disabled={isLoading}
-                />
+                <Form.Label>Период</Form.Label>
+                <div className="d-flex">
+                  <Form.Control
+                    type="date"
+                    className="me-3"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    disabled={isLoading}
+                  />
+                  <Form.Control
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
               </Form.Group>
             </Col>
             <Col>
               <Form.Group className="mb-3">
-                <Form.Label>End Date</Form.Label>
-                <Form.Control
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                  disabled={isLoading}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group className="mb-3">
-                <Form.Label>Document Numbers (comma-separated)</Form.Label>
+                <Form.Label>Номер поступления</Form.Label>
                 <Select
                   isMulti
                   options={receiptNumbersOptions}
                   value={selectedReceiptDocuments}
                   onChange={(selected) => setSelectedDocumentNumbers(selected as SelectOption[])}
-                  placeholder="Select document numbers"
+                  placeholder="Выберите номер поступления"
                   isDisabled={isLoading}
                   className="basic-multi-select"
                   classNamePrefix="select"
@@ -132,13 +130,13 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
             </Col>
             <Col>
               <Form.Group>
-                <Form.Label>Resources</Form.Label>
+                <Form.Label>Ресурс</Form.Label>
                 <Select
                   isMulti
                   options={resourceOptions}
                   value={selectedResources}
                   onChange={(selected) => setSelectedResources(selected as SelectOption[])}
-                  placeholder="Select resources..."
+                  placeholder="Выберите ресурс"
                   isDisabled={isLoading}
                   className="basic-multi-select"
                   classNamePrefix="select"
@@ -147,13 +145,13 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
             </Col>
             <Col>
               <Form.Group>
-                <Form.Label>Units of Measure</Form.Label>
+                <Form.Label>Единица измерения</Form.Label>
                 <Select
                   isMulti
                   options={unitOptions}
                   value={selectedUnits}
                   onChange={(selected) => setSelectedUnits(selected as SelectOption[])}
-                  placeholder="Select units..."
+                  placeholder="Выберите единицу измерения"
                   isDisabled={isLoading}
                   className="basic-multi-select"
                   classNamePrefix="select"
@@ -164,10 +162,10 @@ const ReceiptDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFilt
 
           <div className="d-flex gap-2 justify-content-end">
             <Button variant="secondary" onClick={handleClearFilters} disabled={isLoading}>
-              Clear
+              Очистить
             </Button>
             <Button variant="primary" onClick={handleApplyFilters} disabled={isLoading}>
-              Apply Filters
+              Применить
             </Button>
           </div>
         </Form>

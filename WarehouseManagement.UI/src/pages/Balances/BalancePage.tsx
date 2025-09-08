@@ -65,7 +65,7 @@ const BalancePage: React.FC = () => {
   return (
     <Container fluid className="p-4">
       <Row>
-        <h2>Balance</h2>
+        <h2>Баланс</h2>
       </Row>
       <Row>
         <Col>

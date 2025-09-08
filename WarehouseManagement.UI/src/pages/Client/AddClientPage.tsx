@@ -14,12 +14,12 @@ const AddClientPage: React.FC = () => {
     e.preventDefault();
     
     if (!name.trim()) {
-      setError('Name is required');
+      setError('Название обязательно');
       return;
     }
     
     if (!address.trim()) {
-      setError('Address is required');
+      setError('Адрес обязателен');
       return;
     }
 
@@ -34,7 +34,7 @@ const AddClientPage: React.FC = () => {
       
       navigate('/clients');
     } catch (err: any) {
-      setError(err.message || 'Failed to create client');
+      setError(err.message || 'Не удалось создать клиента');
       console.error('Error creating client:', err);
     } finally {
       setIsSubmitting(false);
@@ -49,7 +49,7 @@ const AddClientPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Add New Client</h2>
+          <h2>Добавить нового клиента</h2>
         </Col>
       </Row>
       
@@ -67,24 +67,24 @@ const AddClientPage: React.FC = () => {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Название</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter client name"
+                placeholder="Введите название клиента"
                 disabled={isSubmitting}
                 required
               />
             </Form.Group>
             
             <Form.Group className="mb-3">
-              <Form.Label>Address</Form.Label>
+              <Form.Label>Адрес</Form.Label>
               <Form.Control
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter client address"
+                placeholder="Введите адрес клиента"
                 disabled={isSubmitting}
                 required
               />
@@ -92,10 +92,10 @@ const AddClientPage: React.FC = () => {
             
             <div className="d-flex gap-2">
               <Button variant="primary" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? 'Сохранение...' : 'Сохранить'}
               </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </div>
           </Form>

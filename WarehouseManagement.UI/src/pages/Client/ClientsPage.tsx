@@ -28,7 +28,7 @@ const ClientsPage: React.FC = () => {
 
       setClients(filteredData);
     } catch (err) {
-      setError('Error loading clients');
+      setError('Ошибка при загрузке клиентов');
       console.error('Error loading clients:', err);
     } finally {
       setLoading(false);
@@ -52,7 +52,7 @@ const ClientsPage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка</span>
           </Spinner>
         </div>
       </Container>
@@ -63,7 +63,7 @@ const ClientsPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Clients</h2>
+          <h2>Клиенты</h2>
         </Col>
       </Row>
 
@@ -73,15 +73,15 @@ const ClientsPage: React.FC = () => {
             {!showArchived ? (
               <>
                 <Button variant="success" onClick={handleAddClient}>
-                  Add
+                  Добавить
                 </Button>
                 <Button variant="warning" onClick={handleToggleArchived}>
-                  Show Archived
+                  К архиву
                 </Button>
               </>
             ) : (
               <Button variant="primary" onClick={handleToggleArchived}>
-                Show Active
+               К рабочим
               </Button>
             )}
           </div>
@@ -101,17 +101,17 @@ const ClientsPage: React.FC = () => {
       <Row>
         <Col>
           <Table bordered className="mb-0">
-            <thead>
+            <thead className="table-secondary">
               <tr>
-                <th>Name</th>
-                <th>Address</th>
+                <th>Имя</th>
+                <th>Адрес</th>
               </tr>
             </thead>
             <tbody>
               {clients.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="text-center text-muted py-4">
-                    {showArchived ? 'No archived clients found' : 'No clients found'}
+                    {showArchived ? 'Архивных клиентов не найдено' : 'Клиентов не найдено'}
                   </td>
                 </tr>
               ) : (

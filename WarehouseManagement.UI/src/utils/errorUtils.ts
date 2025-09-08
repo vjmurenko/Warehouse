@@ -7,34 +7,34 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     switch (error.code) {
       case 'ENTITY_NOT_FOUND':
-        return 'The requested item was not found.';
+        return 'Запрашиваемый элемент не найден.';
       
       case 'ENTITY_IN_USE':
-        return 'Cannot delete this item because it is currently being used in documents.';
+        return 'Невозможно удалить этот элемент, поскольку он используется в документах.';
       
       case 'DUPLICATE_ENTITY':
-        return 'An item with this name already exists.';
+        return 'Элемент с таким именем уже существует.';
       
       case 'INSUFFICIENT_BALANCE':
-        return 'Insufficient inventory balance for this operation.';
+        return 'Недостаточный остаток на складе для выполнения операции.';
       
       case 'SIGNED_DOCUMENT_OPERATION':
-        return 'Cannot modify a signed document. Please revoke the document first.';
+        return 'Невозможно изменить подписанный документ. Пожалуйста, сначала отзовите документ.';
       
       case 'VALIDATION_ERROR':
-        return 'Please check your input and try again.';
+        return 'Пожалуйста, проверьте введенные данные и повторите попытку.';
       
       case 'INVALID_ARGUMENT':
-        return 'Invalid input provided.';
+        return 'Введены некорректные данные.';
       
       case 'INVALID_OPERATION':
-        return 'This operation cannot be performed at this time.';
+        return 'Эта операция не может быть выполнена в данный момент.';
       
       case 'INTERNAL_SERVER_ERROR':
-        return 'An unexpected error occurred. Please try again later.';
+        return 'Произошла непредвиденная ошибка. Пожалуйста, повторите попытку позже.';
       
       default:
-        return error.message || 'An error occurred while processing your request.';
+        return error.message || 'Произошла ошибка при обработке вашего запроса.';
     }
   }
   
@@ -42,7 +42,21 @@ export function getErrorMessage(error: unknown): string {
     return error.message;
   }
   
-  return 'An unexpected error occurred.';
+  return 'Произошла непредвиденная ошибка.';
+}
+
+/**
+ * Checks if the error is a duplicate entity error
+ */
+export function isDuplicateEntityError(error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'DUPLICATE_ENTITY';
+}
+
+/**
+ * Checks if the error is an entity in use error
+ */
+export function isEntityInUseError(error: unknown): boolean {
+  return error instanceof ApiError && error.code === 'ENTITY_IN_USE';
 }
 
 /**
@@ -66,32 +80,4 @@ export function getErrorDetails(error: unknown): {
   return {
     message: getErrorMessage(error)
   };
-}
-
-/**
- * Checks if error is a specific type for conditional handling
- */
-export function isSpecificError(error: unknown, errorCode: string): boolean {
-  return error instanceof ApiError && error.code === errorCode;
-}
-
-/**
- * Checks if error indicates the entity is being used and cannot be deleted
- */
-export function isEntityInUseError(error: unknown): boolean {
-  return isSpecificError(error, 'ENTITY_IN_USE');
-}
-
-/**
- * Checks if error indicates duplicate entity name
- */
-export function isDuplicateEntityError(error: unknown): boolean {
-  return isSpecificError(error, 'DUPLICATE_ENTITY');
-}
-
-/**
- * Checks if error indicates insufficient balance
- */
-export function isInsufficientBalanceError(error: unknown): boolean {
-  return isSpecificError(error, 'INSUFFICIENT_BALANCE');
 }

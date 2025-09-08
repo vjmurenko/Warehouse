@@ -29,7 +29,7 @@ const EditShipmentPage: React.FC = () => {
       loadData(id);
     } else {
       setIsLoading(false);
-      setError('Shipment document ID is required');
+      setError('Не удалось загрузить документ отгрузки');
     }
   }, [id]);
 
@@ -73,7 +73,7 @@ const EditShipmentPage: React.FC = () => {
         quantity: item.quantity
       })));
     } catch (err) {
-      setError('Failed to load shipment document');
+      setError('Не удалось загрузить документ отгрузки');
       console.error('Error loading shipment document:', err);
     } finally {
       setIsLoading(false);
@@ -90,38 +90,38 @@ const EditShipmentPage: React.FC = () => {
     const shouldSign = signOption !== undefined ? signOption : signDocument;
 
     if (!number.trim()) {
-      setError('Document number is required');
+      setError('Необходимо указать номер документа');
       return;
     }
     
     if (!date) {
-      setError('Date is required');
+      setError('Необходимо указать дату');
       return;
     }
     
     if (!selectedClient) {
-      setError('Client is required');
+      setError('Необходимо выбрать клиента');
       return;
     }
     
     if (resources.length === 0) {
-      setError('At least one resource must be added');
+      setError('Необходимо добавить хотя бы один ресурс');
       return;
     }
     
     for (const resource of resources) {
       if (!resource.resourceId) {
-        setError('All resources must have a resource type selected');
+        setError('Необходимо выбрать ресурс');
         return;
       }
       
       if (!resource.unitId) {
-        setError('All resources must have a unit of measure selected');
+        setError('Необходимо выбрать единицу измерения');
         return;
       }
       
       if (resource.quantity <= 0) {
-        setError('All resources must have a positive quantity');
+        setError('Количество должно быть больше нуля');
         return;
       }
     }
@@ -146,7 +146,7 @@ const EditShipmentPage: React.FC = () => {
       
       navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to update shipment document');
+      setError(err.message || 'Не удалось обновить документ отгрузки');
       console.error('Error updating shipment document:', err);
     } finally {
       setIsSubmitting(false);
@@ -158,7 +158,7 @@ const EditShipmentPage: React.FC = () => {
       return;
     }
     
-    if (!window.confirm('Are you sure you want to revoke this shipment document? This will restore the warehouse balances.')) {
+    if (!window.confirm('Вы уверены, что хотите отозвать этот документ отгрузки? Это восстановит балансы на складе.')) {
       return;
     }
     
@@ -169,7 +169,7 @@ const EditShipmentPage: React.FC = () => {
       await apiService.revokeShipmentDocument(id);
       navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to revoke shipment document');
+      setError(err.message || 'Не удалось отозвать документ отгрузки');
       console.error('Error revoking shipment document:', err);
     } finally {
       setIsSubmitting(false);
@@ -181,7 +181,7 @@ const EditShipmentPage: React.FC = () => {
       return;
     }
     
-    if (!window.confirm('Are you sure you want to delete this shipment document?')) {
+    if (!window.confirm('Вы уверены, что хотите удалить этот документ отгрузки?')) {
       return;
     }
     
@@ -192,7 +192,7 @@ const EditShipmentPage: React.FC = () => {
       await apiService.deleteShipmentDocument(id);
       navigate('/shipments');
     } catch (err: any) {
-      setError(err.message || 'Failed to delete shipment document');
+      setError(err.message || 'Не удалось удалить документ отгрузки');
       console.error('Error deleting shipment document:', err);
     } finally {
       setIsSubmitting(false);
@@ -213,7 +213,7 @@ const EditShipmentPage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка...</span>
           </Spinner>
         </div>
       </Container>
@@ -224,10 +224,10 @@ const EditShipmentPage: React.FC = () => {
     return (
       <Container fluid className="p-4">
         <Alert variant="danger">
-          {error || 'Shipment document not found'}
+          {error || 'Документ отгрузки не найден'}
         </Alert>
         <Button variant="primary" onClick={() => navigate('/shipments')}>
-          Back to Shipments
+          Назад к отгрузкам
         </Button>
       </Container>
     );
@@ -238,9 +238,9 @@ const EditShipmentPage: React.FC = () => {
       <Row className="mb-3">
         <Col>
           <div className="d-flex justify-content-between align-items-center">
-            <h2>Edit Shipment Document</h2>
+            <h2>Редактирование документа отгрузки</h2>
             {isSigned && (
-              <Badge bg="success" className="fs-6">Signed</Badge>
+              <Badge bg="success" className="fs-6">Подписан</Badge>
             )}
           </div>
         </Col>
@@ -258,33 +258,33 @@ const EditShipmentPage: React.FC = () => {
       
       <Form>
         <Card className="mb-4">
-          <Card.Header>Document Details</Card.Header>
+          <Card.Header>Детали документа</Card.Header>
           <Card.Body>
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Document Number</Form.Label>
+              <Form.Label>Номер документа</Form.Label>
               <Form.Control
                 type="text"
                 value={number}
                 onChange={(e) => setNumber(e.target.value)}
-                placeholder="Enter document number"
+                placeholder="Введите номер документа"
                 disabled={isSubmitting || isSigned}
                 required
               />
             </Form.Group>
             
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Client</Form.Label>
+              <Form.Label>Клиент</Form.Label>
               <Select
                 options={clientOptions}
                 value={selectedClient}
                 onChange={(selected) => setSelectedClient(selected as SelectOption)}
                 isDisabled={isSubmitting || isLoadingClients || isSigned}
-                placeholder="Select client..."
+                placeholder="Выберите клиента..."
               />
             </Form.Group>
             
             <Form.Group className="mb-3 col-2">
-              <Form.Label>Date</Form.Label>
+              <Form.Label>Дата</Form.Label>
               <Form.Control
                 type="date"
                 value={date}
@@ -295,16 +295,13 @@ const EditShipmentPage: React.FC = () => {
             </Form.Group>
           </Card.Body>
         </Card>
-
-        {
-          !isSigned &&
           <Card className="mb-4">
-          <Card.Header>Resources</Card.Header>
+          <Card.Header>Ресурсы</Card.Header>
           <Card.Body>
             <ShipmentResourcesTable
               resources={resources}
               onResourcesChange={setResources}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isSigned}
               existingDocumentResources={shipment?.resources?.map(r => ({
                 id: r.id,
                 resourceId: r.resourceId,
@@ -316,17 +313,15 @@ const EditShipmentPage: React.FC = () => {
             />
           </Card.Body>
         </Card>
-      }
-
         <div className="d-flex gap-2">
           {isSigned ? (
             // If document is signed, show only Revoke button
             <>
               <Button variant="warning" onClick={handleRevoke} disabled={isSubmitting}>
-                {isSubmitting ? 'Revoking...' : 'Revoke'}
+                {isSubmitting ? 'Отзыв...' : 'Отозвать'}
               </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </>
           ) : (
@@ -337,20 +332,20 @@ const EditShipmentPage: React.FC = () => {
                 onClick={(e) => handleSubmit(e, false)} 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? 'Сохранение...' : 'Сохранить'}
               </Button>
               <Button 
                 variant="success" 
                 onClick={(e) => handleSubmit(e, true)} 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Saving...' : 'Save & Sign'}
+                {isSubmitting ? 'Сохранение...' : 'Сохранить и подписать'}
               </Button>
               <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-                {isSubmitting ? 'Deleting...' : 'Delete'}
+                {isSubmitting ? 'Удаление...' : 'Удалить'}
               </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </>
           )}

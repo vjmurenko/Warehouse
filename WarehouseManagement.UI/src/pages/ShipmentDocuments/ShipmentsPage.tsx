@@ -31,7 +31,7 @@ const ShipmentsPage: React.FC = () => {
       
       setShipments(data);
     } catch (err) {
-      setError('Error loading shipment documents');
+      setError('Ошибка при загрузке документов отгрузки');
       console.error('Error loading shipments:', err);
     } finally {
       setLoading(false);
@@ -65,9 +65,9 @@ const ShipmentsPage: React.FC = () => {
       <Row className="mb-3">
         <Col>
           <div className="d-flex justify-content-between align-items-center">
-            <h2 className="mb-0">Shipment Documents</h2>
+            <h2 className="mb-0">Отгрузки</h2>
             <Button variant="success" onClick={handleAddShipment}>
-              Add Shipment
+              Добавить
             </Button>
           </div>
         </Col>
@@ -96,26 +96,27 @@ const ShipmentsPage: React.FC = () => {
               {loading ? (
                 <div className="text-center py-5">
                   <Spinner animation="border" role="status">
-                    <span className="visually-hidden">Loading...</span>
+                    <span className="visually-hidden">Загрузка</span>
                   </Spinner>
                 </div>
               ) : (
                 <Table bordered hover className="mb-0">
-                  <thead>
+                  <thead className="table-secondary">
                     <tr>
-                      <th>Number</th>
-                      <th>Date</th>
-                      <th>Client</th>
-                      <th>Status</th>
-                      <th>Units of Measure</th>
-                      <th>Resources</th>
+                      <th>Номер</th>
+                      <th>Дата</th>
+                      <th>Клиент</th>
+                      <th>Статус</th>
+                      <th>Ресурс</th>
+                      <th>Единицы измерения</th>
+                      <th>Количество</th>
                     </tr>
                   </thead>
                   <tbody>
                     {shipments.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="text-center text-muted py-4">
-                          No shipment documents found
+                          Отгрузок не найдено
                         </td>
                       </tr>
                     ) : (
@@ -130,8 +131,16 @@ const ShipmentsPage: React.FC = () => {
                           <td>{shipment.clientName}</td>
                           <td>
                             <Badge bg={shipment.isSigned ? "success" : "warning"}>  
-                              {shipment.isSigned ? "Signed" : "Draft"}
+                              {shipment.isSigned ? "Подписан" : "Черновик"}
                             </Badge>
+                          </td>
+                          <td>
+                            {shipment.resources.map((resource, index) => (
+                              <div key={resource.id}>
+                                {index > 0 && <hr className="my-1" />}
+                                {resource.resourceName}
+                              </div>
+                            ))}
                           </td>
                           <td>
                             {shipment.resources.map((resource, index) => (
@@ -142,12 +151,11 @@ const ShipmentsPage: React.FC = () => {
                             ))}
                           </td>
                           <td>
-                            {shipment.resources.map((resource, index) => (
-                              <div key={resource.id}>
+                            {shipment.resources.map((resource, index) =>
+                              (<div key={resource.id}>
                                 {index > 0 && <hr className="my-1" />}
-                                {resource.resourceName}
-                              </div>
-                            ))}
+                                {resource.quantity}
+                              </div>))}
                           </td>
                         </tr>
                       ))

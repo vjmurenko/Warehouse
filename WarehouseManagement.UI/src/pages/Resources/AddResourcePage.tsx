@@ -31,7 +31,7 @@ const AddResourcePage: React.FC = () => {
       console.error('Error creating resource:', err);
       
       if (isDuplicateEntityError(err)) {
-        setError('A resource with this name already exists.');
+        setError('Ресурс с таким названием уже существует.');
       } else {
         setError(getErrorMessage(err));
       }

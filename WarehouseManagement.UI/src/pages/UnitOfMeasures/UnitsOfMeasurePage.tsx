@@ -55,7 +55,7 @@ const UnitsOfMeasurePage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка</span>
           </Spinner>
         </div>
       </Container>
@@ -66,7 +66,7 @@ const UnitsOfMeasurePage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Units of Measure</h2>
+          <h2>Единицы измерения</h2>
         </Col>
       </Row>
 
@@ -76,15 +76,15 @@ const UnitsOfMeasurePage: React.FC = () => {
             {!showArchived ? (
               <>
                 <Button variant="success" onClick={handleAddUnit}>
-                  Add
+                  Добавить
                 </Button>
                 <Button variant="warning" onClick={handleToggleArchived}>
-                  Show Archived
+                  К архиву
                 </Button>
               </>
             ) : (
               <Button variant="primary" onClick={handleToggleArchived}>
-                Show Active
+                К активным
               </Button>
             )}
           </div>
@@ -104,16 +104,16 @@ const UnitsOfMeasurePage: React.FC = () => {
       <Row>
         <Col>
           <Table bordered className="mb-0">
-            <thead>
+            <thead className="table-secondary">
               <tr>
-                <th>Name</th>
+                <th>Наименование</th>
               </tr>
             </thead>
             <tbody>
               {units.length === 0 ? (
                 <tr>
                   <td className="text-center text-muted py-4">
-                    {showArchived ? 'No archived units found' : 'No units found'}
+                    {showArchived ? 'Архивных единиц измерения не найдено' : 'Единиц измерения не найдено'}
                   </td>
                 </tr>
               ) : (

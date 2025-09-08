@@ -9,7 +9,7 @@ const EditResourcePage: React.FC = () => {
   const [resource, setResource] = useState<ResourceDto | null>(null);
   const [formData, setFormData] = useState<UpdateResourceDto>({ name: '' });
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -42,7 +42,7 @@ const EditResourcePage: React.FC = () => {
     }
 
     try {
-      setSubmitting(true);
+      setIsSubmitting(true);
       setError(null);
       
       await apiService.updateResource(resource.id, { name: formData.name.trim() });
@@ -51,12 +51,12 @@ const EditResourcePage: React.FC = () => {
       console.error('Error updating resource:', err);
       
       if (isDuplicateEntityError(err)) {
-        setError('A resource with this name already exists.');
+        setError('Ресурс с таким названием уже существует.');
       } else {
         setError(getErrorMessage(err));
       }
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -68,7 +68,7 @@ const EditResourcePage: React.FC = () => {
     }
 
     try {
-      setSubmitting(true);
+      setIsSubmitting(true);
       setError(null);
       
      await apiService.deleteResource(resource.id);
@@ -77,12 +77,12 @@ const EditResourcePage: React.FC = () => {
       console.error('Error deleting resource:', err);
       
       if (isEntityInUseError(err)) {
-        setError('Cannot delete this resource because it is currently being used in documents.');
+        setError('Невозможно удалить этот ресурс, поскольку он используется в документах.');
       } else {
         setError(getErrorMessage(err));
       }
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -90,7 +90,7 @@ const EditResourcePage: React.FC = () => {
     if (!resource) return;
 
     try {
-      setSubmitting(true);
+      setIsSubmitting(true);
       setError(null);
 
       if(resource.isActive){
@@ -105,8 +105,12 @@ const EditResourcePage: React.FC = () => {
       console.error('Error archiving resource:', err);
       setError(getErrorMessage(err));
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    navigate('/resources');
   };
 
   if (loading) {
@@ -139,43 +143,6 @@ const EditResourcePage: React.FC = () => {
         </Col>
       </Row>
 
-      <Row className="mb-3">
-        <Col>
-          <div className="d-flex gap-2">
-            <Button 
-              variant="success" 
-              onClick={handleSave}
-              disabled={submitting || !formData.name.trim()}
-            >
-              {submitting ? (
-                <>
-                  <Spinner animation="border" size="sm" className="me-2" />
-                  Сохранение...
-                </>
-              ) : (
-                'Сохранить'
-              )}
-            </Button>
-            
-            <Button 
-              variant="danger" 
-              onClick={handleDelete}
-              disabled={submitting}
-            >
-              Удалить
-            </Button>
-            <Button
-                variant="warning" 
-                onClick={handleArchive}
-                disabled={submitting}
-              >
-                {resource.isActive ? 'Archive' : 'Activate'}
-              </Button>
-
-          </div>
-        </Col>
-      </Row>
-
       {error && (
         <Row className="mb-3">
           <Col>
@@ -196,10 +163,50 @@ const EditResourcePage: React.FC = () => {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder=""
-                disabled={submitting}
+                disabled={isSubmitting}
               />
             </Form.Group>
           </Form>
+        </Col>
+      </Row>
+
+      <Row className="mb-3">
+        <Col>
+          <div className="d-flex gap-2">
+            <Button
+              variant="success"
+              onClick={handleSave}
+              disabled={isSubmitting || !formData.name.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Сохранение...
+                </>
+              ) : (
+                'Сохранить'
+              )}
+            </Button>
+
+            <Button
+              variant="danger"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+            >
+              Удалить
+            </Button>
+            <Button
+              variant="warning"
+              onClick={handleArchive}
+              disabled={isSubmitting}
+            >
+              {resource.isActive ? 'Архивировать' : 'Активировать'}
+            </Button>
+            <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
+              Отмена
+            </Button>
+
+          </div>
         </Col>
       </Row>
     </Container>

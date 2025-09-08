@@ -24,7 +24,7 @@ const EditReceiptPage: React.FC = () => {
       loadReceiptDocument(id);
     } else {
       setIsLoading(false);
-      setError('Receipt document ID is required');
+      setError('Требуется указать ID документа поступления');
     }
   }, [id]);
 
@@ -48,8 +48,8 @@ const EditReceiptPage: React.FC = () => {
       setResources(loadedResources);
       setOriginalResources(loadedResources); // Store original resources for conditional validation
     } catch (err) {
-      setError('Failed to load receipt document');
-      console.error('Error loading receipt document:', err);
+      setError('Не удалось загрузить документ поступления');
+      console.error('Ошибка при загрузке документа поступления:', err);
     } finally {
       setIsLoading(false);
     }
@@ -64,33 +64,36 @@ const EditReceiptPage: React.FC = () => {
     
     // Validation
     if (!number.trim()) {
-      setError('Document number is required');
+      setError('Необходимо указать номер документа');
       return;
     }
     
     if (!date) {
-      setError('Date is required');
+        setError('Необходимо указать дату');
       return;
     }
+
+    // Only validate resources that have any data entered
+    const resourcesWithData = resources.filter(r => r.resourceId || r.unitId || r.quantity > 0);
     
-    if (resources.length === 0) {
-      setError('At least one resource must be added');
+    if (resourcesWithData.length === 0) {
+      setError('Необходимо добавить хотя бы один ресурс');
       return;
     }
-    
-    for (const resource of resources) {
+
+    for (const resource of resourcesWithData) {
       if (!resource.resourceId) {
-        setError('All resources must have a resource type selected');
+        setError('Необходимо выбрать ресурс');
         return;
       }
       
       if (!resource.unitId) {
-        setError('All resources must have a unit of measure selected');
+        setError('Необходимо выбрать единицу измерения');
         return;
       }
       
       if (resource.quantity <= 0) {
-        setError('All resources must have a positive quantity');
+        setError('Количество должно быть больше нуля');
         return;
       }
     }
@@ -103,7 +106,7 @@ const EditReceiptPage: React.FC = () => {
         id: id,
         number: number.trim(),
         date: new Date(date).toISOString(),
-        resources: resources.map(r => ({
+        resources: resourcesWithData.map(r => ({
           id: r.id,
           resourceId: r.resourceId,
           unitId: r.unitId,
@@ -113,8 +116,8 @@ const EditReceiptPage: React.FC = () => {
       
       navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to update receipt document');
-      console.error('Error updating receipt document:', err);
+      setError(err.message || 'Не удалось обновить документ поступления');
+      console.error('Ошибка при обновлении документа поступления:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +128,7 @@ const EditReceiptPage: React.FC = () => {
       return;
     }
     
-    if (!window.confirm('Are you sure you want to delete this receipt document?')) {
+    if (!window.confirm('Вы уверены, что хотите удалить этот документ поступления?')) {
       return;
     }
     
@@ -136,8 +139,8 @@ const EditReceiptPage: React.FC = () => {
       await apiService.deleteReceiptDocument(id);
       navigate('/receipts');
     } catch (err: any) {
-      setError(err.message || 'Failed to delete receipt document');
-      console.error('Error deleting receipt document:', err);
+      setError(err.message || 'Не удалось удалить документ поступления');
+      console.error('Ошибка при удалении документа поступления:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -152,7 +155,7 @@ const EditReceiptPage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка...</span>
           </Spinner>
         </div>
       </Container>
@@ -163,10 +166,10 @@ const EditReceiptPage: React.FC = () => {
     return (
       <Container fluid className="p-4">
         <Alert variant="danger">
-          {error || 'Receipt document not found'}
+          {error || 'Документ поступления не найден'}
         </Alert>
         <Button variant="primary" onClick={() => navigate('/receipts')}>
-          Back to Receipts
+          Назад к поступлениям
         </Button>
       </Container>
     );
@@ -176,7 +179,7 @@ const EditReceiptPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Edit Receipt Document</h2>
+          <h2>Редактирование документа поступления</h2>
         </Col>
       </Row>
       
@@ -192,17 +195,17 @@ const EditReceiptPage: React.FC = () => {
       
       <Form onSubmit={handleSubmit}>
         <Card className="mb-4">
-          <Card.Header>Document Details</Card.Header>
+          <Card.Header>Детали документа</Card.Header>
           <Card.Body>
             <Row className="mb-3">
               <Col className="col-2">
                 <Form.Group>
-                  <Form.Label>Document Number</Form.Label>
+                  <Form.Label>Номер документа</Form.Label>
                   <Form.Control
                     type="text"
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
-                    placeholder="Enter document number"
+                    placeholder="Введите номер документа"
                     disabled={isSubmitting}
                     required
                   />
@@ -212,7 +215,7 @@ const EditReceiptPage: React.FC = () => {
               <Row className="mb-3">
                 <Col className="col-2">
                   <Form.Group>
-                    <Form.Label>Date</Form.Label>
+                    <Form.Label>Дата</Form.Label>
                     <Form.Control
                       type="date"
                       value={date}
@@ -227,7 +230,7 @@ const EditReceiptPage: React.FC = () => {
         </Card>
 
         <Card className="mb-4">
-          <Card.Header>Resources</Card.Header>
+          <Card.Header>Ресурсы</Card.Header>
           <Card.Body>
             <ReceiptResources
               resources={resources}
@@ -240,13 +243,13 @@ const EditReceiptPage: React.FC = () => {
         
         <div className="d-flex gap-2">
           <Button variant="primary" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
+            {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
           </Button>
           <Button variant="danger" onClick={handleDelete} disabled={isSubmitting}>
-            Delete
+            Удалить
           </Button>
           <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-            Cancel
+            Отмена
           </Button>
         </div>
       </Form>

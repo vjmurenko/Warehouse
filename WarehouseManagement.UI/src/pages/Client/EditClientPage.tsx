@@ -19,7 +19,7 @@ const EditClientPage: React.FC = () => {
       loadClient(id);
     } else {
       setIsLoading(false);
-      setError('Client ID is required');
+      setError('Требуется указать ID клиента');
     }
   }, [id]);
 
@@ -33,7 +33,7 @@ const EditClientPage: React.FC = () => {
       setName(data.name);
       setAddress(data.address);
     } catch (err) {
-      setError('Failed to load client data');
+      setError('Не удалось загрузить данные клиента');
       console.error('Error loading client:', err);
     } finally {
       setIsLoading(false);
@@ -48,12 +48,12 @@ const EditClientPage: React.FC = () => {
     }
     
     if (!name.trim()) {
-      setError('Name is required');
+      setError('Название обязательно');
       return;
     }
     
     if (!address.trim()) {
-      setError('Address is required');
+      setError('Адрес обязателен');
       return;
     }
 
@@ -68,7 +68,7 @@ const EditClientPage: React.FC = () => {
       
       navigate('/clients');
     } catch (err: any) {
-      setError(err.message || 'Failed to update client');
+      setError(err.message || 'Не удалось обновить клиента');
       console.error('Error updating client:', err);
     } finally {
       setIsSubmitting(false);
@@ -92,7 +92,7 @@ const EditClientPage: React.FC = () => {
       
       navigate('/clients');
     } catch (err: any) {
-      setError(err.message || `Failed to ${client.isActive ? 'archive' : 'activate'} client`);
+      setError(err.message || `Не удалось ${client.isActive ? 'архивировать' : 'активировать'} клиента`);
       console.error(`Error ${client.isActive ? 'archiving' : 'activating'} client:`, err);
     } finally {
       setIsSubmitting(false);
@@ -128,7 +128,7 @@ const EditClientPage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">Загрузка...</span>
           </Spinner>
         </div>
       </Container>
@@ -139,10 +139,10 @@ const EditClientPage: React.FC = () => {
     return (
       <Container fluid className="p-4">
         <Alert variant="danger">
-          {error || 'Client not found'}
+          {error || 'Клиент не найден'}
         </Alert>
         <Button variant="primary" onClick={() => navigate('/clients')}>
-          Back to Clients
+          Назад к клиентам
         </Button>
       </Container>
     );
@@ -152,7 +152,7 @@ const EditClientPage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Edit Client</h2>
+          <h2>Редактирование клиента</h2>
         </Col>
       </Row>
       
@@ -170,24 +170,24 @@ const EditClientPage: React.FC = () => {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Название</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter client name"
+                placeholder="Введите название клиента"
                 disabled={isSubmitting}
                 required
               />
             </Form.Group>
             
             <Form.Group className="mb-3">
-              <Form.Label>Address</Form.Label>
+              <Form.Label>Адрес</Form.Label>
               <Form.Control
                 type="text"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter client address"
+                placeholder="Введите адрес клиента"
                 disabled={isSubmitting}
                 required
               />
@@ -195,11 +195,7 @@ const EditClientPage: React.FC = () => {
             
             <div className="d-flex gap-2">
               <Button variant="primary" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
-              </Button>
-
-              <Button variant="danger" onClick={handleDelete}>
-                Delete
+                {isSubmitting ? 'Сохранение...' : 'Сохранить'}
               </Button>
 
               <Button 
@@ -207,11 +203,15 @@ const EditClientPage: React.FC = () => {
                 onClick={handleArchiveToggle} 
                 disabled={isSubmitting}
               >
-                {client.isActive ? 'Archive' : 'Activate'}
+                {client.isActive ? 'Архивировать' : 'Активировать'}
               </Button>
-              
+
+              <Button variant="danger" onClick={handleDelete}>
+                Удалить
+              </Button>
+
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </div>
           </Form>

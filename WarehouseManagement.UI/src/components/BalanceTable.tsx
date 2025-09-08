@@ -49,8 +49,8 @@ const BalanceTable: React.FC<BalanceTableProps> = ({ balances, loading, error })
 
   return (
     <div className="table-responsive">
-      <Table striped hover className="balance-table mb-0">
-        <thead>
+      <Table hover className="balance-table mb-0">
+        <thead className="table-secondary">
           <tr>
             <th>Ресурс</th>
             <th>Единица измерения</th>

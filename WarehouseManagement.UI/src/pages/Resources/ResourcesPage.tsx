@@ -53,7 +53,7 @@ const ResourcesPage: React.FC = () => {
       <Container fluid className="p-4">
         <div className="text-center">
           <Spinner animation="border" role="status">
-            <span className="visually-hidden">Загрузка...</span>
+            <span className="visually-hidden">Загрузка</span>
           </Spinner>
         </div>
       </Container>
@@ -102,7 +102,7 @@ const ResourcesPage: React.FC = () => {
       <Row>
         <Col>
           <Table bordered className="mb-0">
-            <thead>
+            <thead className="table-secondary">
               <tr>
                 <th>Наименование</th>
               </tr>
@@ -129,8 +129,6 @@ const ResourcesPage: React.FC = () => {
           </Table>
         </Col>
       </Row>
-
-
     </Container>
   );
 };
