@@ -4,15 +4,18 @@ using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Application.Features.Resources.Queries.GetResources;
 
-public class GetResourcesQueryHandler(IResourceService resourceService) : IRequestHandler<GetResourcesQuery, List<ResourceDto>>
+public class GetResourcesQueryHandler : IRequestHandler<GetResourcesQuery, List<ResourceDto>>
 {
-    public async Task<List<ResourceDto>> Handle(GetResourcesQuery query, CancellationToken cancellationToken)
+    private readonly IResourceService _resourceService;
+
+    public GetResourcesQueryHandler(IResourceService resourceService)
     {
-        var resources = await resourceService.GetAllAsync();
-        return resources.Select(r => new ResourceDto(
-            r.Id,
-            r.Name,
-            r.IsActive
-        )).ToList();
+        _resourceService = resourceService;
+    }
+
+    public async Task<List<ResourceDto>> Handle(GetResourcesQuery request, CancellationToken cancellationToken)
+    {
+        var resources = await _resourceService.GetAllAsync();
+        return resources.Select(r => new ResourceDto(r.Id, r.Name, r.IsActive)).ToList();
     }
 }
