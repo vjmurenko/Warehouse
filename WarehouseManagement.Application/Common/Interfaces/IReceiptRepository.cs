@@ -1,4 +1,4 @@
-﻿﻿﻿using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
+﻿﻿﻿﻿using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 
@@ -11,5 +11,13 @@ public interface IReceiptRepository
     Task<bool> ExistsByNumberAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default);
     Task UpdateAsync(ReceiptDocument document, CancellationToken cancellationToken = default);
     Task DeleteAsync(ReceiptDocument document, CancellationToken cancellationToken = default);
-
+    
+    // Method with proper eager loading strategies
+    Task<List<ReceiptDocument>> GetFilteredAsync(
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        List<string>? documentNumbers = null,
+        List<Guid>? resourceIds = null,
+        List<Guid>? unitIds = null,
+        CancellationToken cancellationToken = default);
 }

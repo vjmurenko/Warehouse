@@ -7,7 +7,6 @@ namespace WarehouseManagement.Application.Repositories;
 
 public class ReceiptRepository(WarehouseDbContext context) : IReceiptRepository
 {
-    // Existing methods
     public async Task<bool> ExistsByNumberAsync(string number)
     {
         return await context.ReceiptDocuments.AnyAsync(r => r.Number == number);
@@ -49,5 +48,54 @@ public class ReceiptRepository(WarehouseDbContext context) : IReceiptRepository
         return Task.CompletedTask;
     }
 
+    public async Task<List<ReceiptDocument>> GetFilteredAsync(
+        DateTime? fromDate = null,
+        DateTime? toDate = null,
+        List<string>? documentNumbers = null,
+        List<Guid>? resourceIds = null,
+        List<Guid>? unitIds = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = context.ReceiptDocuments
+            .Include(r => r.ReceiptResources)
+            .AsQueryable();
 
+        // Date range filtering
+        if (fromDate.HasValue)
+        {
+            var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc)
+                : fromDate.Value.ToUniversalTime();
+            query = query.Where(r => r.Date >= fromDateUtc);
+        }
+
+        if (toDate.HasValue)
+        {
+            var toDateUtc = toDate.Value.Kind == DateTimeKind.Unspecified 
+                ? DateTime.SpecifyKind(toDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
+                : toDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
+            query = query.Where(r => r.Date <= toDateUtc);
+        }
+
+        // Document numbers filtering
+        if (documentNumbers != null && documentNumbers.Any())
+        {
+            query = query.Where(r => documentNumbers.Contains(r.Number));
+        }
+
+        if (resourceIds != null && resourceIds.Any())
+        {
+            query = query.Where(r => r.ReceiptResources.Any(rr => resourceIds.Contains(rr.ResourceId)));
+        }
+
+        if (unitIds != null && unitIds.Any())
+        {
+            query = query.Where(r => r.ReceiptResources.Any(rr => unitIds.Contains(rr.UnitOfMeasureId)));
+        }
+
+        return await query
+            .OrderByDescending(r => r.Date)
+            .ThenBy(r => r.Number)
+            .ToListAsync(cancellationToken);
+    }
 }

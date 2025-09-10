@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using NSubstitute;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
@@ -85,7 +85,8 @@ public class CreateReceiptDocumentTests
             () => _handler.Handle(command, CancellationToken.None));
         
         Assert.Contains($"Документ с номером {documentNumber} уже существует", exception.Message);
-        await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        // Validation happens before transaction starts, so no rollback is needed
+        await _unitOfWork.DidNotReceive().RollbackTransactionAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -105,7 +106,8 @@ public class CreateReceiptDocumentTests
             () => _handler.Handle(command, CancellationToken.None));
         
         Assert.Contains($"Ресурс с ID {resourceId} не найден", exception.Message);
-        await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        // Validation happens before transaction starts, so no rollback is needed
+        await _unitOfWork.DidNotReceive().RollbackTransactionAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -126,7 +128,8 @@ public class CreateReceiptDocumentTests
             () => _handler.Handle(command, CancellationToken.None));
         
         Assert.Contains("архивирована и не может быть использована", exception.Message);
-        await _unitOfWork.Received(1).RollbackTransactionAsync(Arg.Any<CancellationToken>());
+        // Validation happens before transaction starts, so no rollback is needed
+        await _unitOfWork.DidNotReceive().RollbackTransactionAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

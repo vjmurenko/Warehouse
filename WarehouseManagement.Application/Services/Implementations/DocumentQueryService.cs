@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -12,7 +13,7 @@ namespace WarehouseManagement.Application.Services.Implementations;
 /// Extracted from repositories to maintain Single Responsibility Principle.
 /// Handles all complex query building logic for documents and balances.
 /// </summary>
-public class DocumentQueryService(WarehouseDbContext context) : IDocumentQueryService
+public class DocumentQueryService(WarehouseDbContext context, IReceiptRepository receiptRepository) : IDocumentQueryService
 {
     public async Task<List<ReceiptDocument>> GetFilteredReceiptsAsync(
         DateTime? fromDate = null,
@@ -22,49 +23,13 @@ public class DocumentQueryService(WarehouseDbContext context) : IDocumentQuerySe
         List<Guid>? unitIds = null,
         CancellationToken cancellationToken = default)
     {
-        var query = context.ReceiptDocuments
-            .Include(r => r.ReceiptResources)
-            .AsQueryable();
-
-        // Date range filtering
-        if (fromDate.HasValue)
-        {
-            var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
-                ? DateTime.SpecifyKind(fromDate.Value, DateTimeKind.Utc)
-                : fromDate.Value.ToUniversalTime();
-            query = query.Where(r => r.Date >= fromDateUtc);
-        }
-
-        if (toDate.HasValue)
-        {
-            var toDateUtc = toDate.Value.Kind == DateTimeKind.Unspecified 
-                ? DateTime.SpecifyKind(toDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                : toDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
-            query = query.Where(r => r.Date <= toDateUtc);
-        }
-
-        // Document numbers filtering
-        if (documentNumbers != null && documentNumbers.Any())
-        {
-            query = query.Where(r => documentNumbers.Contains(r.Number));
-        }
-
-        // Resource filtering
-        if (resourceIds != null && resourceIds.Any())
-        {
-            query = query.Where(r => r.ReceiptResources.Any(rr => resourceIds.Contains(rr.ResourceId)));
-        }
-
-        // Unit filtering
-        if (unitIds != null && unitIds.Any())
-        {
-            query = query.Where(r => r.ReceiptResources.Any(rr => unitIds.Contains(rr.UnitOfMeasureId)));
-        }
-
-        return await query
-            .OrderByDescending(r => r.Date)
-            .ThenBy(r => r.Number)
-            .ToListAsync(cancellationToken);
+        return await receiptRepository.GetFilteredAsync(
+            fromDate, 
+            toDate, 
+            documentNumbers, 
+            resourceIds, 
+            unitIds, 
+            cancellationToken);
     }
 
     public async Task<List<ShipmentDocument>> GetFilteredShipmentsAsync(

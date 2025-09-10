@@ -1,4 +1,4 @@
-﻿﻿﻿using Microsoft.EntityFrameworkCore;
+﻿﻿﻿﻿﻿﻿﻿﻿using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
@@ -20,6 +20,4 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
     {
         await DbContext.Balances.AddAsync(balance, ct);
     }
-
-
 }

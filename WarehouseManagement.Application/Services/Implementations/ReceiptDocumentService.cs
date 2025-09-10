@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿using WarehouseManagement.Application.Common.Interfaces;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -14,7 +14,6 @@ public class ReceiptDocumentService(
 {
     public async Task ValidateReceiptRequestAsync(string number, List<ReceiptResourceDto> resources, Guid? excludeDocumentId = null, CancellationToken cancellationToken = default)
     {
-        // 1. Check document number uniqueness
         if (excludeDocumentId.HasValue)
         {
             if (await receiptRepository.ExistsByNumberAsync(number, excludeDocumentId.Value, cancellationToken))
@@ -26,7 +25,6 @@ public class ReceiptDocumentService(
                 throw new InvalidOperationException($"Документ с номером {number} уже существует");
         }
 
-        // 2. Validate all resources and units
         foreach (var dto in resources)
         {
             await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
@@ -73,24 +71,26 @@ public class ReceiptDocumentService(
 
         var allResourceKeys = oldResourceMap.Keys.Union(newResourceMap.Keys);
 
-        // First validate all decreases
-        foreach (var resourceKey in allResourceKeys)
+        var decreaseValidations = allResourceKeys
+            .Where(resourceKey => {
+                var oldQuantity = oldResourceMap.GetValueOrDefault(resourceKey, 0);
+                var newQuantity = newResourceMap.GetValueOrDefault(resourceKey, 0);
+                return newQuantity - oldQuantity < 0;
+            })
+            .ToList();
+            
+        foreach (var resourceKey in decreaseValidations)
         {
             var oldQuantity = oldResourceMap.GetValueOrDefault(resourceKey, 0);
             var newQuantity = newResourceMap.GetValueOrDefault(resourceKey, 0);
             var delta = newQuantity - oldQuantity;
-
-            if (delta < 0)
-            {
-                await balanceService.ValidateBalanceAvailability(
-                    resourceKey.ResourceId,
-                    resourceKey.UnitId,
-                    new Quantity(Math.Abs(delta)),
-                    cancellationToken);
-            }
+            await balanceService.ValidateBalanceAvailability(
+                resourceKey.ResourceId,
+                resourceKey.UnitId,
+                new Quantity(Math.Abs(delta)),
+                cancellationToken);
         }
 
-        // Then apply all changes
         foreach (var resourceKey in allResourceKeys)
         {
             var oldQuantity = oldResourceMap.GetValueOrDefault(resourceKey, 0);

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿using MediatR;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -12,23 +12,19 @@ public class CreateReceiptCommandHandler(
 {
     public async Task<Guid> Handle(CreateReceiptCommand command, CancellationToken cancellationToken)
     {
+        await receiptDocumentService.ValidateReceiptRequestAsync(command.Number, command.Resources, cancellationToken: cancellationToken);
+
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            // 1. Validate request
-            await receiptDocumentService.ValidateReceiptRequestAsync(command.Number, command.Resources, cancellationToken: cancellationToken);
-
-            // 2. Create document
             var receiptDocument = new ReceiptDocument(command.Number, command.Date);
             foreach (var dto in command.Resources)
             {
                 receiptDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
             }
 
-            // 3. Save document
             await receiptRepository.AddAsync(receiptDocument, cancellationToken);
 
-            // 4. Apply balance changes
             await receiptDocumentService.ApplyReceiptBalanceChangesAsync(receiptDocument, cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);
