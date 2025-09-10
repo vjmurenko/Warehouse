@@ -13,6 +13,7 @@ namespace WarehouseManagement.Tests.Application.Features;
 public class ReadReceiptDocumentTests
 {
     private readonly IReceiptRepository _receiptRepository;
+    private readonly IDocumentQueryService _documentQueryService;
     private readonly IResourceService _resourceService;
     private readonly IUnitOfMeasureService _unitOfMeasureService;
     private readonly GetReceiptByIdQueryHandler _getByIdHandler;
@@ -30,12 +31,13 @@ public class ReadReceiptDocumentTests
     {
         // Initialize mocks
         _receiptRepository = Substitute.For<IReceiptRepository>();
+        _documentQueryService = Substitute.For<IDocumentQueryService>();
         _resourceService = Substitute.For<IResourceService>();
         _unitOfMeasureService = Substitute.For<IUnitOfMeasureService>();
         
         // Initialize handlers
         _getByIdHandler = new GetReceiptByIdQueryHandler(_receiptRepository, _resourceService, _unitOfMeasureService);
-        _getReceiptsHandler = new GetReceiptsQueryHandler(_receiptRepository, _resourceService, _unitOfMeasureService);
+        _getReceiptsHandler = new GetReceiptsQueryHandler(_documentQueryService, _resourceService, _unitOfMeasureService);
         
         // Initialize common test data
         _defaultDocumentId = Guid.NewGuid();
@@ -129,7 +131,7 @@ public class ReadReceiptDocumentTests
         var documents = new List<ReceiptDocument> { document1, document2 };
         var query = new GetReceiptsQuery();
 
-        _receiptRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
             .Returns(documents);
         _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);
         _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId).Returns(_defaultUnitOfMeasure);
@@ -151,14 +153,14 @@ public class ReadReceiptDocumentTests
         var toDate = DateTime.Now.AddDays(-1);
         var query = new GetReceiptsQuery(fromDate, toDate);
 
-        _receiptRepository.GetFilteredAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>())
             .Returns(new List<ReceiptDocument>());
 
         // Act
         await _getReceiptsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _receiptRepository.Received(1).GetFilteredAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredReceiptsAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -168,14 +170,14 @@ public class ReadReceiptDocumentTests
         var documentNumbers = new List<string> { "DOC-001", "DOC-002", "DOC-003" };
         var query = new GetReceiptsQuery(DocumentNumbers: documentNumbers);
 
-        _receiptRepository.GetFilteredAsync(null, null, documentNumbers, null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(null, null, documentNumbers, null, null, Arg.Any<CancellationToken>())
             .Returns(new List<ReceiptDocument>());
 
         // Act
         await _getReceiptsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _receiptRepository.Received(1).GetFilteredAsync(null, null, documentNumbers, null, null, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredReceiptsAsync(null, null, documentNumbers, null, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -186,14 +188,14 @@ public class ReadReceiptDocumentTests
         var unitIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var query = new GetReceiptsQuery(ResourceIds: resourceIds, UnitIds: unitIds);
 
-        _receiptRepository.GetFilteredAsync(null, null, null, resourceIds, unitIds, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(null, null, null, resourceIds, unitIds, Arg.Any<CancellationToken>())
             .Returns(new List<ReceiptDocument>());
 
         // Act
         await _getReceiptsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _receiptRepository.Received(1).GetFilteredAsync(null, null, null, resourceIds, unitIds, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredReceiptsAsync(null, null, null, resourceIds, unitIds, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -207,14 +209,14 @@ public class ReadReceiptDocumentTests
         var unitIds = new List<Guid> { Guid.NewGuid() };
         var query = new GetReceiptsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds);
 
-        _receiptRepository.GetFilteredAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>())
             .Returns(new List<ReceiptDocument>());
 
         // Act
         await _getReceiptsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _receiptRepository.Received(1).GetFilteredAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredReceiptsAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -223,7 +225,7 @@ public class ReadReceiptDocumentTests
         // Arrange
         var document1 = new ReceiptDocument("MULTI-001", DateTime.Now.AddDays(-3));
         var document2 = new ReceiptDocument("MULTI-002", DateTime.Now.AddDays(-2));
-        var document3 = new ReceiptDocument("EMPTY-003", DateTime.Now.AddDays(-1)); // Empty document
+        var document3 = new ReceiptDocument("EMPTY-003", DateTime.Now.AddDays(-1));
         
         document1.GetType().GetProperty("Id")?.SetValue(document1, Guid.NewGuid());
         document2.GetType().GetProperty("Id")?.SetValue(document2, Guid.NewGuid());
@@ -236,12 +238,10 @@ public class ReadReceiptDocumentTests
         // Document2: 1 resource
         document2.AddResource(Guid.NewGuid(), Guid.NewGuid(), 15);
         
-        // Document3: 0 resources (empty)
-        
         var documents = new List<ReceiptDocument> { document1, document2, document3 };
         var query = new GetReceiptsQuery();
 
-        _receiptRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredReceiptsAsync(null, null, null, null, null, Arg.Any<CancellationToken>())
             .Returns(documents);
         _resourceService.GetByIdAsync(Arg.Any<Guid>()).Returns(_defaultResource);
         _unitOfMeasureService.GetByIdAsync(Arg.Any<Guid>()).Returns(_defaultUnitOfMeasure);

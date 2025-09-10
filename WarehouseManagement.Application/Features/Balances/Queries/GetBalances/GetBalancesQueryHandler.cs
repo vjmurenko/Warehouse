@@ -1,18 +1,17 @@
 using MediatR;
-using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 
 public class GetBalancesQueryHandler(
-    IBalanceRepository balanceRepository,
+    IDocumentQueryService documentQueryService,
     IResourceService resourceService,
     IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetBalancesQuery, List<BalanceDto>>
 {
     public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken cancellationToken)
     {
-        var balances = await balanceRepository.GetFilteredAsync(
+        var balances = await documentQueryService.GetFilteredBalancesAsync(
             query.ResourceIds,
             query.UnitIds,
             cancellationToken);

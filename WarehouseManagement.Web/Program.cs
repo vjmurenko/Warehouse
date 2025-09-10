@@ -48,6 +48,7 @@ builder.Services.AddScoped<INamedEntityRepository<Client>, ClientRepository>();
 builder.Services.AddScoped<INamedEntityRepository<UnitOfMeasure>, UnitOfMeasureRepository>();
 
 // Register services
+builder.Services.AddScoped<IDocumentQueryService, DocumentQueryService>();
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<IReceiptDocumentService, ReceiptDocumentService>();
 builder.Services.AddScoped<INamedEntityValidationService, NamedEntityValidationService>();

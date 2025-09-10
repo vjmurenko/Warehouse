@@ -1,18 +1,17 @@
 using MediatR;
-using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceipts;
 
 public class GetReceiptsQueryHandler(
-    IReceiptRepository receiptRepository,
+    IDocumentQueryService documentQueryService,
     IResourceService resourceService,
     IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>
 {
     public async Task<List<ReceiptDocumentDto>> Handle(GetReceiptsQuery query, CancellationToken cancellationToken)
     {
-        var documents = await receiptRepository.GetFilteredAsync(
+        var documents = await documentQueryService.GetFilteredReceiptsAsync(
             query.FromDate,
             query.ToDate,
             query.DocumentNumbers,

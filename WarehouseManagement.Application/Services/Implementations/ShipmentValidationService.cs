@@ -1,14 +1,13 @@
-﻿using WarehouseManagement.Application.Common.Interfaces;
+﻿﻿using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
 public class ShipmentValidationService(
-    IReceiptRepository receiptRepository,
+    IDocumentQueryService documentQueryService,
     INamedEntityRepository<Client> clientRepository,
     INamedEntityValidationService namedEntityValidationService) : IShipmentValidationService
 {
@@ -18,7 +17,7 @@ public class ShipmentValidationService(
         ShipmentDocument? currentDocumentForExclude = null)
     {
         var resourcesForExclude = new List<ShipmentResourceDto>();
-        var receiptDocuments = await receiptRepository.GetFilteredAsync();
+        var receiptDocuments = await documentQueryService.GetFilteredReceiptsAsync(cancellationToken: token);
         var receiptResources = receiptDocuments
             .SelectMany(c => c.ReceiptResources, (_, resource) =>
                 new ShipmentResourceDto(resource.ResourceId, resource.UnitOfMeasureId, resource.Quantity.Value))

@@ -11,6 +11,7 @@ namespace WarehouseManagement.Tests.Application.Features;
 public class ShipmentQueryTests
 {
     private readonly IShipmentRepository _shipmentRepository;
+    private readonly IDocumentQueryService _documentQueryService;
     private readonly IResourceService _resourceService;
     private readonly IUnitOfMeasureService _unitOfMeasureService;
     private readonly IClientService _clientService;
@@ -30,13 +31,14 @@ public class ShipmentQueryTests
     {
         // Initialize mocks
         _shipmentRepository = Substitute.For<IShipmentRepository>();
+        _documentQueryService = Substitute.For<IDocumentQueryService>();
         _resourceService = Substitute.For<IResourceService>();
         _unitOfMeasureService = Substitute.For<IUnitOfMeasureService>();
         _clientService = Substitute.For<IClientService>();
         
         // Initialize handlers
         _getByIdHandler = new GetShipmentByIdQueryHandler(_shipmentRepository, _resourceService, _unitOfMeasureService, _clientService);
-        _getShipmentsHandler = new GetShipmentsQueryHandler(_shipmentRepository, _clientService, _unitOfMeasureService, _resourceService);
+        _getShipmentsHandler = new GetShipmentsQueryHandler(_documentQueryService, _clientService, _unitOfMeasureService, _resourceService);
         
         // Initialize common test data
         _defaultDocumentId = Guid.NewGuid();
@@ -139,7 +141,7 @@ public class ShipmentQueryTests
         var documents = new List<ShipmentDocument> { document1, document2 };
         var query = new GetShipmentsQuery();
 
-        _shipmentRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
+        _documentQueryService.GetFilteredShipmentsAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
         _clientService.GetByIdAsync(_defaultClientId).Returns(_defaultClient);
         _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);
         _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId).Returns(_defaultUnitOfMeasure);
@@ -170,13 +172,13 @@ public class ShipmentQueryTests
         var documents = new List<ShipmentDocument>();
         var query = new GetShipmentsQuery(FromDate: fromDate, ToDate: toDate);
 
-        _shipmentRepository.GetFilteredAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
+        _documentQueryService.GetFilteredShipmentsAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
 
         // Act
         var result = await _getShipmentsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _shipmentRepository.Received(1).GetFilteredAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredShipmentsAsync(fromDate, toDate, null, null, null, Arg.Any<CancellationToken>());
         Assert.Empty(result);
     }
 
@@ -193,13 +195,13 @@ public class ShipmentQueryTests
         
         var query = new GetShipmentsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds);
 
-        _shipmentRepository.GetFilteredAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>()).Returns(documents);
+        _documentQueryService.GetFilteredShipmentsAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>()).Returns(documents);
 
         // Act
         var result = await _getShipmentsHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _shipmentRepository.Received(1).GetFilteredAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredShipmentsAsync(fromDate, toDate, documentNumbers, resourceIds, unitIds, Arg.Any<CancellationToken>());
         Assert.Empty(result);
     }
 
@@ -221,7 +223,7 @@ public class ShipmentQueryTests
         var documents = new List<ShipmentDocument> { document1, document2 };
         var query = new GetShipmentsQuery();
 
-        _shipmentRepository.GetFilteredAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
+        _documentQueryService.GetFilteredShipmentsAsync(null, null, null, null, null, Arg.Any<CancellationToken>()).Returns(documents);
         _clientService.GetByIdAsync(_defaultClientId).Returns(_defaultClient);
         _clientService.GetByIdAsync(client2Id).Returns(client2);
         _resourceService.GetByIdAsync(_defaultResourceId).Returns(_defaultResource);

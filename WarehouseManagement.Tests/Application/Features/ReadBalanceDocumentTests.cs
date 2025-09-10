@@ -10,7 +10,7 @@ namespace WarehouseManagement.Tests.Application.Features;
 
 public class ReadBalanceDocumentTests
 {
-    private readonly IBalanceRepository _balanceRepository;
+    private readonly IDocumentQueryService _documentQueryService;
     private readonly IResourceService _resourceService;
     private readonly IUnitOfMeasureService _unitOfMeasureService;
     private readonly GetBalancesQueryHandler _getBalancesHandler;
@@ -25,12 +25,12 @@ public class ReadBalanceDocumentTests
     public ReadBalanceDocumentTests()
     {
         // Initialize mocks
-        _balanceRepository = Substitute.For<IBalanceRepository>();
+        _documentQueryService = Substitute.For<IDocumentQueryService>();
         _resourceService = Substitute.For<IResourceService>();
         _unitOfMeasureService = Substitute.For<IUnitOfMeasureService>();
         
         // Initialize handler
-        _getBalancesHandler = new GetBalancesQueryHandler(_balanceRepository, _resourceService, _unitOfMeasureService);
+        _getBalancesHandler = new GetBalancesQueryHandler(_documentQueryService, _resourceService, _unitOfMeasureService);
         
         // Initialize common test data
         _defaultResourceId = Guid.NewGuid();
@@ -53,7 +53,7 @@ public class ReadBalanceDocumentTests
         var balances = new List<Balance> { balance1, balance2 };
         var query = new GetBalancesQuery();
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(balances);
         _resourceService.GetByIdAsync(Arg.Any<Guid>())
             .Returns(_defaultResource);
@@ -79,14 +79,14 @@ public class ReadBalanceDocumentTests
         var resourceIds = new List<Guid> { _defaultResourceId, Guid.NewGuid() };
         var query = new GetBalancesQuery(resourceIds);
 
-        _balanceRepository.GetFilteredAsync(resourceIds, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(resourceIds, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance>());
 
         // Act
         await _getBalancesHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _balanceRepository.Received(1).GetFilteredAsync(resourceIds, null, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredBalancesAsync(resourceIds, null, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -96,14 +96,14 @@ public class ReadBalanceDocumentTests
         var unitIds = new List<Guid> { _defaultUnitOfMeasureId, Guid.NewGuid() };
         var query = new GetBalancesQuery(null, unitIds);
 
-        _balanceRepository.GetFilteredAsync(null, unitIds, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, unitIds, Arg.Any<CancellationToken>())
             .Returns(new List<Balance>());
 
         // Act
         await _getBalancesHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _balanceRepository.Received(1).GetFilteredAsync(null, unitIds, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredBalancesAsync(null, unitIds, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class ReadBalanceDocumentTests
         var unitIds = new List<Guid> { _defaultUnitOfMeasureId };
         var query = new GetBalancesQuery(resourceIds, unitIds);
 
-        _balanceRepository.GetFilteredAsync(resourceIds, unitIds, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(resourceIds, unitIds, Arg.Any<CancellationToken>())
             .Returns(new List<Balance> { _defaultBalance });
         _resourceService.GetByIdAsync(_defaultResourceId)
             .Returns(_defaultResource);
@@ -125,7 +125,7 @@ public class ReadBalanceDocumentTests
         var result = await _getBalancesHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        await _balanceRepository.Received(1).GetFilteredAsync(resourceIds, unitIds, Arg.Any<CancellationToken>());
+        await _documentQueryService.Received(1).GetFilteredBalancesAsync(resourceIds, unitIds, Arg.Any<CancellationToken>());
         Assert.Single(result);
         Assert.Equal(_defaultResourceId, result.First().ResourceId);
         Assert.Equal(_defaultUnitOfMeasureId, result.First().UnitOfMeasureId);
@@ -137,10 +137,10 @@ public class ReadBalanceDocumentTests
         // Arrange
         var query = new GetBalancesQuery();
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance> { _defaultBalance });
         _resourceService.GetByIdAsync(_defaultResourceId)
-            .Returns((Resource?)null); // Missing resource
+            .Returns((Resource?)null);
         _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId)
             .Returns(_defaultUnitOfMeasure);
 
@@ -148,7 +148,7 @@ public class ReadBalanceDocumentTests
         var result = await _getBalancesHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        Assert.Empty(result); // Should skip balances with missing resource data
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -157,18 +157,18 @@ public class ReadBalanceDocumentTests
         // Arrange
         var query = new GetBalancesQuery();
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance> { _defaultBalance });
         _resourceService.GetByIdAsync(_defaultResourceId)
             .Returns(_defaultResource);
         _unitOfMeasureService.GetByIdAsync(_defaultUnitOfMeasureId)
-            .Returns((UnitOfMeasure?)null); // Missing unit
+            .Returns((UnitOfMeasure?)null);
 
         // Act
         var result = await _getBalancesHandler.Handle(query, CancellationToken.None);
 
         // Assert
-        Assert.Empty(result); // Should skip balances with missing unit data
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class ReadBalanceDocumentTests
         // Arrange
         var query = new GetBalancesQuery();
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance>());
 
         // Act
@@ -195,7 +195,7 @@ public class ReadBalanceDocumentTests
         var balanceId = Guid.NewGuid();
         _defaultBalance.GetType().GetProperty("Id")?.SetValue(_defaultBalance, balanceId);
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance> { _defaultBalance });
         _resourceService.GetByIdAsync(_defaultResourceId)
             .Returns(_defaultResource);
@@ -232,7 +232,7 @@ public class ReadBalanceDocumentTests
 
         var query = new GetBalancesQuery();
 
-        _balanceRepository.GetFilteredAsync(null, null, Arg.Any<CancellationToken>())
+        _documentQueryService.GetFilteredBalancesAsync(null, null, Arg.Any<CancellationToken>())
             .Returns(new List<Balance> { balance1, balance2 });
         
         _resourceService.GetByIdAsync(_defaultResourceId)

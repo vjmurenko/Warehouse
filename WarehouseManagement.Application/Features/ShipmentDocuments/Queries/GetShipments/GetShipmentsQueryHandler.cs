@@ -1,19 +1,18 @@
 using MediatR;
-using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipments;
 
 public class GetShipmentsQueryHandler(
-    IShipmentRepository shipmentRepository,
+    IDocumentQueryService documentQueryService,
     IClientService clientService,
     IUnitOfMeasureService unitOfMeasureService,
     IResourceService resourceService) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentDto>>
 {
     public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken cancellationToken)
     {
-        var documents = await shipmentRepository.GetFilteredAsync(
+        var documents = await documentQueryService.GetFilteredShipmentsAsync(
             request.FromDate,
             request.ToDate,
             request.DocumentNumbers,
