@@ -7,7 +7,7 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Del
 
 public class DeleteReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    IBalanceService balanceService,
+    IReceiptDocumentService receiptDocumentService,
     IUnitOfWork unitOfWork) : IRequestHandler<DeleteReceiptCommand, Unit>
 {
     public async Task<Unit> Handle(DeleteReceiptCommand command, CancellationToken cancellationToken)
@@ -20,16 +20,8 @@ public class DeleteReceiptCommandHandler(
             if (document == null)
                 throw new EntityNotFoundException("ReceiptDocument", command.Id);
 
-            // 2. Откат изменений баланса (уменьшение баланса на количество поступивших ресурсов)
-            // Валидация возможности удаления происходит внутри DecreaseBalance
-            foreach (var resource in document.ReceiptResources)
-            {
-                await balanceService.DecreaseBalance(
-                    resource.ResourceId,
-                    resource.UnitOfMeasureId,
-                    resource.Quantity,
-                    cancellationToken);
-            }
+            // 2. Revert balance changes
+            await receiptDocumentService.RevertReceiptBalanceChangesAsync(document, cancellationToken);
 
             // 3. Удаление документа
             await receiptRepository.DeleteAsync(document, cancellationToken);

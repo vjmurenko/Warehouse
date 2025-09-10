@@ -1,4 +1,4 @@
-﻿﻿using MediatR;
+﻿﻿﻿﻿﻿﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -7,8 +7,7 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Cre
 
 public class CreateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    IBalanceService balanceService,
-    INamedEntityValidationService validationService,
+    IReceiptDocumentService receiptDocumentService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateReceiptCommand, Guid>
 {
     public async Task<Guid> Handle(CreateReceiptCommand command, CancellationToken cancellationToken)
@@ -16,36 +15,21 @@ public class CreateReceiptCommandHandler(
         await unitOfWork.BeginTransactionAsync(cancellationToken);
         try
         {
-            // 1. Проверка уникальности номера
-            if (await receiptRepository.ExistsByNumberAsync(command.Number))
-                throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
+            // 1. Validate request
+            await receiptDocumentService.ValidateReceiptRequestAsync(command.Number, command.Resources, cancellationToken: cancellationToken);
 
-            // 2. Создание документа
+            // 2. Create document
             var receiptDocument = new ReceiptDocument(command.Number, command.Date);
-
-            // 3. Валидация и добавление ресурсов
             foreach (var dto in command.Resources)
             {
-                // Валидация через validation service
-                await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
-                await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
-                
-                // Добавление через доменную модель
                 receiptDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
             }
 
-            // 4. Сохранение документа
+            // 3. Save document
             await receiptRepository.AddAsync(receiptDocument, cancellationToken);
 
-            // 5. Обновление баланса
-            foreach (var resource in receiptDocument.ReceiptResources)
-            {
-                await balanceService.IncreaseBalance(
-                    resource.ResourceId,
-                    resource.UnitOfMeasureId,
-                    resource.Quantity,
-                    cancellationToken);
-            }
+            // 4. Apply balance changes
+            await receiptDocumentService.ApplyReceiptBalanceChangesAsync(receiptDocument, cancellationToken);
 
             await unitOfWork.CommitTransactionAsync(cancellationToken);
             return receiptDocument.Id;

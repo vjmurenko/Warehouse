@@ -14,7 +14,7 @@ public class DeleteReceiptDocumentTests
 {
     private readonly IReceiptRepository _receiptRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBalanceService _balanceService;
+    private readonly IReceiptDocumentService _receiptDocumentService;
     private readonly DeleteReceiptCommandHandler _handler;
     
     // Common test data
@@ -28,10 +28,10 @@ public class DeleteReceiptDocumentTests
         // Initialize mocks
         _receiptRepository = Substitute.For<IReceiptRepository>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _balanceService = Substitute.For<IBalanceService>();
+        _receiptDocumentService = Substitute.For<IReceiptDocumentService>();
         
         // Initialize handler
-        _handler = new DeleteReceiptCommandHandler(_receiptRepository, _balanceService, _unitOfWork);
+        _handler = new DeleteReceiptCommandHandler(_receiptRepository, _receiptDocumentService, _unitOfWork);
         
         // Initialize common test data
         _defaultDocumentId = Guid.NewGuid();
@@ -55,8 +55,7 @@ public class DeleteReceiptDocumentTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await _balanceService.Received(1).DecreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, 
-            Arg.Is<Quantity>(q => q.Value == 15), Arg.Any<CancellationToken>());
+        await _receiptDocumentService.Received(1).RevertReceiptBalanceChangesAsync(_defaultReceiptDocument, Arg.Any<CancellationToken>());
         await _receiptRepository.Received(1).DeleteAsync(_defaultReceiptDocument, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
     }
@@ -87,7 +86,7 @@ public class DeleteReceiptDocumentTests
 
         _receiptRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>())
             .Returns(_defaultReceiptDocument);
-        _balanceService.DecreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, Arg.Any<Quantity>(), Arg.Any<CancellationToken>())
+        _receiptDocumentService.RevertReceiptBalanceChangesAsync(_defaultReceiptDocument, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Недостаточно ресурса для удаления документа"));
 
         // Act & Assert
@@ -122,10 +121,7 @@ public class DeleteReceiptDocumentTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await _balanceService.Received(1).DecreaseBalance(resource1Id, unit1Id, 
-            Arg.Is<Quantity>(q => q.Value == 10), Arg.Any<CancellationToken>());
-        await _balanceService.Received(1).DecreaseBalance(resource2Id, unit2Id, 
-            Arg.Is<Quantity>(q => q.Value == 20), Arg.Any<CancellationToken>());
+        await _receiptDocumentService.Received(1).RevertReceiptBalanceChangesAsync(multiResourceDocument, Arg.Any<CancellationToken>());
         await _receiptRepository.Received(1).DeleteAsync(multiResourceDocument, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
     }
@@ -146,7 +142,7 @@ public class DeleteReceiptDocumentTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await _balanceService.DidNotReceive().DecreaseBalance(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<Quantity>(), Arg.Any<CancellationToken>());
+        await _receiptDocumentService.Received(1).RevertReceiptBalanceChangesAsync(emptyDocument, Arg.Any<CancellationToken>());
         await _receiptRepository.Received(1).DeleteAsync(emptyDocument, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
     }
@@ -159,7 +155,7 @@ public class DeleteReceiptDocumentTests
 
         _receiptRepository.GetByIdWithResourcesAsync(_defaultDocumentId, Arg.Any<CancellationToken>())
             .Returns(_defaultReceiptDocument);
-        _balanceService.DecreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, Arg.Any<Quantity>(), Arg.Any<CancellationToken>())
+        _receiptDocumentService.RevertReceiptBalanceChangesAsync(_defaultReceiptDocument, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Balance update failed"));
 
         // Act & Assert

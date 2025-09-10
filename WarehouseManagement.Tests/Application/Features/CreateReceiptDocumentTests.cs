@@ -1,4 +1,4 @@
-﻿using NSubstitute;
+﻿﻿﻿﻿﻿﻿﻿﻿using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
@@ -13,9 +13,8 @@ namespace WarehouseManagement.Tests.Application.Features;
 public class CreateReceiptDocumentTests
 {
     private readonly IReceiptRepository _receiptRepository;
-    private readonly INamedEntityValidationService _validationService;
+    private readonly IReceiptDocumentService _receiptDocumentService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBalanceService _balanceService;
     private readonly CreateReceiptCommandHandler _handler;
     
     // Common test data
@@ -28,12 +27,11 @@ public class CreateReceiptDocumentTests
     {
         // Initialize mocks
         _receiptRepository = Substitute.For<IReceiptRepository>();
-        _validationService = Substitute.For<INamedEntityValidationService>();
+        _receiptDocumentService = Substitute.For<IReceiptDocumentService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
-        _balanceService = Substitute.For<IBalanceService>();
         
         // Initialize handler
-        _handler = new CreateReceiptCommandHandler(_receiptRepository, _balanceService, _validationService, _unitOfWork);
+        _handler = new CreateReceiptCommandHandler(_receiptRepository, _receiptDocumentService, _unitOfWork);
         
         // Initialize common test data
         _defaultResourceId = Guid.NewGuid();
@@ -53,14 +51,11 @@ public class CreateReceiptDocumentTests
         var receiptDto = new ReceiptResourceDto(_defaultResourceId, _defaultUnitOfMeasureId, quantity.Value);
         var command = new CreateReceiptCommand(documentNumber, date, new List<ReceiptResourceDto> { receiptDto });
 
-        _validationService.ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>()).Returns(_defaultResource);
-        _validationService.ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>()).Returns(_defaultUnitOfMeasure);
-        _receiptRepository.ExistsByNumberAsync(documentNumber).Returns(false);
-
         // Act
         var resultId = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await _receiptDocumentService.Received(1).ValidateReceiptRequestAsync(documentNumber, command.Resources, null, Arg.Any<CancellationToken>());
         await _receiptRepository.Received(1).AddAsync(
             Arg.Is<ReceiptDocument>(r =>
                 r.Number == documentNumber &&
@@ -70,10 +65,7 @@ public class CreateReceiptDocumentTests
                 r.ReceiptResources.First().UnitOfMeasureId == _defaultUnitOfMeasureId
             ),
             Arg.Any<CancellationToken>());
-
-        await _validationService.Received(1).ValidateResourceAsync(_defaultResourceId, Arg.Any<CancellationToken>());
-        await _validationService.Received(1).ValidateUnitOfMeasureAsync(_defaultUnitOfMeasureId, Arg.Any<CancellationToken>());
-        await _balanceService.Received(1).IncreaseBalance(_defaultResourceId, _defaultUnitOfMeasureId, quantity, Arg.Any<CancellationToken>());
+        await _receiptDocumentService.Received(1).ApplyReceiptBalanceChangesAsync(Arg.Any<ReceiptDocument>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
         Assert.NotEqual(Guid.Empty, resultId);
     }
@@ -85,7 +77,8 @@ public class CreateReceiptDocumentTests
         var documentNumber = "DUPLICATE_123";
         var command = new CreateReceiptCommand(documentNumber, DateTime.Now, new List<ReceiptResourceDto>());
 
-        _receiptRepository.ExistsByNumberAsync(documentNumber).Returns(true);
+        _receiptDocumentService.ValidateReceiptRequestAsync(documentNumber, command.Resources, null, Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException($"Документ с номером {documentNumber} уже существует"));
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -104,8 +97,7 @@ public class CreateReceiptDocumentTests
         var receiptDto = new ReceiptResourceDto(resourceId, unitId, 10);
         var command = new CreateReceiptCommand("TEST_123", DateTime.Now, new List<ReceiptResourceDto> { receiptDto });
 
-        _receiptRepository.ExistsByNumberAsync("TEST_123").Returns(false);
-        _validationService.ValidateResourceAsync(resourceId, Arg.Any<CancellationToken>())
+        _receiptDocumentService.ValidateReceiptRequestAsync("TEST_123", command.Resources, null, Arg.Any<CancellationToken>())
             .ThrowsAsync(new ArgumentException($"Ресурс с ID {resourceId} не найден"));
 
         // Act & Assert
@@ -126,9 +118,7 @@ public class CreateReceiptDocumentTests
         var command = new CreateReceiptCommand("TEST_123", DateTime.Now, new List<ReceiptResourceDto> { receiptDto });
         var resource = new Resource("Test Resource") { Id = resourceId };
 
-        _receiptRepository.ExistsByNumberAsync("TEST_123").Returns(false);
-        _validationService.ValidateResourceAsync(resourceId, Arg.Any<CancellationToken>()).Returns(resource);
-        _validationService.ValidateUnitOfMeasureAsync(unitId, Arg.Any<CancellationToken>())
+        _receiptDocumentService.ValidateReceiptRequestAsync("TEST_123", command.Resources, null, Arg.Any<CancellationToken>())
             .ThrowsAsync(new InvalidOperationException("Единица измерения 'кг' архивирована и не может быть использована"));
 
         // Act & Assert
@@ -163,22 +153,16 @@ public class CreateReceiptDocumentTests
         var quantity1 = new Quantity(10);
         var quantity2 = new Quantity(20);
 
-        _receiptRepository.ExistsByNumberAsync("MULTI_123").Returns(false);
-        _validationService.ValidateResourceAsync(resource1Id, Arg.Any<CancellationToken>()).Returns(resource1);
-        _validationService.ValidateResourceAsync(resource2Id, Arg.Any<CancellationToken>()).Returns(resource2);
-        _validationService.ValidateUnitOfMeasureAsync(unit1Id, Arg.Any<CancellationToken>()).Returns(unit1);
-        _validationService.ValidateUnitOfMeasureAsync(unit2Id, Arg.Any<CancellationToken>()).Returns(unit2);
-
         // Act
         var resultId = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
+        await _receiptDocumentService.Received(1).ValidateReceiptRequestAsync("MULTI_123", receipts, null, Arg.Any<CancellationToken>());
         await _receiptRepository.Received(1).AddAsync(
             Arg.Is<ReceiptDocument>(r => r.Number == "MULTI_123" && r.ReceiptResources.Count == 2),
             Arg.Any<CancellationToken>());
         
-        await _balanceService.Received(1).IncreaseBalance(resource1Id, unit1Id, quantity1, Arg.Any<CancellationToken>());
-        await _balanceService.Received(1).IncreaseBalance(resource2Id, unit2Id, quantity2, Arg.Any<CancellationToken>());
+        await _receiptDocumentService.Received(1).ApplyReceiptBalanceChangesAsync(Arg.Any<ReceiptDocument>(), Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).CommitTransactionAsync(Arg.Any<CancellationToken>());
         Assert.NotEqual(Guid.Empty, resultId);
     }
