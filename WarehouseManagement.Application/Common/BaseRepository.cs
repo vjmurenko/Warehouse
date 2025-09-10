@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿﻿﻿﻿﻿﻿﻿﻿﻿using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data;
@@ -9,11 +9,10 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IBaseRep
 {
     public WarehouseDbContext DbContext { get; set; } = dbContext;
 
-    public virtual async Task<Guid> CreateAsync(T t)
+    public virtual Task<Guid> CreateAsync(T t)
     {
         DbContext.Add(t);
-        await SaveAsync();
-        return t.Id;
+        return Task.FromResult(t.Id);
     }
     
     public async Task<T> GetByIdAsync(Guid id)
@@ -27,22 +26,16 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IBaseRep
         return await DbContext.Set<T>().ToListAsync();
     }
 
-    public async Task<bool> UpdateAsync(T t)
+    public Task<bool> UpdateAsync(T t)
     {
         DbContext.Set<T>().Update(t);
-        return await SaveAsync();
+        return Task.FromResult(true);
     }
 
-    public async Task<bool> DeleteAsync(T t)
+    public Task<bool> DeleteAsync(T t)
     {
         DbContext.Remove(t);
-        return await SaveAsync();
+        return Task.FromResult(true);
     }
 
-    public async Task<bool> SaveAsync()
-    {
-        var result = await DbContext.SaveChangesAsync();
-        return result > 0;
-    }
-    
 }

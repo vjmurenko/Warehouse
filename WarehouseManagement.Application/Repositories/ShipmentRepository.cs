@@ -22,7 +22,6 @@ public class ShipmentRepository(WarehouseDbContext context) : IShipmentRepositor
     public async Task AddAsync(ShipmentDocument document, CancellationToken cancellationToken = default)
     {
         await context.ShipmentDocuments.AddAsync(document, cancellationToken);
-        await context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<ShipmentDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default)
@@ -32,16 +31,16 @@ public class ShipmentRepository(WarehouseDbContext context) : IShipmentRepositor
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
     }
 
-    public async Task UpdateAsync(ShipmentDocument document, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(ShipmentDocument document, CancellationToken cancellationToken = default)
     {
         context.ShipmentDocuments.Update(document);
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(ShipmentDocument document, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(ShipmentDocument document, CancellationToken cancellationToken = default)
     {
         context.ShipmentDocuments.Remove(document);
-        await context.SaveChangesAsync(cancellationToken);
+        return Task.CompletedTask;
     }
 
 

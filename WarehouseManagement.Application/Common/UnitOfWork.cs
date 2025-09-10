@@ -1,28 +1,91 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿﻿﻿﻿﻿﻿﻿﻿using Microsoft.EntityFrameworkCore.Storage;
+using WarehouseManagement.Application.Common.Constants;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Common;
 
-public class UnitOfWork(WarehouseDbContext context) : IUnitOfWork
+public class UnitOfWork : IUnitOfWork
 {
-    private IDbContextTransaction? _transaction;
+    private readonly WarehouseDbContext _context;
+    private IDbContextTransaction? _currentTransaction;
+    private bool _disposed;
 
-    public async Task BeginTransactionAsync(CancellationToken ct = default)
+    public UnitOfWork(WarehouseDbContext context)
     {
-        _transaction = await context.Database.BeginTransactionAsync(ct);
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
-    public async Task CommitTransactionAsync(CancellationToken ct = default)
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        await context.SaveChangesAsync(ct);   // << SaveChanges только тут
-        if (_transaction != null)
-            await _transaction.CommitAsync(ct);
+        if (_currentTransaction != null)
+        {
+            throw new InvalidOperationException(UnitOfWorkConstants.TransactionAlreadyStartedError);
+        }
+
+        _currentTransaction = await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 
-    public async Task RollbackTransactionAsync(CancellationToken ct = default)
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction != null)
-            await _transaction.RollbackAsync(ct);
+        if (_currentTransaction == null)
+        {
+            throw new InvalidOperationException(UnitOfWorkConstants.NoActiveTransactionError);
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+            await _currentTransaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            if (_currentTransaction != null)
+            {
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_currentTransaction != null)
+        {
+            try
+            {
+                await _currentTransaction.RollbackAsync(cancellationToken);
+            }
+            finally
+            {
+                await _currentTransaction.DisposeAsync();
+                _currentTransaction = null;
+            }
+        }
+    }
+
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed && disposing)
+        {
+            _currentTransaction?.Dispose();
+            _disposed = true;
+        }
     }
 }
