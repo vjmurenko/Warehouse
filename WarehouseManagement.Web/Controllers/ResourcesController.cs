@@ -19,11 +19,12 @@ public class ResourcesController : ControllerBase
     /// <summary>
     /// Get all resources
     /// </summary>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>List of all resources</returns>
     [HttpGet]
-    public async Task<ActionResult<List<ResourceDto>>> GetResources()
+    public async Task<ActionResult<List<ResourceDto>>> GetResources(CancellationToken ctx)
     {
-        var resources = await _resourceService.GetAllAsync();
+        var resources = await _resourceService.GetAllAsync(ctx);
         var resourceDtos = resources.Select(r => new ResourceDto(
             r.Id,
             r.Name,
@@ -36,11 +37,12 @@ public class ResourcesController : ControllerBase
     /// <summary>
     /// Get active resources only
     /// </summary>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>List of active resources</returns>
     [HttpGet("active")]
-    public async Task<ActionResult<List<ResourceDto>>> GetActiveResources()
+    public async Task<ActionResult<List<ResourceDto>>> GetActiveResources(CancellationToken ctx)
     {
-        var resources = await _resourceService.GetActiveAsync();
+        var resources = await _resourceService.GetActiveAsync(ctx);
         var resourceDtos = resources.Select(r => new ResourceDto(
             r.Id,
             r.Name,
@@ -54,11 +56,12 @@ public class ResourcesController : ControllerBase
     /// Get a specific resource by ID
     /// </summary>
     /// <param name="id">The resource ID</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>Resource information</returns>
     [HttpGet("{id}")]
-    public async Task<ActionResult<ResourceDto>> GetResourceById(Guid id)
+    public async Task<ActionResult<ResourceDto>> GetResourceById(Guid id, CancellationToken ctx)
     {
-        var resource = await _resourceService.GetByIdAsync(id);
+        var resource = await _resourceService.GetByIdAsync(id, ctx);
         
         if (resource == null)
         {
@@ -78,11 +81,12 @@ public class ResourcesController : ControllerBase
     /// Create a new resource
     /// </summary>
     /// <param name="request">Resource creation data</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>ID of the created resource</returns>
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request)
+    public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request, CancellationToken ctx)
     {
-        var resourceId = await _resourceService.CreateResourceAsync(request.Name);
+        var resourceId = await _resourceService.CreateResourceAsync(request.Name, ctx);
         return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceId);
     }
 
@@ -91,11 +95,12 @@ public class ResourcesController : ControllerBase
     /// </summary>
     /// <param name="id">The resource ID</param>
     /// <param name="request">Resource update data</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>No content if successful</returns>
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request)
+    public async Task<ActionResult> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request, CancellationToken ctx)
     {
-        var success = await _resourceService.UpdateResourceAsync(id, request.Name);
+        var success = await _resourceService.UpdateResourceAsync(id, request.Name, ctx);
         
         if (!success)
         {
@@ -109,11 +114,12 @@ public class ResourcesController : ControllerBase
     /// Delete a resource
     /// </summary>
     /// <param name="id">The resource ID</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>No content if successful</returns>
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteResource(Guid id)
+    public async Task<ActionResult> DeleteResource(Guid id, CancellationToken ctx)
     {
-        await _resourceService.DeleteAsync(id);
+        await _resourceService.DeleteAsync(id, ctx);
         return NoContent();
     }
 
@@ -121,11 +127,12 @@ public class ResourcesController : ControllerBase
     /// Archive a resource
     /// </summary>
     /// <param name="id">The resource ID</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>No content if successful</returns>
     [HttpPost("{id}/archive")]
-    public async Task<ActionResult> ArchiveResource(Guid id)
+    public async Task<ActionResult> ArchiveResource(Guid id, CancellationToken ctx)
     {
-        var success = await _resourceService.ArchiveAsync(id);
+        var success = await _resourceService.ArchiveAsync(id, ctx);
         
         if (!success)
         {
@@ -139,11 +146,12 @@ public class ResourcesController : ControllerBase
     /// Activate a resource
     /// </summary>
     /// <param name="id">The resource ID</param>
+    /// <param name="ctx">Cancellation token</param>
     /// <returns>No content if successful</returns>
     [HttpPost("{id}/activate")]
-    public async Task<ActionResult> ActivateResource(Guid id)
+    public async Task<ActionResult> ActivateResource(Guid id, CancellationToken ctx)
     {
-        var success = await _resourceService.ActivateAsync(id);
+        var success = await _resourceService.ActivateAsync(id, ctx);
         
         if (!success)
         {

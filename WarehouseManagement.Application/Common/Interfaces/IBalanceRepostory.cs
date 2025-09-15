@@ -2,7 +2,7 @@
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 
-public interface IBalanceRepository : IBaseRepository<Balance>
+public interface IBalanceRepository : IRepositoryBase<Balance>
 {
     Task<Balance?> GetForUpdateAsync(Guid resourceId, Guid unitOfMeasureId, CancellationToken token);
     Task AddAsync(Balance balance, CancellationToken token);

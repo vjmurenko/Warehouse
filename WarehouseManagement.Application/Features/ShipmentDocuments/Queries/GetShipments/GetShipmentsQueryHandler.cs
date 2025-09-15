@@ -11,7 +11,7 @@ public class GetShipmentsQueryHandler(
     IUnitOfMeasureService unitOfMeasureService,
     IResourceService resourceService) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentDto>>
 {
-    public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken cancellationToken)
+    public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken ctx)
     {
         var documents = await shipmentRepository.GetFilteredAsync(
             request.FromDate,
@@ -19,20 +19,20 @@ public class GetShipmentsQueryHandler(
             request.DocumentNumbers,
             request.ResourceIds,
             request.UnitIds,
-            cancellationToken);
+            ctx);
 
         var result = new List<ShipmentDocumentDto>();
 
         foreach (var document in documents)
         {
-            var client = await clientService.GetByIdAsync(document.ClientId);
+            var client = await clientService.GetByIdAsync(document.ClientId, ctx);
             var clientName = client?.Name ?? "Unknown Client";
             var shipmentResourceDetailDtos = new List<ShipmentResourceDetailDto>();
 
             foreach (var shipmentResource in document.ShipmentResources)
             {
-                var unitOfMeasure = await unitOfMeasureService.GetByIdAsync(shipmentResource.UnitOfMeasureId);
-                var resource = await resourceService.GetByIdAsync(shipmentResource.ResourceId);
+                var unitOfMeasure = await unitOfMeasureService.GetByIdAsync(shipmentResource.UnitOfMeasureId, ctx);
+                var resource = await resourceService.GetByIdAsync(shipmentResource.ResourceId, ctx);
                 
                 if (resource != null && unitOfMeasure != null)
                 {

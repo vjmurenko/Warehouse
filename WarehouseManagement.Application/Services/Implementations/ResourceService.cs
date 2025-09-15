@@ -7,23 +7,23 @@ using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class ResourceService(INamedEntityRepository<Resource> repository) : NamedEntityService<Resource>(repository), IResourceService
+public class ResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork) : NamedEntityService<Resource>(repository, unitOfWork), IResourceService
 {
-    public async Task<Guid> CreateResourceAsync(string name)
+    public async Task<Guid> CreateResourceAsync(string name, CancellationToken ctx)
     {
         var resource = new Resource(name);
-        return await CreateAsync(resource);
+        return await CreateAsync(resource, ctx);
     }
 
-    public async Task<bool> UpdateResourceAsync(Guid id, string name)
+    public async Task<bool> UpdateResourceAsync(Guid id, string name, CancellationToken ctx)
     {
-        var resource = await GetByIdAsync(id);
+        var resource = await GetByIdAsync(id, ctx);
         if (resource == null)
         {
             throw new EntityNotFoundException("Resource", id);
         }
         
         resource.Rename(name);
-        return await UpdateAsync(resource);
+        return await UpdateAsync(resource, ctx);
     }
 }

@@ -10,19 +10,19 @@ public class GetBalancesQueryHandler(
     IResourceService resourceService,
     IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetBalancesQuery, List<BalanceDto>>
 {
-    public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken cancellationToken)
+    public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken ctx)
     {
         var balances = await balanceRepository.GetFilteredAsync(
             query.ResourceIds,
             query.UnitIds,
-            cancellationToken);
+            ctx);
 
         var balanceDtos = new List<BalanceDto>();
 
         foreach (var balance in balances)
         {
-            var resource = await resourceService.GetByIdAsync(balance.ResourceId);
-            var unit = await unitOfMeasureService.GetByIdAsync(balance.UnitOfMeasureId);
+            var resource = await resourceService.GetByIdAsync(balance.ResourceId, ctx);
+            var unit = await unitOfMeasureService.GetByIdAsync(balance.UnitOfMeasureId, ctx);
 
             if (resource != null && unit != null)
             {

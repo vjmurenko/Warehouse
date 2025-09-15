@@ -22,7 +22,7 @@ public class UnitOfMeasureTests
         var name = "Kilogram";
         var guid = Guid.NewGuid();
         
-        _namedEntityRepository.CreateAsync(Arg.Is<UnitOfMeasure>(u => u.Name == name)).Returns(guid);
+        _namedEntityRepository.Create(Arg.Is<UnitOfMeasure>(u => u.Name == name)).Returns(guid);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
 
         // act
@@ -54,7 +54,7 @@ public class UnitOfMeasureTests
 
         _namedEntityRepository.GetByIdAsync(id).Returns(unitOfMeasure);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
-        _namedEntityRepository.UpdateAsync(unitOfMeasure).Returns(true);
+        _namedEntityRepository.Update(unitOfMeasure).Returns(true);
 
         // act
         var result = await _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, name);

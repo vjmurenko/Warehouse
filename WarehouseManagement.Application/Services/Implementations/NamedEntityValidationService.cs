@@ -10,7 +10,7 @@ public class NamedEntityValidationService(
 {
     public async Task<Resource> ValidateResourceAsync(Guid resourceId, CancellationToken cancellationToken)
     {
-        var resource = await resourceRepository.GetByIdAsync(resourceId);
+        var resource = await resourceRepository.GetByIdAsync(resourceId, cancellationToken);
         if (resource == null)
             throw new ArgumentException($"Ресурс с ID {resourceId} не найден", nameof(resourceId));
         
@@ -22,7 +22,7 @@ public class NamedEntityValidationService(
 
     public async Task<UnitOfMeasure> ValidateUnitOfMeasureAsync(Guid unitId, CancellationToken cancellationToken)
     {
-        var unit = await unitRepository.GetByIdAsync(unitId);
+        var unit = await unitRepository.GetByIdAsync(unitId, cancellationToken);
         if (unit == null)
             throw new ArgumentException($"Единица измерения с ID {unitId} не найдена", nameof(unitId));
         

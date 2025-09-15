@@ -24,7 +24,7 @@ public class ClientServiceTests
         var address = "Test Address";
         var guid = Guid.NewGuid();
         
-        _namedEntityRepository.CreateAsync(Arg.Is<Client>(c => c.Name == name && c.Address.Name == address)).Returns(guid);
+        _namedEntityRepository.Create(Arg.Is<Client>(c => c.Name == name && c.Address.Name == address)).Returns(guid);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
 
         // act
@@ -81,7 +81,7 @@ public class ClientServiceTests
 
         _namedEntityRepository.GetByIdAsync(id).Returns(client);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
-        _namedEntityRepository.UpdateAsync(client).Returns(true);
+        _namedEntityRepository.Update(client).Returns(true);
 
         // act
         var result = await _clientService.UpdateClientAsync(id, name, address);

@@ -7,8 +7,10 @@ namespace WarehouseManagement.Application.Repositories;
 
 public class UnitOfMeasureRepository(WarehouseDbContext dbContext) : NamedEntityRepository<UnitOfMeasure>(dbContext)
 {
-    public override async Task<bool> IsUsingInDocuments(Guid id)
+    public override async Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx)
     {
-        return await DbContext.ReceiptResources.AnyAsync(c => c.UnitOfMeasureId == id) || await DbContext.ShipmentResources.AnyAsync(c => c.UnitOfMeasureId == id);
+        return await DbContext.ReceiptResources
+            .AnyAsync(c => c.UnitOfMeasureId == id, ctx) || await DbContext.ShipmentResources
+            .AnyAsync(c => c.UnitOfMeasureId == id, ctx);
     }
 }

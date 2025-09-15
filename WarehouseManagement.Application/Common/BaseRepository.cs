@@ -5,44 +5,36 @@ using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Common;
 
-public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IBaseRepository<T> where T : Entity
+public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IRepositoryBase<T> where T : Entity
 {
-    public WarehouseDbContext DbContext { get; set; } = dbContext;
+    protected WarehouseDbContext DbContext { get; set; } = dbContext;
 
-    public virtual async Task<Guid> CreateAsync(T t)
+    public virtual Guid Create(T t)
     {
         DbContext.Add(t);
-        await SaveAsync();
         return t.Id;
     }
     
-    public async Task<T> GetByIdAsync(Guid id)
+    public async Task<T> GetByIdAsync(Guid id, CancellationToken ctx)
     {
-        return await DbContext.Set<T>()
-            .FirstOrDefaultAsync(c => c.Id == id);
+        return await DbContext.Set<T>().FirstOrDefaultAsync(c => c.Id == id, ctx);
     }
     
-    public async Task<List<T>> GetAll()
+    public async Task<List<T>> GetAllAsync(CancellationToken ctx)
     {
-        return await DbContext.Set<T>().ToListAsync();
+        return await DbContext.Set<T>().ToListAsync(ctx);
     }
 
-    public async Task<bool> UpdateAsync(T t)
+    public void  Update(T t)
     {
         DbContext.Set<T>().Update(t);
-        return await SaveAsync();
     }
 
-    public async Task<bool> DeleteAsync(T t)
+    public void Delete(T t)
     {
         DbContext.Remove(t);
-        return await SaveAsync();
     }
 
-    public async Task<bool> SaveAsync()
-    {
-        var result = await DbContext.SaveChangesAsync();
-        return result > 0;
-    }
+
     
 }

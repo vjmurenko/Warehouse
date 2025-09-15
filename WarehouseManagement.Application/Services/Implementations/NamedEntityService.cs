@@ -6,80 +6,77 @@ using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public abstract class NamedEntityService<T> : INamedEntityService<T> where T : NamedEntity
+public abstract class NamedEntityService<T>(INamedEntityRepository<T> repository, IUnitOfWork unitOfWork)
+    : INamedEntityService<T>
+    where T : NamedEntity
 {
-    protected readonly INamedEntityRepository<T> Repository;
+    protected readonly INamedEntityRepository<T> Repository = repository;
 
-    protected NamedEntityService(INamedEntityRepository<T> repository)
+    public virtual async Task<List<T>> GetAllAsync(CancellationToken ctx)
     {
-        Repository = repository;
+        return await Repository.GetAllAsync(ctx);
     }
 
-    public virtual async Task<List<T>> GetAllAsync()
+    public virtual async Task<List<T>> GetActiveAsync(CancellationToken ctx)
     {
-        return await Repository.GetAll();
+        return await Repository.GetActiveAsync(ctx);
     }
 
-    public virtual async Task<List<T>> GetActiveAsync()
+    public virtual async Task<T?> GetByIdAsync(Guid id, CancellationToken ctx)
     {
-        return await Repository.GetActiveAsync();
+        return await Repository.GetByIdAsync(id, ctx);
     }
 
-    public virtual async Task<List<T>> GetArchivedAsync()
-    {
-        return await Repository.GetArchivedAsync();
-    }
-
-    public virtual async Task<T?> GetByIdAsync(Guid id)
-    {
-        return await Repository.GetByIdAsync(id);
-    }
-    
-    public virtual async Task<Guid> CreateAsync(T entity)
+    public virtual async Task<Guid> CreateAsync(T entity, CancellationToken ctx)
     {
         if (await Repository.ExistsWithNameAsync(entity.Name))
         {
             throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }
 
-        var a = await Repository.CreateAsync(entity);
+        var id =  Repository.Create(entity);
 
-        return a;
+        await unitOfWork.SaveChangesAsync(ctx);
+        return id;
     }
 
-    public virtual async Task<bool> UpdateAsync(T entity)
+    public virtual async Task<bool> UpdateAsync(T entity, CancellationToken ctx)
     {
         if (await Repository.ExistsWithNameAsync(entity.Name, entity.Id))
         {
             throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }
-
-        return await Repository.UpdateAsync(entity);
+        
+        Repository.Update(entity);
+        return await unitOfWork.SaveChangesAsync(ctx) > 0;
     }
 
-    public virtual async Task<bool> DeleteAsync(Guid id)
+    public virtual async Task<bool> DeleteAsync(Guid id, CancellationToken ctx)
     {
-        if (await Repository.IsUsingInDocuments(id))
+        if (await Repository.IsUsingInDocuments(id, ctx))
         {
             throw new EntityInUseException(typeof(T).Name, id, "documents");
         }
 
-        var entity = await Repository.GetByIdAsync(id);
+        var entity = await Repository.GetByIdAsync(id, ctx);
         if (entity == null)
         {
             throw new EntityNotFoundException(typeof(T).Name, id);
         }
-
-        return await Repository.DeleteAsync(entity);
+        
+        Repository.Delete(entity);
+        return await unitOfWork.SaveChangesAsync(ctx) > 0;
     }
 
-    public virtual async Task<bool> ArchiveAsync(Guid id)
+    public virtual async Task<bool> ArchiveAsync(Guid id, CancellationToken ctx)
     {
-        return await Repository.ArchiveAsync(id);
+         await Repository.ArchiveAsync(id, ctx);
+         return await unitOfWork.SaveChangesAsync(ctx) > 0;
     }
 
-    public virtual async Task<bool> ActivateAsync(Guid id)
+    public virtual async Task<bool> ActivateAsync(Guid id, CancellationToken ctx)
     {
-        return await Repository.ActivateAsync(id);
+        await Repository.ActivateAsync(id, ctx);
+        return await unitOfWork.SaveChangesAsync(ctx) > 0;
     }
 }

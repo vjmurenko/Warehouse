@@ -14,38 +14,38 @@ public class ShipmentValidationService(
 {
     public async Task ValidateShipmentResourcesForUpdate(
         List<ShipmentResourceDto> updatedShipmentResources,
-        CancellationToken token,
+        CancellationToken ctx,
         ShipmentDocument? currentDocumentForExclude = null)
     {
         var resourcesForExclude = new List<ShipmentResourceDto>();
-        var receiptDocuments = await receiptRepository.GetFilteredAsync();
+        var receiptDocuments = await receiptRepository.GetFilteredAsync(cancellationToken: ctx);
         var receiptResources = receiptDocuments
             .SelectMany(c => c.ReceiptResources, (_, resource) =>
                 new ShipmentResourceDto(resource.ResourceId, resource.UnitOfMeasureId, resource.Quantity.Value))
             .ToList();
         resourcesForExclude.AddRange(receiptResources);
-        
+
         if (currentDocumentForExclude != null)
         {
             resourcesForExclude.AddRange(currentDocumentForExclude.ShipmentResources
                 .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity.Value)));
         }
-        
+
         updatedShipmentResources = updatedShipmentResources
-            .Where(u => 
+            .Where(u =>
                 !resourcesForExclude.Any(r => r.UnitId == u.UnitId && r.ResourceId == u.ResourceId))
             .ToList();
-        
+
         foreach (var documentReceiptResource in updatedShipmentResources)
         {
-            await namedEntityValidationService.ValidateResourceAsync(documentReceiptResource.ResourceId, token);
-            await namedEntityValidationService.ValidateUnitOfMeasureAsync(documentReceiptResource.UnitId, token);
+            await namedEntityValidationService.ValidateResourceAsync(documentReceiptResource.ResourceId, ctx);
+            await namedEntityValidationService.ValidateUnitOfMeasureAsync(documentReceiptResource.UnitId, ctx);
         }
     }
 
-    public async Task ValidateClient(Guid clientId, Guid? excludeCurrentClient = null)
+    public async Task ValidateClient(Guid clientId, Guid? excludeCurrentClient = null, CancellationToken ctx = default)
     {
-        var clients = await clientRepository.GetArchivedAsync();
+        var clients = await clientRepository.GetArchivedAsync(ctx);
         var archivedClient = clients.Where(c => c.Id != excludeCurrentClient).FirstOrDefault(c => c.Id == clientId);
 
         if (archivedClient != null)

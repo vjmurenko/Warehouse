@@ -22,7 +22,7 @@ public class ResourceTests
         //arrange
         var name = "name";
         var guid = Guid.NewGuid();
-        _namedEntityRepository.CreateAsync(Arg.Is<Resource>(c => c.Name == name)).Returns(guid);
+        _namedEntityRepository.Create(Arg.Is<Resource>(c => c.Name == name)).Returns(guid);
         _namedEntityRepository.ExistsWithNameAsync("name").Returns(false);
 
         //act
@@ -53,7 +53,7 @@ public class ResourceTests
         
         _namedEntityRepository.IsUsingInDocuments(guid).Returns(false);
         _namedEntityRepository.GetByIdAsync(guid).Returns(new Resource("abc"));
-        _namedEntityRepository.DeleteAsync(Arg.Any<Resource>()).Returns(true);
+        _namedEntityRepository.Delete(Arg.Any<Resource>()).Returns(true);
         
         //act
         var result = await _resourceService.DeleteAsync(guid);
@@ -72,7 +72,7 @@ public class ResourceTests
 
         _namedEntityRepository.GetByIdAsync(id).Returns(resource);
         _namedEntityRepository.ExistsWithNameAsync(name).Returns(false);
-        _namedEntityRepository.UpdateAsync(resource).Returns(true);
+        _namedEntityRepository.Update(resource).Returns(true);
 
         //act
         var result = await _resourceService.UpdateResourceAsync(id, name);
@@ -121,7 +121,7 @@ public class ResourceTests
             new ("Resource 3")
         };
 
-        _namedEntityRepository.GetAll().Returns(resources);
+        _namedEntityRepository.GetAllAsync().Returns(resources);
 
         //act
         var result = await _resourceService.GetAllAsync();

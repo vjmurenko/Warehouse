@@ -8,45 +8,43 @@ namespace WarehouseManagement.Application.Common;
 public abstract class NamedEntityRepository<T>(WarehouseDbContext dbContext) : RepositoryBase<T>(dbContext), INamedEntityRepository<T>
     where T : NamedEntity
 {
-    public async Task<bool> ExistsWithNameAsync(string name, Guid? excludeId = null)
+    public async Task<bool> ExistsWithNameAsync(string name, Guid? excludeId = null, CancellationToken ctx = default)
     {
         var query = DbContext.Set<T>().AsNoTracking()
             .Where(x => x.Name.ToLower() == name.ToLower() && x.Id != excludeId);
-        
-        return await query.AnyAsync();
+
+        return await query.AnyAsync(ctx);
     }
 
-    public async Task<List<T>> GetActiveAsync()
+    public async Task<List<T>> GetActiveAsync(CancellationToken ctx)
     {
         return await DbContext.Set<T>()
             .Where(x => x.IsActive)
-            .ToListAsync();
+            .ToListAsync(ctx);
     }
 
-    public async Task<List<T>> GetArchivedAsync()
+    public async Task<List<T>> GetArchivedAsync(CancellationToken ctx)
     {
         return await DbContext.Set<T>()
             .Where(x => !x.IsActive)
-            .ToListAsync();
+            .ToListAsync(ctx);
     }
 
-    public async Task<bool> ArchiveAsync(Guid id)
+    public async Task ArchiveAsync(Guid id, CancellationToken ctx)
     {
-        var entity = await GetByIdAsync(id);
-        if (entity == null) return false;
+        var entity = await GetByIdAsync(id, ctx);
 
         entity.Archive();
-        return await UpdateAsync(entity);
+        Update(entity);
     }
 
-    public async Task<bool> ActivateAsync(Guid id)
+    public async Task ActivateAsync(Guid id, CancellationToken ctx)
     {
-        var entity = await GetByIdAsync(id);
-        if (entity == null) return false;
+        var entity = await GetByIdAsync(id, ctx);
 
         entity.Activate();
-        return await UpdateAsync(entity);
+        Update(entity);
     }
 
-    public abstract Task<bool> IsUsingInDocuments(Guid id);
+    public abstract Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx);
 }

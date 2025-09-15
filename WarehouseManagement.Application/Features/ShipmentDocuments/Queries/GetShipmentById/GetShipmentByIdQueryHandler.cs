@@ -11,22 +11,22 @@ public class GetShipmentByIdQueryHandler(
     IUnitOfMeasureService unitOfMeasureService,
     IClientService clientService) : IRequestHandler<GetShipmentByIdQuery, ShipmentDocumentDto?>
 {
-    public async Task<ShipmentDocumentDto?> Handle(GetShipmentByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ShipmentDocumentDto?> Handle(GetShipmentByIdQuery request, CancellationToken ctx)
     {
-        var document = await shipmentRepository.GetByIdWithResourcesAsync(request.Id, cancellationToken);
+        var document = await shipmentRepository.GetByIdWithResourcesAsync(request.Id, ctx);
         if (document == null)
             return null;
 
         // Получаем информацию о клиенте
-        var client = await clientService.GetByIdAsync(document.ClientId);
+        var client = await clientService.GetByIdAsync(document.ClientId, ctx);
         var clientName = client?.Name ?? "Unknown Client";
 
         // Получаем детали ресурсов
         var resourceDetails = new List<ShipmentResourceDetailDto>();
         foreach (var resource in document.ShipmentResources)
         {
-            var resourceInfo = await resourceService.GetByIdAsync(resource.ResourceId);
-            var unitInfo = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId);
+            var resourceInfo = await resourceService.GetByIdAsync(resource.ResourceId, ctx);
+            var unitInfo = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId, ctx);
 
             resourceDetails.Add(new ShipmentResourceDetailDto(
                 resource.Id,

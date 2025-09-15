@@ -8,8 +8,8 @@ public interface IShipmentValidationService
 {
     Task ValidateShipmentResourcesForUpdate(
         List<ShipmentResourceDto> updatedShipmentResources,
-        CancellationToken token,
+        CancellationToken ctx,
         ShipmentDocument? currentDocumentForExclude = null);
 
-    Task ValidateClient(Guid clientId, Guid? excludeCurrentClient = null);
+    Task ValidateClient(Guid clientId, Guid? excludeCurrentClient = null, CancellationToken ctx = default);
 }

@@ -25,4 +25,9 @@ public class UnitOfWork(WarehouseDbContext context) : IUnitOfWork
         if (_transaction != null)
             await _transaction.RollbackAsync(ct);
     }
+
+    public async Task<int> SaveChangesAsync(CancellationToken token)
+    {
+       return await context.SaveChangesAsync(token);
+    }
 }

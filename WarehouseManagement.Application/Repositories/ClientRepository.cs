@@ -7,8 +7,8 @@ namespace WarehouseManagement.Application.Repositories;
 
 public class ClientRepository(WarehouseDbContext dbContext) : NamedEntityRepository<Client>(dbContext)
 {
-    public override  async Task<bool> IsUsingInDocuments(Guid id)
+    public override  async Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx)
     {
-       return await DbContext.ShipmentDocuments.AnyAsync(c => c.ClientId == id);
+       return await DbContext.ShipmentDocuments.AnyAsync(c => c.ClientId == id, ctx);
     }
 }

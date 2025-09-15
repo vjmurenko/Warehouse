@@ -9,5 +9,5 @@ public interface IReceiptDocumentService
         Guid resourceId,
         Guid unitId,
         decimal quantity,
-        CancellationToken ct);
+        CancellationToken ctx);
 }

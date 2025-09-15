@@ -12,13 +12,13 @@ public class ReceiptDocumentService(INamedEntityRepository<Resource> resourceRep
         Guid resourceId,
         Guid unitId,
         decimal quantity,
-        CancellationToken ct)
+        CancellationToken ctx)
     {
-        var resource = await resourceRepository.GetByIdAsync(resourceId);
+        var resource = await resourceRepository.GetByIdAsync(resourceId, ctx);
         if (resource == null || !resource.IsActive)
             throw new Exception($"Ресурс {resourceId} не найден или архивирован");
 
-        var unit = await unitRepository.GetByIdAsync(unitId);
+        var unit = await unitRepository.GetByIdAsync(unitId, ctx);
         if (unit == null || !unit.IsActive)
             throw new Exception($"Единица измерения {unitId} не найдена или архивирована");
 

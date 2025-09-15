@@ -10,9 +10,9 @@ public class GetReceiptByIdQueryHandler(
     IResourceService resourceService,
     IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetReceiptByIdQuery, ReceiptDocumentDto?>
 {
-    public async Task<ReceiptDocumentDto?> Handle(GetReceiptByIdQuery query, CancellationToken cancellationToken)
+    public async Task<ReceiptDocumentDto?> Handle(GetReceiptByIdQuery query, CancellationToken ctx)
     {
-        var document = await receiptRepository.GetByIdWithResourcesAsync(query.Id, cancellationToken);
+        var document = await receiptRepository.GetByIdWithResourcesAsync(query.Id, ctx);
         
         if (document == null)
             return null;
@@ -21,8 +21,8 @@ public class GetReceiptByIdQueryHandler(
         
         foreach (var resource in document.ReceiptResources)
         {
-            var resourceEntity = await resourceService.GetByIdAsync(resource.ResourceId);
-            var unitEntity = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId);
+            var resourceEntity = await resourceService.GetByIdAsync(resource.ResourceId, ctx);
+            var unitEntity = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId, ctx);
             
             if (resourceEntity != null && unitEntity != null)
             {
