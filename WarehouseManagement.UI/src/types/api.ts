@@ -92,13 +92,6 @@ export interface ReceiptDocumentDto {
   resources: ReceiptResourceDetailDto[];
 }
 
-export interface ReceiptDocumentSummaryDto {
-  id: string;
-  number: string;
-  date: string;
-  resourceCount: number;
-}
-
 export interface ReceiptResourceDetailDto {
   id: string;
   resourceId: string;
@@ -116,16 +109,6 @@ export interface ShipmentDocumentDto {
   date: string;
   isSigned: boolean;
   resources: ShipmentResourceDetailDto[];
-}
-
-export interface ShipmentDocumentSummaryDto {
-  id: string;
-  number: string;
-  clientId: string;
-  clientName: string;
-  date: string;
-  isSigned: boolean;
-  resourceCount: number;
 }
 
 export interface ShipmentResourceDetailDto {

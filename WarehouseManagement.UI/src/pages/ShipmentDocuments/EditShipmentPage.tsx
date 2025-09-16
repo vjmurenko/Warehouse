@@ -137,7 +137,6 @@ const EditShipmentPage: React.FC = () => {
         date: new Date(date).toISOString(),
         sign: shouldSign,
         resources: resources.map(r => ({
-          id: r.id,
           resourceId: r.resourceId,
           unitId: r.unitId,
           quantity: r.quantity
@@ -302,6 +301,7 @@ const EditShipmentPage: React.FC = () => {
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting || isSigned}
+              isSigned={isSigned}
               existingDocumentResources={shipment?.resources?.map(r => ({
                 id: r.id,
                 resourceId: r.resourceId,

@@ -6,29 +6,43 @@ namespace WarehouseManagement.Application.Services.Implementations;
 
 public class NamedEntityValidationService(
     INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitRepository) : INamedEntityValidationService
+    INamedEntityRepository<UnitOfMeasure> unitRepository)
+    : INamedEntityValidationService
 {
-    public async Task<Resource> ValidateResourceAsync(Guid resourceId, CancellationToken cancellationToken)
+    
+    public async Task ValidateResourcesAsync(IEnumerable<Guid> resourceIds, CancellationToken cancellationToken)
     {
-        var resource = await resourceRepository.GetByIdAsync(resourceId, cancellationToken);
-        if (resource == null)
-            throw new ArgumentException($"Ресурс с ID {resourceId} не найден", nameof(resourceId));
-        
-        if (!resource.IsActive)
-            throw new InvalidOperationException($"Ресурс '{resource.Name}' архивирован и не может быть использован");
-            
-        return resource;
+        var ids = resourceIds.Distinct().ToList();
+        if (ids.Count == 0) return;
+
+        var resources = await resourceRepository.GetByIdsAsync(ids, cancellationToken);
+
+        // Проверяем, что все ресурсы найдены
+        var missingIds = ids.Except(resources.Select(r => r.Id)).ToList();
+        if (missingIds.Count > 0)
+            throw new ArgumentException($"Не найдены ресурсы с ID: {string.Join(", ", missingIds)}");
+
+        // Проверяем на архив
+        var archived = resources.Where(r => !r.IsActive).ToList();
+        if (archived.Count > 0)
+            throw new InvalidOperationException(
+                $"Следующие ресурсы архивированы и не могут быть использованы: {string.Join(", ", archived.Select(r => r.Name))}");
     }
 
-    public async Task<UnitOfMeasure> ValidateUnitOfMeasureAsync(Guid unitId, CancellationToken cancellationToken)
+    public async Task ValidateUnitsAsync(IEnumerable<Guid> unitIds, CancellationToken cancellationToken)
     {
-        var unit = await unitRepository.GetByIdAsync(unitId, cancellationToken);
-        if (unit == null)
-            throw new ArgumentException($"Единица измерения с ID {unitId} не найдена", nameof(unitId));
-        
-        if (!unit.IsActive)
-            throw new InvalidOperationException($"Единица измерения '{unit.Name}' архивирована и не может быть использована");
-            
-        return unit;
+        var ids = unitIds.Distinct().ToList();
+        if (ids.Count == 0) return;
+
+        var units = await unitRepository.GetByIdsAsync(ids, cancellationToken);
+
+        var missingIds = ids.Except(units.Select(u => u.Id)).ToList();
+        if (missingIds.Count > 0)
+            throw new ArgumentException($"Не найдены единицы измерения с ID: {string.Join(", ", missingIds)}");
+
+        var archived = units.Where(u => !u.IsActive).ToList();
+        if (archived.Count > 0)
+            throw new InvalidOperationException(
+                $"Следующие единицы измерения архивированы и не могут быть использованы: {string.Join(", ", archived.Select(u => u.Name))}");
     }
 }

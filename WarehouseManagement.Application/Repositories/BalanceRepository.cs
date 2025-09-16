@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using WarehouseManagement.Application.Common;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Dtos;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Infrastructure.Data;
 
@@ -8,14 +10,6 @@ namespace WarehouseManagement.Application.Repositories;
 
 public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Balance>(context), IBalanceRepository
 {
-    public async Task<Balance?> GetForUpdateAsync(Guid resourceId, Guid unitId, CancellationToken ct)
-    {
-        return await DbContext.Balances
-            .FromSqlRaw("SELECT * FROM \"Balances\" WHERE \"ResourceId\" = {0} AND \"UnitOfMeasureId\" = {1} FOR UPDATE",
-                resourceId, unitId)
-            .FirstOrDefaultAsync(ct);
-    }
-
     public async Task AddAsync(Balance balance, CancellationToken ct)
     {
         await DbContext.Balances.AddAsync(balance, ct);
@@ -25,16 +19,13 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
     {
         var query = DbContext.Balances.AsQueryable();
 
-        // Filter out zero balances
         query = query.Where(b => b.Quantity.Value > 0);
 
-        // Resource filtering
         if (resourceIds != null && resourceIds.Any())
         {
             query = query.Where(b => resourceIds.Contains(b.ResourceId));
         }
 
-        // Unit filtering  
         if (unitIds != null && unitIds.Any())
         {
             query = query.Where(b => unitIds.Contains(b.UnitOfMeasureId));
@@ -44,5 +35,38 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
             .OrderBy(b => b.ResourceId)
             .ThenBy(b => b.UnitOfMeasureId)
             .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<Dictionary<ResourceKey, Balance>> GetForUpdateAsync(
+        IEnumerable<ResourceKey> keys,
+        CancellationToken ct)
+    {
+        var keyList = keys.Distinct().ToList();
+        if (!keyList.Any())
+            return new Dictionary<ResourceKey, Balance>();
+        
+        var values = string.Join(", ", keyList.Select((k, i) => $"(@p{i*2}, @p{i*2+1})"));
+        var sql = $"""
+                       SELECT * 
+                       FROM "Balances"
+                       WHERE ("ResourceId","UnitOfMeasureId") IN ({values})
+                       FOR UPDATE
+                   """;
+
+        var parameters = keyList
+            .SelectMany((k, i) => new object[]
+            {
+                new NpgsqlParameter($"p{i*2}", k.ResourceId),
+                new NpgsqlParameter($"p{i*2+1}", k.UnitOfMeasureId)
+            })
+            .ToArray();
+
+        var balancesList = await context.Balances.FromSqlRaw(sql, parameters).ToListAsync(ct);
+
+        var balancesDict = balancesList.ToDictionary(
+            b => new ResourceKey(b.ResourceId, b.UnitOfMeasureId),
+            b => b);
+
+        return balancesDict;
     }
 }

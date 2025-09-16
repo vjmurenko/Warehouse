@@ -1,5 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Features.ShipmentDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
@@ -18,15 +19,13 @@ public class CreateShipmentCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         // 2. Валидация клиента
-        await validationService.ValidateClient(command.ClientId);
+        await validationService.ValidateClient(command.ClientId, ctx: cancellationToken);
         
-        // 3. Создание документа
-        var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
-        
-        
-        // 4. Валидация ресурсов
+        // 3. Валидация ресурсов
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken);
         
+        // 4. Создание документа
+        var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
         foreach (var dto in command.Resources)
         {
             shipmentDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
@@ -36,27 +35,13 @@ public class CreateShipmentCommandHandler(
         shipmentDocument.ValidateNotEmpty();
 
         // 5. Проверка доступности баланса (без списания)
-        foreach (var resource in shipmentDocument.ShipmentResources)
-        {
-            await balanceService.ValidateBalanceAvailability(
-                resource.ResourceId,
-                resource.UnitOfMeasureId,
-                resource.Quantity,
-                cancellationToken);
-        }
-
+        var deltas = shipmentDocument.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
+        await balanceService.ValidateBalanceAvailability(deltas, cancellationToken);
+        
         // 6. Подписание документа и списание с баланса если требуется
         if (command.Sign)
         {
-            // Списание при подписании (проверка уже выполнена выше)
-            foreach (var resource in shipmentDocument.ShipmentResources)
-            {
-                await balanceService.DecreaseBalance(
-                    resource.ResourceId,
-                    resource.UnitOfMeasureId,
-                    resource.Quantity,
-                    cancellationToken);
-            }
+            await balanceService.DecreaseBalances(deltas, cancellationToken);
             shipmentDocument.Sign();
         }
 

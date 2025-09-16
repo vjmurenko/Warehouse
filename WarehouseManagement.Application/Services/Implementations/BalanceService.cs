@@ -1,98 +1,125 @@
 ﻿using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Dtos;
+using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Domain.ValueObjects;
+
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class BalanceService : IBalanceService
+public class BalanceService(IBalanceRepository balanceRepository) : IBalanceService
 {
-    private readonly IBalanceRepository _balanceRepository;
-
-    public BalanceService(IBalanceRepository balanceRepository)
+    /// <summary>
+    /// Увеличение балансов
+    /// </summary>
+    public async Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        _balanceRepository = balanceRepository;
-    }
-
-    public async Task IncreaseBalance(Guid resourceId, Guid unitId, Quantity quantity, CancellationToken ct)
-    {
-        var balance = await _balanceRepository.GetForUpdateAsync(resourceId, unitId, ct);
-
-        if (balance == null)
-        {
-            balance = new Balance(resourceId, unitId, quantity);
-            await _balanceRepository.AddAsync(balance, ct);
-        }
-        else
-        {
-            balance.Increase(quantity);
-        }
-    }
-
-    public async Task DecreaseBalance(Guid resourceId, Guid unitId, Quantity quantity, CancellationToken ct)
-    {
-        var balance = await _balanceRepository.GetForUpdateAsync(resourceId, unitId, ct);
         
-        if (balance == null || balance.Quantity.Value < quantity.Value)
-            throw new InsufficientBalanceException(
-                "Resource", // We'll need to get actual names later
-                "Unit",
-                quantity.Value, 
-                balance?.Quantity.Value ?? 0);
-
-        balance?.Decrease(quantity);
+        var positiveDeltas = deltas.Select(d => d with { Quantity = Math.Abs(d.Quantity) });
+        await AdjustBalances(positiveDeltas, ct);
     }
 
-    public async Task ValidateBalanceAvailability(Guid resourceId, Guid unitId, Quantity quantity, CancellationToken ct)
+    /// <summary>
+    /// Пакетное уменьшение балансов
+    /// </summary>
+    public async Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        var balance = await _balanceRepository.GetForUpdateAsync(resourceId, unitId, ct);
-        
-        if (balance == null || balance.Quantity.Value < quantity.Value)
-            throw new InsufficientBalanceException(
-                "Resource", // We'll need to get actual names later
-                "Unit",
-                quantity.Value, 
-                balance?.Quantity.Value ?? 0);
-        
-        // Не изменяем баланс, только проверяем доступность
+        // Все дельты считаем отрицательными
+        var negativeDeltas = deltas.Select(d => d with { Quantity = -Math.Abs(d.Quantity) });
+        await AdjustBalances(negativeDeltas, ct);
     }
 
-    public async Task AdjustBalance(Guid resourceId, Guid unitId, decimal deltaQuantity, CancellationToken ct)
+    /// <summary>
+    /// Проверка доступности балансов (не изменяет их)
+    /// </summary>
+    public async Task ValidateBalanceAvailability(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        // deltaQuantity can be positive (increase) or negative (decrease)
-        if (deltaQuantity == 0)
-            return; // No change needed
+        var aggregated = deltas
+            .GroupBy(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId))
+            .Select(g => new BalanceDelta(
+                g.Key.ResourceId,
+                g.Key.UnitOfMeasureId,
+                g.Sum(x => x.Quantity)))
+            .Where(d => d.Quantity > 0) // проверяем только положительные дельты
+            .ToList();
 
-        var balance = await _balanceRepository.GetForUpdateAsync(resourceId, unitId, ct);
+        if (!aggregated.Any())
+            return;
 
-        if (deltaQuantity > 0)
+        var keys = aggregated.Select(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId));
+        var balances = await balanceRepository.GetForUpdateAsync(keys, ct);
+
+        foreach (var delta in aggregated)
         {
-            var quantity = new Quantity(deltaQuantity);
-            
-            // Increase balance
-            if (balance == null)
+            var key = new ResourceKey(delta.ResourceId, delta.UnitOfMeasureId);
+            balances.TryGetValue(key, out var balance);
+
+            if (balance == null || balance.Quantity.Value < delta.Quantity)
             {
-                balance = new Balance(resourceId, unitId, quantity);
-                await _balanceRepository.AddAsync(balance, ct);
+                throw new InsufficientBalanceException(
+                    "Resource", 
+                    "Unit",
+                    delta.Quantity,
+                    balance?.Quantity.Value ?? 0);
+            }
+        }
+    }
+    
+    /// <summary>
+    /// Обновление балансов по дельтам, положительная дельта = увеличение, отрицательная = уменьшение
+    /// </summary>
+    public async Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
+    {
+        var aggregated = deltas
+            .GroupBy(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId))
+            .Select(g => new BalanceDelta(
+                g.Key.ResourceId,
+                g.Key.UnitOfMeasureId,
+                g.Sum(x => x.Quantity)))
+            .Where(d => d.Quantity != 0)
+            .ToList();
+
+        if (!aggregated.Any())
+            return;
+
+        var keys = aggregated.Select(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId));
+        var balances = await balanceRepository.GetForUpdateAsync(keys, ct);
+
+        foreach (var delta in aggregated)
+        {
+            var key = new ResourceKey(delta.ResourceId, delta.UnitOfMeasureId);
+            balances.TryGetValue(key, out var balance);
+
+            if (delta.Quantity > 0)
+            {
+                var qty = new Quantity(delta.Quantity);
+
+                if (balance == null)
+                {
+                    balance = new Balance(delta.ResourceId, delta.UnitOfMeasureId, qty);
+                    await balanceRepository.AddAsync(balance, ct);
+                }
+                else
+                {
+                    balance.Increase(qty);
+                }
             }
             else
             {
-                balance.Increase(quantity);
-            }
-        }
-        else
-        {
-            // Decrease balance - deltaQuantity.Value is negative, so we need to make it positive
-            var decreaseAmount = new Quantity(Math.Abs(deltaQuantity));
-            
-            if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
-                throw new InsufficientBalanceException(
-                    "Resource", // We'll need to get actual names later
-                    "Unit",
-                    decreaseAmount.Value, 
-                    balance?.Quantity.Value ?? 0);
+                var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
 
-            balance?.Decrease(decreaseAmount);
+                if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
+                {
+                    throw new InsufficientBalanceException(
+                        "Resource",
+                        "Unit",
+                        decreaseAmount.Value,
+                        balance?.Quantity.Value ?? 0);
+                }
+
+                balance.Decrease(decreaseAmount);
+            }
         }
     }
 }

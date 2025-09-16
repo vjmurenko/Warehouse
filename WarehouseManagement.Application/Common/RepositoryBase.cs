@@ -9,6 +9,19 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IReposit
 {
     protected WarehouseDbContext DbContext { get; set; } = dbContext;
 
+    public async Task<IEnumerable<T>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken ctx)
+    {
+        ArgumentNullException.ThrowIfNull(ids);
+
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0)
+            return [];
+
+        return await DbContext.Set<T>()
+            .Where(e => idList.Contains(e.Id))
+            .ToListAsync(ctx);
+    }
+
     public virtual Guid Create(T t)
     {
         DbContext.Add(t);

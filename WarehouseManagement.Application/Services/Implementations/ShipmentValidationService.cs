@@ -2,7 +2,6 @@
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 namespace WarehouseManagement.Application.Services.Implementations;
@@ -18,12 +17,6 @@ public class ShipmentValidationService(
         ShipmentDocument? currentDocumentForExclude = null)
     {
         var resourcesForExclude = new List<ShipmentResourceDto>();
-        var receiptDocuments = await receiptRepository.GetFilteredAsync(cancellationToken: ctx);
-        var receiptResources = receiptDocuments
-            .SelectMany(c => c.ReceiptResources, (_, resource) =>
-                new ShipmentResourceDto(resource.ResourceId, resource.UnitOfMeasureId, resource.Quantity.Value))
-            .ToList();
-        resourcesForExclude.AddRange(receiptResources);
 
         if (currentDocumentForExclude != null)
         {
@@ -31,16 +24,12 @@ public class ShipmentValidationService(
                 .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity.Value)));
         }
 
-        updatedShipmentResources = updatedShipmentResources
-            .Where(u =>
-                !resourcesForExclude.Any(r => r.UnitId == u.UnitId && r.ResourceId == u.ResourceId))
+        var resourcesToValidate = updatedShipmentResources
+            .Where(u => !resourcesForExclude.Any(r => r.UnitId == u.UnitId && r.ResourceId == u.ResourceId))
             .ToList();
 
-        foreach (var documentReceiptResource in updatedShipmentResources)
-        {
-            await namedEntityValidationService.ValidateResourceAsync(documentReceiptResource.ResourceId, ctx);
-            await namedEntityValidationService.ValidateUnitOfMeasureAsync(documentReceiptResource.UnitId, ctx);
-        }
+        await namedEntityValidationService.ValidateResourcesAsync(resourcesToValidate.Select(c => c.ResourceId), ctx);
+        await namedEntityValidationService.ValidateUnitsAsync(resourcesToValidate.Select(c => c.UnitId), ctx);
     }
 
     public async Task ValidateClient(Guid clientId, Guid? excludeCurrentClient = null, CancellationToken ctx = default)

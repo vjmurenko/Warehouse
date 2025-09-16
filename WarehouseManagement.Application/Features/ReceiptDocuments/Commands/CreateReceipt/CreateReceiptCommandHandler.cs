@@ -1,5 +1,7 @@
 ﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Features.Balances.DTOs;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
@@ -15,29 +17,21 @@ public class CreateReceiptCommandHandler(
     {
         if (await receiptRepository.ExistsByNumberAsync(command.Number))
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
-
+        
+        await validationService.ValidateResourcesAsync(command.Resources.Select(c => c.ResourceId), cancellationToken);
+        await validationService.ValidateUnitsAsync(command.Resources.Select(c => c.UnitId), cancellationToken);
+        
         var receiptDocument = new ReceiptDocument(command.Number, command.Date);
-
         foreach (var dto in command.Resources)
         {
-            await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
-            await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
-
-
             receiptDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
         }
         
         receiptRepository.Create(receiptDocument);
-
-        foreach (var resource in receiptDocument.ReceiptResources)
-        {
-            await balanceService.IncreaseBalance(
-                resource.ResourceId,
-                resource.UnitOfMeasureId,
-                resource.Quantity,
-                cancellationToken);
-        }
-
+        
+        var balancesToIncrease = receiptDocument.ReceiptResources.Select(r => new ReceiptResourceAdapter(r).ToDelta());
+        await balanceService.IncreaseBalances(balancesToIncrease, cancellationToken);
+        
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return receiptDocument.Id;

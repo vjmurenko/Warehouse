@@ -1,7 +1,9 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Dtos;
+using WarehouseManagement.Application.Features.Balances.DTOs;
+using WarehouseManagement.Application.Features.ReceiptDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
@@ -11,84 +13,60 @@ public class UpdateReceiptCommandHandler(
     INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>
 {
-    public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken cancellationToken)
+    public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken ct)
     {
-        // 1. Получение существующего документа
-        var existingDocument = await receiptRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-        if (existingDocument == null)
+        // 1. Получаем существующий документ
+        var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, ct);
+        if (document == null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
-        // 2. Проверка уникальности номера (исключая текущий документ)
-        if (await receiptRepository.ExistsByNumberAsync(command.Number, command.Id, cancellationToken))
+        // 2. Проверяем уникальность номера
+        if (await receiptRepository.ExistsByNumberAsync(command.Number, command.Id, ct))
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
-        // 3. Создание карт старых и новых ресурсов для вычисления дельты
-        var oldResourceMap = existingDocument.ReceiptResources
-            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity.Value));
+        // 3. Валидируем только новые ресурсы (которые ещё не в документе)
+        var existingKeys = document.ReceiptResources
+            .Select(r => new { r.ResourceId, r.UnitOfMeasureId })
+            .ToHashSet();
 
-        var newResourceMap = command.Resources
-            .GroupBy(r => new { r.ResourceId, UnitOfMeasureId = r.UnitId })
-            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
+        var newResources = command.Resources
+            .Where(r => !existingKeys.Contains(new { r.ResourceId, UnitOfMeasureId = r.UnitId }))
+            .ToList();
 
-        // 4. Получение всех уникальных комбинаций ресурс-единица
-        var allResourceKeys = oldResourceMap.Keys.Union(newResourceMap.Keys).ToList();
-
-        // 5. Валидация новых ресурсов (только для тех, которых не было в старом документе)
-        foreach (var dto in command.Resources
-                     .Where(c => !oldResourceMap.ContainsKey(new { c.ResourceId, UnitOfMeasureId = c.UnitId })))
+        if (newResources.Any())
         {
-            await validationService.ValidateResourceAsync(dto.ResourceId, cancellationToken);
-            await validationService.ValidateUnitOfMeasureAsync(dto.UnitId, cancellationToken);
+            await validationService.ValidateResourcesAsync(newResources.Select(r => r.ResourceId), ct);
+            await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
 
-        // 6. Проверка дельты и предварительная валидация баланса для уменьшений
-        foreach (var resourceKey in allResourceKeys)
-        {
-            var oldQuantity = oldResourceMap.GetValueOrDefault(resourceKey, 0);
-            var newQuantity = newResourceMap.GetValueOrDefault(resourceKey, 0);
-            var delta = newQuantity - oldQuantity;
+        // 4. Формируем дельты: новое - старое
+        var oldDeltas = document.ReceiptResources.Select(r => new ReceiptResourceAdapter(r).ToDelta());
+        var newDeltas = command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity));
 
-            // Если дельта отрицательная (уменьшение), нужно проверить, что баланс не станет отрицательным
-            if (delta < 0)
-            {
-                var decreaseAmount = new Quantity(Math.Abs(delta));
-                await balanceService.ValidateBalanceAvailability(
-                    resourceKey.ResourceId,
-                    resourceKey.UnitOfMeasureId,
-                    decreaseAmount,
-                    cancellationToken);
-            }
+        var deltas = oldDeltas
+            .Concat(newDeltas.Select(d => d with { Quantity = -d.Quantity }))
+            .GroupBy(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId))
+            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(d => d.Quantity)))
+            .Where(d => d.Quantity != 0)
+            .ToList();
+
+        // 5. Применяем 
+        if (deltas.Any())
+        {
+            await balanceService.ValidateBalanceAvailability(deltas, ct);
+            await balanceService.AdjustBalances(deltas, ct);
         }
 
-        // 7. Обновление документа через доменные методы
-        existingDocument.UpdateNumber(command.Number);
-        existingDocument.UpdateDate(command.Date);
-        existingDocument.ClearResources();
+        // 6. Обновляем документ
+        document.UpdateNumber(command.Number);
+        document.UpdateDate(command.Date);
+        document.ClearResources();
 
-        // 8. Добавление новых ресурсов
-        foreach (var dto in command.Resources)
-        {
-            existingDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
-        }
+        foreach (var r in command.Resources)
+            document.AddResource(r.ResourceId, r.UnitId, r.Quantity);
 
-        // 9. Применение дельта изменений баланса
-        foreach (var resourceKey in allResourceKeys)
-        {
-            var oldQuantity = oldResourceMap.GetValueOrDefault(resourceKey, 0);
-            var newQuantity = newResourceMap.GetValueOrDefault(resourceKey, 0);
-            var delta = newQuantity - oldQuantity;
-
-            await balanceService.AdjustBalance(
-                resourceKey.ResourceId,
-                resourceKey.UnitOfMeasureId,
-                delta,
-                cancellationToken);
-        }
-
-        // 10. Сохранение изменений
-        receiptRepository.Update(existingDocument);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        receiptRepository.Update(document);
+        await unitOfWork.SaveChangesAsync(ct);
 
         return Unit.Value;
     }

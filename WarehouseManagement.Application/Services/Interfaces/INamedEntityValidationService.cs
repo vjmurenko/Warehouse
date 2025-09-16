@@ -4,6 +4,6 @@ namespace WarehouseManagement.Application.Services.Interfaces;
 
 public interface INamedEntityValidationService
 {
-    Task<Resource> ValidateResourceAsync(Guid resourceId, CancellationToken cancellationToken);
-    Task<UnitOfMeasure> ValidateUnitOfMeasureAsync(Guid unitId, CancellationToken cancellationToken);
+    Task ValidateResourcesAsync(IEnumerable<Guid> resourceIds, CancellationToken cancellationToken);
+    Task ValidateUnitsAsync(IEnumerable<Guid> unitIds, CancellationToken cancellationToken);
 }

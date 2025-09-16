@@ -1,5 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Features.ShipmentDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.RevokeShipment;
@@ -21,15 +22,9 @@ public class RevokeShipmentCommandHandler(
             throw new InvalidOperationException("Документ не подписан и не может быть отозван");
 
         // 3. Восстановление баланса
-        foreach (var resource in document.ShipmentResources)
-        {
-            await balanceService.IncreaseBalance(
-                resource.ResourceId,
-                resource.UnitOfMeasureId,
-                resource.Quantity,
-                cancellationToken);
-        }
-
+        var deltas = document.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
+        await balanceService.IncreaseBalances(deltas, cancellationToken);
+        
         // 4. Отзыв документа
         document.Revoke();
 
