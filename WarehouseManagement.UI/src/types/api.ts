@@ -153,11 +153,7 @@ export interface DocumentFilters {
   documentNumbers?: string[];
   resourceIds?: string[];
   unitIds?: string[];
-
-  // Legacy fields (keeping for backward compatibility while transitioning)
-  startDate?: string;
-  endDate?: string;
-  numbers?: string[];
+  clientIds?: string[]; 
 }
 
 export interface SelectOption {

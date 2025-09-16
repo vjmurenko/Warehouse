@@ -19,6 +19,7 @@ public class GetShipmentsQueryHandler(
             request.DocumentNumbers,
             request.ResourceIds,
             request.UnitIds,
+            request.ClientIds,
             ctx);
 
         var result = new List<ShipmentDocumentDto>();

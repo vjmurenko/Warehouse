@@ -62,7 +62,8 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
       toDate: toDate || undefined,
       documentNumbers: selectedShipmentDocuments.map(c => c.value),
       resourceIds: selectedResources.map(r => r.value),
-      unitIds: selectedUnits.map(u => u.value)
+      unitIds: selectedUnits.map(u => u.value), 
+      clientIds: selectedClients.map(c => c.value)
     };
     
     onFiltersChange(filters);

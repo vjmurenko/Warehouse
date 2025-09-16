@@ -25,7 +25,8 @@ const ShipmentsPage: React.FC = () => {
       const data = filtersToUse.fromDate || filtersToUse.toDate || 
                   filtersToUse.documentNumbers?.length || 
                   filtersToUse.resourceIds?.length || 
-                  filtersToUse.unitIds?.length
+                  filtersToUse.unitIds?.length || 
+                  filtersToUse.clientIds?.length
         ? await apiService.getFilteredShipmentDocuments(filtersToUse)
         : await apiService.getShipmentDocuments();
       

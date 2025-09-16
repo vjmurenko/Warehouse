@@ -8,5 +8,6 @@ public record GetShipmentsQuery(
     DateTime? ToDate = null,
     List<string>? DocumentNumbers = null,
     List<Guid>? ResourceIds = null,
-    List<Guid>? UnitIds = null
+    List<Guid>? UnitIds = null,
+    List<Guid>? ClientIds = null
 ) : IRequest<List<ShipmentDocumentDto>>;

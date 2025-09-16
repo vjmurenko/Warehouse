@@ -33,13 +33,13 @@ public class ShipmentRepository(WarehouseDbContext context) : RepositoryBase<Shi
         List<string>? documentNumbers = null,
         List<Guid>? resourceIds = null,
         List<Guid>? unitIds = null,
+        List<Guid>? clientIds = null,
         CancellationToken cancellationToken = default)
     {
         var query = context.ShipmentDocuments
             .Include(s => s.ShipmentResources)
             .AsQueryable();
-
-        // Date range filtering
+        
         if (fromDate.HasValue)
         {
             var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
@@ -55,20 +55,22 @@ public class ShipmentRepository(WarehouseDbContext context) : RepositoryBase<Shi
                 : toDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
             query = query.Where(s => s.Date <= toDateUtc);
         }
-
-        // Document numbers filtering
+        
         if (documentNumbers != null && documentNumbers.Any())
         {
             query = query.Where(s => documentNumbers.Contains(s.Number));
         }
-
-        // Resource filtering
+        
+        if (clientIds != null && clientIds.Any())
+        {
+            query = query.Where(s => clientIds.Contains(s.ClientId));
+        }
+        
         if (resourceIds != null && resourceIds.Any())
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => resourceIds.Contains(sr.ResourceId)));
         }
-
-        // Unit filtering
+        
         if (unitIds != null && unitIds.Any())
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => unitIds.Contains(sr.UnitOfMeasureId)));

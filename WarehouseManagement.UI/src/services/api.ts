@@ -225,16 +225,9 @@ class ApiService {
   async getFilteredReceiptDocuments(filters: DocumentFilters = {}): Promise<ReceiptDocumentDto[]> {
     const params = new URLSearchParams();
     
-    // Support both naming conventions for compatibility during transition
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
-    else if (filters.startDate) params.append('fromDate', filters.startDate);
-    
     if (filters.toDate) params.append('toDate', filters.toDate);
-    else if (filters.endDate) params.append('toDate', filters.endDate);
-    
     if (filters.documentNumbers) filters.documentNumbers.forEach(num => params.append('documentNumbers', num));
-    else if (filters.numbers) filters.numbers.forEach(num => params.append('documentNumbers', num));
-    
     if (filters.resourceIds) filters.resourceIds.forEach(id => params.append('resourceIds', id));
     if (filters.unitIds) filters.unitIds.forEach(id => params.append('unitIds', id));
     
@@ -300,18 +293,12 @@ class ApiService {
   async getFilteredShipmentDocuments(filters: DocumentFilters = {}): Promise<ShipmentDocumentDto[]> {
     const params = new URLSearchParams();
     
-    // Support both naming conventions for compatibility during transition
     if (filters.fromDate) params.append('fromDate', filters.fromDate);
-    else if (filters.startDate) params.append('fromDate', filters.startDate);
-    
     if (filters.toDate) params.append('toDate', filters.toDate);
-    else if (filters.endDate) params.append('toDate', filters.endDate);
-    
     if (filters.documentNumbers) filters.documentNumbers.forEach(num => params.append('documentNumbers', num));
-    else if (filters.numbers) filters.numbers.forEach(num => params.append('documentNumbers', num));
-    
     if (filters.resourceIds) filters.resourceIds.forEach(id => params.append('resourceIds', id));
     if (filters.unitIds) filters.unitIds.forEach(id => params.append('unitIds', id));
+    if (filters.clientIds) filters.clientIds.forEach(id => params.append('clientIds', id));
     
     const queryString = params.toString();
     const endpoint = queryString ? `/ShipmentDocuments?${queryString}` : '/ShipmentDocuments';

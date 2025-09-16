@@ -12,5 +12,6 @@ public interface IShipmentRepository : IRepositoryBase<ShipmentDocument>
         List<string>? documentNumbers = null,
         List<Guid>? resourceIds = null,
         List<Guid>? unitIds = null,
+        List<Guid>? clientIds = null,
         CancellationToken cancellationToken = default);
 }

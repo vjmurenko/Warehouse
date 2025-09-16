@@ -22,6 +22,7 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     /// <param name="documentNumbers">Filter by specific document numbers</param>
     /// <param name="resourceIds">Filter by specific resource IDs</param>
     /// <param name="unitIds">Filter by specific unit of measure IDs</param>
+    /// <param name="clientIds">Filter by specific client IDs</param>
     /// <returns>List of shipment document summaries</returns>
     [HttpGet]
     public async Task<ActionResult<List<ShipmentDocumentDto>>> GetShipments(
@@ -29,9 +30,10 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
         [FromQuery] DateTime? toDate = null,
         [FromQuery] List<string>? documentNumbers = null,
         [FromQuery] List<Guid>? resourceIds = null,
-        [FromQuery] List<Guid>? unitIds = null)
+        [FromQuery] List<Guid>? unitIds = null,
+        [FromQuery] List<Guid>? clientIds = null)
     {
-        var query = new GetShipmentsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds);
+        var query = new GetShipmentsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds, clientIds);
         var result = await mediator.Send(query);
         return Ok(result);
     }
