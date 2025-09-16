@@ -1,4 +1,4 @@
-﻿﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Infrastructure.Data;

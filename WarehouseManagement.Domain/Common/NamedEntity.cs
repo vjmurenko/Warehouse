@@ -1,4 +1,4 @@
-﻿﻿namespace WarehouseManagement.Domain.Common;
+﻿namespace WarehouseManagement.Domain.Common;
 
 public abstract class NamedEntity : Entity, IAggregateRoot
 {

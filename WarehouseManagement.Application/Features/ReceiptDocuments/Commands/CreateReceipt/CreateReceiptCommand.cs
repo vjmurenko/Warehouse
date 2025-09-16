@@ -1,4 +1,4 @@
-﻿﻿using MediatR;
+﻿using MediatR;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;

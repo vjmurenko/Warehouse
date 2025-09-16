@@ -2,15 +2,13 @@
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 
-public interface IReceiptRepository
+public interface IReceiptRepository : IRepositoryBase<ReceiptDocument>
 {
     Task<bool> ExistsByNumberAsync(string number);
-    Task AddAsync(ReceiptDocument document, CancellationToken token);
     
     Task<ReceiptDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByNumberAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default);
-    Task UpdateAsync(ReceiptDocument document, CancellationToken cancellationToken = default);
-    Task DeleteAsync(ReceiptDocument document, CancellationToken cancellationToken = default);
+
     Task<List<ReceiptDocument>> GetFilteredAsync(
         DateTime? fromDate = null, 
         DateTime? toDate = null, 

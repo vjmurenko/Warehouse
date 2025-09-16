@@ -1,9 +1,8 @@
-﻿﻿﻿﻿﻿﻿using WarehouseManagement.Application.Common.Interfaces;
+﻿using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Domain.ValueObjects;
-
 namespace WarehouseManagement.Application.Services.Implementations;
 
 public class BalanceService : IBalanceService

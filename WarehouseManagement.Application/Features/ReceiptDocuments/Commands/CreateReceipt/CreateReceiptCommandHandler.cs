@@ -27,8 +27,7 @@ public class CreateReceiptCommandHandler(
             receiptDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
         }
         
-        await receiptRepository.AddAsync(receiptDocument, cancellationToken);
-
+        receiptRepository.Create(receiptDocument);
 
         foreach (var resource in receiptDocument.ReceiptResources)
         {

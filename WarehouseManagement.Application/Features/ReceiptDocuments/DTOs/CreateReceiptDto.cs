@@ -1,4 +1,4 @@
-﻿﻿namespace WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
+﻿namespace WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 
 public record ReceiptResourceDto(
     Guid ResourceId,

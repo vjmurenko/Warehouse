@@ -1,4 +1,4 @@
-﻿﻿﻿﻿using WarehouseManagement.Domain.ValueObjects;
+﻿using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Interfaces;
 

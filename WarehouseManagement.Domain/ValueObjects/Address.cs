@@ -1,4 +1,4 @@
-﻿﻿﻿using WarehouseManagement.Domain.Common;
+﻿using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.ValueObjects;
 

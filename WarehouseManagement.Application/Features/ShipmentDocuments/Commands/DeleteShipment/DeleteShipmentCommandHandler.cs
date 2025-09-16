@@ -10,28 +10,19 @@ public class DeleteShipmentCommandHandler(
 {
     public async Task<Unit> Handle(DeleteShipmentCommand command, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            // 1. Получение документа
-            var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-            if (document == null)
-                throw new EntityNotFoundException("ShipmentDocument", command.Id);
+        // 1. Получение документа
+        var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
+        if (document == null)
+            throw new EntityNotFoundException("ShipmentDocument", command.Id);
 
-            // 2. Проверка что документ не подписан
-            if (document.IsSigned)
-                throw new SignedDocumentException("delete", "shipment", document.Number);
+        // 2. Проверка что документ не подписан
+        if (document.IsSigned)
+            throw new SignedDocumentException("delete", "shipment", document.Number);
 
-            // 3. Удаление документа
-            await shipmentRepository.DeleteAsync(document, cancellationToken);
+        // 3. Удаление документа
+        shipmentRepository.Delete(document);
 
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
-            return Unit.Value;
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        return Unit.Value;
     }
 }

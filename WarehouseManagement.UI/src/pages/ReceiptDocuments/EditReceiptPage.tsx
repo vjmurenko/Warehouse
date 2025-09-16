@@ -75,11 +75,6 @@ const EditReceiptPage: React.FC = () => {
 
     // Only validate resources that have any data entered
     const resourcesWithData = resources.filter(r => r.resourceId || r.unitId || r.quantity > 0);
-    
-    if (resourcesWithData.length === 0) {
-      setError('Необходимо добавить хотя бы один ресурс');
-      return;
-    }
 
     for (const resource of resourcesWithData) {
       if (!resource.resourceId) {

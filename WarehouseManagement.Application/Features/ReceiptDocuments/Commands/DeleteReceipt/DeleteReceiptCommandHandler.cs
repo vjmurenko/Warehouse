@@ -12,9 +12,7 @@ public class DeleteReceiptCommandHandler(
 {
     public async Task<Unit> Handle(DeleteReceiptCommand command, CancellationToken cancellationToken)
     {
-        await unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
-        {
+     
             // 1. Получение документа для удаления
             var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
             if (document == null)
@@ -32,15 +30,10 @@ public class DeleteReceiptCommandHandler(
             }
 
             // 3. Удаление документа
-            await receiptRepository.DeleteAsync(document, cancellationToken);
-            await unitOfWork.CommitTransactionAsync(cancellationToken);
+            receiptRepository.Delete(document);
+            await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
-        }
-        catch
-        {
-            await unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+        
     }
 }
