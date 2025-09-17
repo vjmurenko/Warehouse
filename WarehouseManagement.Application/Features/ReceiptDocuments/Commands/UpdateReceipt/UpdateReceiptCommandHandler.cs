@@ -39,14 +39,22 @@ public class UpdateReceiptCommandHandler(
             await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
 
-        // 4. Формируем дельты: новое - старое
-        var oldDeltas = document.ReceiptResources.Select(r => new ReceiptResourceAdapter(r).ToDelta());
-        var newDeltas = command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity));
+        // 4. Суммируем дубли и рассчитываем дельты
+        var oldQuantities = document.ReceiptResources
+            .GroupBy(r => new ResourceUnitKey(r.ResourceId, r.UnitOfMeasureId))
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity.Value));
 
-        var deltas = oldDeltas
-            .Concat(newDeltas.Select(d => d with { Quantity = -d.Quantity }))
-            .GroupBy(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId))
-            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(d => d.Quantity)))
+        var newQuantities = command.Resources
+            .Where(r => r.Quantity > 0)
+            .GroupBy(r => new ResourceUnitKey(r.ResourceId, r.UnitId))
+            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
+
+        var allKeys = oldQuantities.Keys.Union(newQuantities.Keys);
+        var deltas = allKeys
+            .Select(key => new BalanceDelta(
+                key.ResourceId, 
+                key.UnitOfMeasureId, 
+                newQuantities.GetValueOrDefault(key, 0) - oldQuantities.GetValueOrDefault(key, 0)))
             .Where(d => d.Quantity != 0)
             .ToList();
 
@@ -62,7 +70,12 @@ public class UpdateReceiptCommandHandler(
         document.UpdateDate(command.Date);
         document.ClearResources();
 
-        foreach (var r in command.Resources)
+        var finalResources = command.Resources
+            .Where(r => r.Quantity > 0)
+            .GroupBy(r => new { r.ResourceId, r.UnitId })
+            .Select(g => new { g.Key.ResourceId, g.Key.UnitId, Quantity = g.Sum(r => r.Quantity) });
+
+        foreach (var r in finalResources)
             document.AddResource(r.ResourceId, r.UnitId, r.Quantity);
 
         receiptRepository.Update(document);
