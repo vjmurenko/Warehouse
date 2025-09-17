@@ -1,6 +1,5 @@
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.Exceptions;
 
@@ -29,7 +28,7 @@ public abstract class NamedEntityService<T>(INamedEntityRepository<T> repository
 
     public virtual async Task<Guid> CreateAsync(T entity, CancellationToken ctx)
     {
-        if (await Repository.ExistsWithNameAsync(entity.Name))
+        if (await Repository.ExistsWithNameAsync(entity.Name, ctx: ctx))
         {
             throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }
@@ -42,7 +41,7 @@ public abstract class NamedEntityService<T>(INamedEntityRepository<T> repository
 
     public virtual async Task<bool> UpdateAsync(T entity, CancellationToken ctx)
     {
-        if (await Repository.ExistsWithNameAsync(entity.Name, entity.Id))
+        if (await Repository.ExistsWithNameAsync(entity.Name, entity.Id, ctx))
         {
             throw new DuplicateEntityException(typeof(T).Name, entity.Name);
         }

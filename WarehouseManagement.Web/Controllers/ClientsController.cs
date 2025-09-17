@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.Client;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Web.Controllers;
 

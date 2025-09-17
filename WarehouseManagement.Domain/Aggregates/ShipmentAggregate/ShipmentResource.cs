@@ -5,7 +5,6 @@ namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 public class ShipmentResource : Entity
 {
-    // Конструктор для EF Core
     private ShipmentResource()
     {
         Quantity = new Quantity(0);

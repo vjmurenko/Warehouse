@@ -1,5 +1,4 @@
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Interfaces;
 

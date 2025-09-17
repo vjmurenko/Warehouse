@@ -17,11 +17,9 @@ public class GetShipmentByIdQueryHandler(
         if (document == null)
             return null;
 
-        // Получаем информацию о клиенте
         var client = await clientService.GetByIdAsync(document.ClientId, ctx);
         var clientName = client?.Name ?? "Unknown Client";
-
-        // Получаем детали ресурсов
+        
         var resourceDetails = new List<ShipmentResourceDetailDto>();
         foreach (var resource in document.ShipmentResources)
         {

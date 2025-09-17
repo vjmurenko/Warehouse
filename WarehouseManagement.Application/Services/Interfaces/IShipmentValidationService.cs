@@ -1,5 +1,4 @@
 ﻿using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
-using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 namespace WarehouseManagement.Application.Services.Interfaces;

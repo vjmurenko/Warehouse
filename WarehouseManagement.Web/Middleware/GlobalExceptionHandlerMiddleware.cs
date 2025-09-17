@@ -1,6 +1,5 @@
 using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Common.Models;
 using WarehouseManagement.Domain.Exceptions;
 

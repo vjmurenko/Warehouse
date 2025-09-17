@@ -5,12 +5,11 @@ namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 public class Client : NamedEntity
 {
-    public Address Address { get; private set; } = null!; // Will be set by EF Core or constructor
-
-    // Конструктор для EF Core
+    public Address Address { get; private set; } = null!;
+    
     private Client() : base()
     {
-        // EF Core will set Address property during hydration
+        
     }
     
     public Client(string name, string address) : base(name)

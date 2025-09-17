@@ -10,13 +10,6 @@ public record ReceiptDocumentDto(
     public int ResourceCount => Resources?.Count ?? 0;
 };
 
-public record ReceiptDocumentSummaryDto(
-    Guid Id,
-    string Number,
-    DateTime Date,
-    int ResourceCount
-);
-
 public record ReceiptResourceDetailDto(
     Guid Id,
     Guid ResourceId,

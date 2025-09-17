@@ -47,7 +47,4 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IReposit
     {
         DbContext.Remove(t);
     }
-
-
-    
 }

@@ -5,7 +5,6 @@ using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.IntegrationTests.Infrastructure;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.ValueObjects;
-using Xunit;
 
 namespace WarehouseManagement.IntegrationTests;
 

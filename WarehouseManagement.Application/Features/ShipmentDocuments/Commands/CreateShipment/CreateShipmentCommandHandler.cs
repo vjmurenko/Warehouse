@@ -31,10 +31,10 @@ public class CreateShipmentCommandHandler(
             shipmentDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
         }
         
-        // 4.2. Проверка что документ не пустой (бизнес-правило)
+        // 4.2. Проверка что документ не пустой
         shipmentDocument.ValidateNotEmpty();
 
-        // 5. Проверка доступности баланса (без списания)
+        // 5. Проверка доступности баланса
         var deltas = shipmentDocument.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
         await balanceService.ValidateBalanceAvailability(deltas, cancellationToken);
         

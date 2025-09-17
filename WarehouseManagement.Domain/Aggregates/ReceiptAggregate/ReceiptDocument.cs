@@ -10,7 +10,6 @@ public class ReceiptDocument : Entity, IAggregateRoot
     public DateTime Date { get; private set; }
     public IReadOnlyCollection<ReceiptResource> ReceiptResources => _receiptResources.AsReadOnly();
     
-    // Конструктор для EF
     private ReceiptDocument() { }
 
     public ReceiptDocument(string number, DateTime date)
@@ -29,7 +28,6 @@ public class ReceiptDocument : Entity, IAggregateRoot
         _receiptResources.Add(resource);
     }
     
-    // New methods for update operations
     public void UpdateNumber(string number)
     {
         if (string.IsNullOrWhiteSpace(number))

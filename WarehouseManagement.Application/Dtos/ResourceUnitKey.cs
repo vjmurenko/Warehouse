@@ -1,3 +1,3 @@
 ﻿namespace WarehouseManagement.Application.Dtos;
 
-public readonly record struct ResourceKey(Guid ResourceId, Guid UnitOfMeasureId);
+public readonly record struct ResourceUnitKey(Guid ResourceId, Guid UnitOfMeasureId);

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.UntOfMeasure;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Web.Controllers;
 

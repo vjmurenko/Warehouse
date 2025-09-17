@@ -37,13 +37,13 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
             .ToListAsync(cancellationToken);
     }
     
-    public async Task<Dictionary<ResourceKey, Balance>> GetForUpdateAsync(
-        IEnumerable<ResourceKey> keys,
+    public async Task<Dictionary<ResourceUnitKey, Balance>> GetForUpdateAsync(
+        IEnumerable<ResourceUnitKey> keys,
         CancellationToken ct)
     {
         var keyList = keys.Distinct().ToList();
         if (!keyList.Any())
-            return new Dictionary<ResourceKey, Balance>();
+            return new Dictionary<ResourceUnitKey, Balance>();
         
         var values = string.Join(", ", keyList.Select((k, i) => $"(@p{i*2}, @p{i*2+1})"));
         var sql = $"""
@@ -64,7 +64,7 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
         var balancesList = await context.Balances.FromSqlRaw(sql, parameters).ToListAsync(ct);
 
         var balancesDict = balancesList.ToDictionary(
-            b => new ResourceKey(b.ResourceId, b.UnitOfMeasureId),
+            b => new ResourceUnitKey(b.ResourceId, b.UnitOfMeasureId),
             b => b);
 
         return balancesDict;

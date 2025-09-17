@@ -1,5 +1,3 @@
-using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-
 namespace WarehouseManagement.Application.Services.Interfaces;
 
 public interface INamedEntityValidationService

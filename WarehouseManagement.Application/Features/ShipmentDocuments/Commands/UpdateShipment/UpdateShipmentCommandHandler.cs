@@ -1,7 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Adapters;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
@@ -49,7 +48,7 @@ public class UpdateShipmentCommandHandler(
         // 6. Проверка доступности балансов (для новых ресурсов)
         await balanceService.ValidateBalanceAvailability(delta, cancellationToken);
 
-        // 7. Если подписываем, делаем пакетное списание баланса
+        // 7. Если подписываем, делаем списание баланса
         if (command.Sign)
         {
             await balanceService.DecreaseBalances(delta, cancellationToken);

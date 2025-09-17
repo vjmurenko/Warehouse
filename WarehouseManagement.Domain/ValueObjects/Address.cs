@@ -13,7 +13,7 @@ public class Address : ValueObject
     
     private Address()
     {
-        Name = string.Empty; // EF Core will set the actual value later
+        Name = string.Empty; 
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

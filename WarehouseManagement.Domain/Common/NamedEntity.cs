@@ -4,11 +4,10 @@ public abstract class NamedEntity : Entity, IAggregateRoot
 {
     public string Name { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
-
-    // Protected parameterless constructor for EF Core
+    
     protected NamedEntity()
     {
-        // EF Core will set properties after construction
+        
     }
 
     protected NamedEntity(string name)

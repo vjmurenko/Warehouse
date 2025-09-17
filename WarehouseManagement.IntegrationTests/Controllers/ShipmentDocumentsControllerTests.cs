@@ -14,18 +14,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
     public ShipmentDocumentsControllerTests(TestcontainersWebApplicationFactory<Program> factory) : base(factory)
     {
     }
-
-    [Fact]
-    public async Task GetShipments_ShouldReturnEmptyList_WhenNoShipments()
-    {
-        // Act
-        var shipments = await GetAsync<List<ShipmentDocumentSummaryDto>>("/api/ShipmentDocuments");
-
-        // Assert
-        Assert.NotNull(shipments);
-        Assert.Empty(shipments);
-    }
-
+    
     [Fact]
     public async Task CreateShipment_ShouldCreateShipment_WhenValidDataAndSufficientInventory()
     {

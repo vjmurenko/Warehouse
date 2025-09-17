@@ -1,8 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 

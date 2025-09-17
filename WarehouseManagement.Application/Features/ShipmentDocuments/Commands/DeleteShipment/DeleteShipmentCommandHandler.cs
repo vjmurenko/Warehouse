@@ -15,7 +15,7 @@ public class DeleteShipmentCommandHandler(
         if (document == null)
             throw new EntityNotFoundException("ShipmentDocument", command.Id);
 
-        // 2. Проверка что документ не подписан
+        // 2. Проверка, что документ не подписан
         if (document.IsSigned)
             throw new SignedDocumentException("delete", "shipment", document.Number);
 

@@ -7,7 +7,6 @@ using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 namespace WarehouseManagement.Application.Services.Implementations;
 
 public class ShipmentValidationService(
-    IReceiptRepository receiptRepository,
     INamedEntityRepository<Client> clientRepository,
     INamedEntityValidationService namedEntityValidationService) : IShipmentValidationService
 {

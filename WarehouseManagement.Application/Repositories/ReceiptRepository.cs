@@ -8,13 +8,11 @@ namespace WarehouseManagement.Application.Repositories;
 
 public class ReceiptRepository(WarehouseDbContext context) : RepositoryBase<ReceiptDocument>(context), IReceiptRepository
 {
-    // Existing methods
     public async Task<bool> ExistsByNumberAsync(string number)
     {
         return await context.ReceiptDocuments.AnyAsync(r => r.Number == number);
     }
     
-
     public async Task<ReceiptDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await context.ReceiptDocuments
@@ -33,7 +31,6 @@ public class ReceiptRepository(WarehouseDbContext context) : RepositoryBase<Rece
         
         return await query.AnyAsync(cancellationToken);
     }
-
     
     public async Task<List<ReceiptDocument>> GetFilteredAsync(
         DateTime? fromDate = null,
@@ -47,7 +44,6 @@ public class ReceiptRepository(WarehouseDbContext context) : RepositoryBase<Rece
             .Include(r => r.ReceiptResources)
             .AsQueryable();
 
-        // Date range filtering
         if (fromDate.HasValue)
         {
             var fromDateUtc = fromDate.Value.Kind == DateTimeKind.Unspecified 
@@ -64,19 +60,16 @@ public class ReceiptRepository(WarehouseDbContext context) : RepositoryBase<Rece
             query = query.Where(r => r.Date <= toDateUtc);
         }
 
-        // Document numbers filtering
         if (documentNumbers != null && documentNumbers.Any())
         {
             query = query.Where(r => documentNumbers.Contains(r.Number));
         }
-
-        // Resource filtering
+        
         if (resourceIds != null && resourceIds.Any())
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => resourceIds.Contains(rr.ResourceId)));
         }
-
-        // Unit filtering
+        
         if (unitIds != null && unitIds.Any())
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => unitIds.Contains(rr.UnitOfMeasureId)));

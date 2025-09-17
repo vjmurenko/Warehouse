@@ -45,7 +45,7 @@ public class UpdateReceiptCommandHandler(
 
         var deltas = oldDeltas
             .Concat(newDeltas.Select(d => d with { Quantity = -d.Quantity }))
-            .GroupBy(d => new ResourceKey(d.ResourceId, d.UnitOfMeasureId))
+            .GroupBy(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId))
             .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(d => d.Quantity)))
             .Where(d => d.Quantity != 0)
             .ToList();

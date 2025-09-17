@@ -5,7 +5,6 @@ namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
 public class ReceiptResource : Entity
 {
-    // Конструктор для EF Core
     private ReceiptResource()
     {
         Quantity = new Quantity(0);
