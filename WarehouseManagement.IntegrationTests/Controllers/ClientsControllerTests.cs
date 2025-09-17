@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using WarehouseManagement.Application.Dtos.Client;
 using WarehouseManagement.IntegrationTests.Infrastructure;
+using WarehouseManagement.Web;
 using CreateClientRequest = WarehouseManagement.Application.Dtos.Client.CreateClientRequest;
 using UpdateClientRequest = WarehouseManagement.Application.Dtos.Client.UpdateClientRequest;
 

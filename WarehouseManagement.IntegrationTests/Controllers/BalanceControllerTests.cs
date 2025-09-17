@@ -4,6 +4,7 @@ using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.IntegrationTests.Infrastructure;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.ValueObjects;
+using WarehouseManagement.Web;
 
 namespace WarehouseManagement.IntegrationTests.Controllers;
 

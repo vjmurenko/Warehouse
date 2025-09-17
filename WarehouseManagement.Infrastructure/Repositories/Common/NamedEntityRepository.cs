@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data;
 
-namespace WarehouseManagement.Application.Common;
+namespace WarehouseManagement.Infrastructure.Repositories.Common;
 
 public abstract class NamedEntityRepository<T>(WarehouseDbContext dbContext) : RepositoryBase<T>(dbContext), INamedEntityRepository<T>
     where T : NamedEntity

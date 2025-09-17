@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data;
 
-namespace WarehouseManagement.Application.Common;
+namespace WarehouseManagement.Infrastructure.Repositories.Common;
 
 public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IRepositoryBase<T> where T : Entity
 {

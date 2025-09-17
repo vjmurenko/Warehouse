@@ -6,6 +6,7 @@ using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.IntegrationTests.Infrastructure;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.ValueObjects;
+using WarehouseManagement.Web;
 
 namespace WarehouseManagement.IntegrationTests.Controllers;
 

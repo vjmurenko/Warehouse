@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using WarehouseManagement.Application.Dtos.Resource;
 using WarehouseManagement.IntegrationTests.Infrastructure;
+using WarehouseManagement.Web;
 
 namespace WarehouseManagement.IntegrationTests.Controllers;
 

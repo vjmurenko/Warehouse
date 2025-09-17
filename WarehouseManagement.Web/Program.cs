@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Common;
-using WarehouseManagement.Application.Repositories;
-using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 using WarehouseManagement.Application.Services.Implementations;
+using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Repositories;
+using WarehouseManagement.Infrastructure.Repositories.Common;
 using WarehouseManagement.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +36,7 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
 // Add MediatR
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(typeof(WarehouseManagement.Application.Features.Balances.Queries.GetBalances.GetBalancesQuery).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(GetBalancesQuery).Assembly);
 });
 
 // Register repositories
@@ -85,7 +86,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<WarehouseManagement.Web.Program>>();
         logger.LogError(ex, "An error occurred while applying database migrations.");
         throw;
     }
@@ -94,4 +95,7 @@ using (var scope = app.Services.CreateScope())
 app.Run();
 
 // Make Program class accessible for testing
-public partial class Program { }
+namespace WarehouseManagement.Web
+{
+    public partial class Program { }
+}

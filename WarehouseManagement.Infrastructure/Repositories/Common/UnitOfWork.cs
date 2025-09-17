@@ -1,7 +1,7 @@
 ﻿using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Infrastructure.Data;
 
-namespace WarehouseManagement.Application.Common;
+namespace WarehouseManagement.Infrastructure.Repositories.Common;
 
 public class UnitOfWork(WarehouseDbContext context) : IUnitOfWork
 {

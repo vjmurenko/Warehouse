@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using WarehouseManagement.Application.Common;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Repositories.Common;
 
-namespace WarehouseManagement.Application.Repositories;
+namespace WarehouseManagement.Infrastructure.Repositories;
 
 public class ResourceRepository(WarehouseDbContext dbContext) : NamedEntityRepository<Resource>(dbContext)
 {

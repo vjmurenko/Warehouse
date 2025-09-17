@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 using WarehouseManagement.IntegrationTests.Infrastructure;
+using WarehouseManagement.Web;
 
 namespace WarehouseManagement.IntegrationTests.Controllers;
 

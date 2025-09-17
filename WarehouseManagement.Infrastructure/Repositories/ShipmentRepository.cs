@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using WarehouseManagement.Application.Common;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Repositories.Common;
 
-namespace WarehouseManagement.Application.Repositories;
+namespace WarehouseManagement.Infrastructure.Repositories;
 
 public class ShipmentRepository(WarehouseDbContext context) : RepositoryBase<ShipmentDocument>(context), IShipmentRepository
 {

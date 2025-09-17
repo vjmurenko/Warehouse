@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using WarehouseManagement.Application.Common;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Repositories.Common;
 
-namespace WarehouseManagement.Application.Repositories;
+namespace WarehouseManagement.Infrastructure.Repositories;
 
 public class ReceiptRepository(WarehouseDbContext context) : RepositoryBase<ReceiptDocument>(context), IReceiptRepository
 {

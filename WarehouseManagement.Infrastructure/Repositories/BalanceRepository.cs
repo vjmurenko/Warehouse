@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
-using WarehouseManagement.Application.Common;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Dtos;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Repositories.Common;
 
-namespace WarehouseManagement.Application.Repositories;
+namespace WarehouseManagement.Infrastructure.Repositories;
 
 public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Balance>(context), IBalanceRepository
 {
@@ -45,28 +45,29 @@ public class BalanceRepository(WarehouseDbContext context) : RepositoryBase<Bala
         if (!keyList.Any())
             return new Dictionary<ResourceUnitKey, Balance>();
         
-        var values = string.Join(", ", keyList.Select((k, i) => $"(@p{i*2}, @p{i*2+1})"));
-        var sql = $"""
-                       SELECT * 
-                       FROM "Balances"
-                       WHERE ("ResourceId","UnitOfMeasureId") IN ({values})
-                       FOR UPDATE
-                   """;
+        var resourceIds = keyList.Select(k => k.ResourceId).ToArray();
+        var unitIds = keyList.Select(k => k.UnitOfMeasureId).ToArray();
 
-        var parameters = keyList
-            .SelectMany((k, i) => new object[]
-            {
-                new NpgsqlParameter($"p{i*2}", k.ResourceId),
-                new NpgsqlParameter($"p{i*2+1}", k.UnitOfMeasureId)
-            })
-            .ToArray();
+        var sql = @"
+        SELECT *
+        FROM ""Balances""
+        WHERE (""ResourceId"", ""UnitOfMeasureId"") IN (
+            SELECT UNNEST(@resourceIds::uuid[]), UNNEST(@unitIds::uuid[])
+        )
+        FOR UPDATE";
 
-        var balancesList = await context.Balances.FromSqlRaw(sql, parameters).ToListAsync(ct);
+        var parameters = new[]
+        {
+            new NpgsqlParameter("resourceIds", resourceIds),
+            new NpgsqlParameter("unitIds", unitIds)
+        };
 
-        var balancesDict = balancesList.ToDictionary(
-            b => new ResourceUnitKey(b.ResourceId, b.UnitOfMeasureId),
-            b => b);
+        var balancesList = await context.Balances
+            .FromSqlRaw(sql, parameters)
+            .ToListAsync(ct);
 
-        return balancesDict;
+        return balancesList
+            .ToDictionary(b => new ResourceUnitKey(b.ResourceId, b.UnitOfMeasureId), b => b);
     }
+
 }
