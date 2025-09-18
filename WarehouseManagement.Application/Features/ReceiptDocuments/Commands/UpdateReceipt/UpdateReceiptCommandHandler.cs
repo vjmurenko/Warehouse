@@ -2,8 +2,9 @@ using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Dtos;
 using WarehouseManagement.Application.Features.Balances.DTOs;
-using WarehouseManagement.Application.Features.ReceiptDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
+using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
@@ -25,40 +26,17 @@ public class UpdateReceiptCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         // 3. Валидируем только новые ресурсы (которые ещё не в документе)
-        var existingKeys = document.ReceiptResources
-            .Select(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .ToHashSet();
-
-        var newResources = command.Resources
-            .Where(r => !existingKeys.Contains(new { r.ResourceId, UnitOfMeasureId = r.UnitId }))
-            .ToList();
-
+        var newResources = GetNewResources(document, command.Resources);
         if (newResources.Any())
         {
             await validationService.ValidateResourcesAsync(newResources.Select(r => r.ResourceId), ct);
             await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
+        
+        // 4. Рассчитываем дельты для изменения балансов
+        var deltas = CalculateBalanceDeltas(document, command.Resources);
 
-        // 4. Суммируем дубли и рассчитываем дельты
-        var oldQuantities = document.ReceiptResources
-            .GroupBy(r => new ResourceUnitKey(r.ResourceId, r.UnitOfMeasureId))
-            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity.Value));
-
-        var newQuantities = command.Resources
-            .Where(r => r.Quantity > 0)
-            .GroupBy(r => new ResourceUnitKey(r.ResourceId, r.UnitId))
-            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity));
-
-        var allKeys = oldQuantities.Keys.Union(newQuantities.Keys);
-        var deltas = allKeys
-            .Select(key => new BalanceDelta(
-                key.ResourceId, 
-                key.UnitOfMeasureId, 
-                newQuantities.GetValueOrDefault(key, 0) - oldQuantities.GetValueOrDefault(key, 0)))
-            .Where(d => d.Quantity != 0)
-            .ToList();
-
-        // 5. Применяем 
+        // 5. Применяем изменения к балансам
         if (deltas.Any())
         {
             await balanceService.ValidateBalanceAvailability(deltas, ct);
@@ -66,21 +44,59 @@ public class UpdateReceiptCommandHandler(
         }
 
         // 6. Обновляем документ
-        document.UpdateNumber(command.Number);
-        document.UpdateDate(command.Date);
-        document.ClearResources();
-
-        var finalResources = command.Resources
-            .Where(r => r.Quantity > 0)
-            .GroupBy(r => new { r.ResourceId, r.UnitId })
-            .Select(g => new { g.Key.ResourceId, g.Key.UnitId, Quantity = g.Sum(r => r.Quantity) });
-
-        foreach (var r in finalResources)
-            document.AddResource(r.ResourceId, r.UnitId, r.Quantity);
+        UpdateDocumentResources(document, command);
 
         receiptRepository.Update(document);
         await unitOfWork.SaveChangesAsync(ct);
 
         return Unit.Value;
+    }
+
+    private List<ReceiptResourceDto> GetNewResources(ReceiptDocument document, List<ReceiptResourceDto> commandResources)
+    {
+        var existingKeys = document.ReceiptResources
+            .Select(r => new { r.ResourceId, r.UnitOfMeasureId })
+            .ToHashSet();
+
+        return commandResources
+            .Where(r => !existingKeys.Contains(new { r.ResourceId, UnitOfMeasureId = r.UnitId }))
+            .ToList();
+    }
+
+    private List<BalanceDelta> CalculateBalanceDeltas(ReceiptDocument document, List<ReceiptResourceDto> commandResources)
+    {
+        var oldQuantities = document.ReceiptResources
+            .ToDictionary(g => new ResourceUnitKey(g.ResourceId, g.UnitOfMeasureId), r => r.Quantity.Value);
+        
+        var newQuantities = commandResources
+            .Where(r => r.Quantity > 0)
+            .GroupBy(r => new {r.ResourceId, r.UnitId})
+            .ToDictionary(g => new ResourceUnitKey(g.Key.ResourceId, g.Key.UnitId), r => r.Sum(d => d.Quantity));
+        
+        var allKeys = oldQuantities.Keys.Union(newQuantities.Keys);
+        return allKeys
+            .Select(key => new BalanceDelta(
+                key.ResourceId,
+                key.UnitOfMeasureId,
+                newQuantities.GetValueOrDefault(key, 0) - oldQuantities.GetValueOrDefault(key, 0)))
+            .Where(d => d.Quantity != 0)
+            .ToList();
+    }
+
+    private void UpdateDocumentResources(ReceiptDocument document, UpdateReceiptCommand command)
+    {
+        document.UpdateNumber(command.Number);
+        document.UpdateDate(command.Date);
+        document.ClearResources();
+
+        var groupedResources = command.Resources.Where(r => r.Quantity > 0)
+            .GroupBy(d => new { d.ResourceId, d.UnitId })
+            .Select(c => new BalanceDelta(c.Key.ResourceId, c.Key.UnitId, c.Sum(d => d.Quantity))
+            ).ToList();
+
+        foreach (var groupedResource in groupedResources)
+        {
+            document.AddResource(groupedResource.ResourceId, groupedResource.UnitOfMeasureId, groupedResource.Quantity);
+        }
     }
 }

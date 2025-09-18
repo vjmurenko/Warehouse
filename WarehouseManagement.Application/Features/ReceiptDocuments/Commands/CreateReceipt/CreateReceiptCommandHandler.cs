@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Features.ReceiptDocuments.Adapters;
+using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
@@ -21,15 +21,20 @@ public class CreateReceiptCommandHandler(
         await validationService.ValidateUnitsAsync(command.Resources.Select(c => c.UnitId), cancellationToken);
         
         var receiptDocument = new ReceiptDocument(command.Number, command.Date);
-        foreach (var dto in command.Resources)
+        
+        var balanceDeltas  = command.Resources
+            .GroupBy(r => new { r.ResourceId, r.UnitId })
+            .Select(c => new BalanceDelta(c.Key.ResourceId, c.Key.UnitId, c.Sum(r => r.Quantity)))
+            .ToList();
+
+        foreach (var balanceDelta in balanceDeltas)
         {
-            receiptDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
+            receiptDocument.AddResource(balanceDelta.ResourceId, balanceDelta.UnitOfMeasureId, balanceDelta.Quantity);
         }
         
         receiptRepository.Create(receiptDocument);
         
-        var balancesToIncrease = receiptDocument.ReceiptResources.Select(r => new ReceiptResourceAdapter(r).ToDelta());
-        await balanceService.IncreaseBalances(balancesToIncrease, cancellationToken);
+        await balanceService.IncreaseBalances(balanceDeltas, cancellationToken);
         
         await unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -5,9 +5,9 @@ namespace WarehouseManagement.Domain.Aggregates;
 
 public class Balance : Entity, IAggregateRoot
 {
-    public Guid ResourceId { get; set; }
-    public Guid UnitOfMeasureId { get; set; }
-    public Quantity Quantity { get; set; }
+    public Guid ResourceId { get; private set; }
+    public Guid UnitOfMeasureId { get; private set; }
+    public Quantity Quantity { get; private set; }
     
     public Balance(Guid resourceId, Guid unitOfMeasureId, Quantity quantity)
     {

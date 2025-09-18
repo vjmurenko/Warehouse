@@ -1,6 +1,7 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Features.ReceiptDocuments.Adapters;
+using WarehouseManagement.Application.Dtos;
+using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Exceptions;
 
@@ -17,13 +18,15 @@ public class DeleteReceiptCommandHandler(
             if (document == null)
                 throw new EntityNotFoundException("ReceiptDocument", command.Id);
             
-            var balanceDeltaToDecrease = document.ReceiptResources.Select(c => new ReceiptResourceAdapter(c).ToDelta());
+            var balanceDeltaToDecrease = document.ReceiptResources
+                .GroupBy(r => new {r.ResourceId, r.UnitOfMeasureId})
+                .Select(c =>  new BalanceDelta(c.Key.ResourceId, c.Key.UnitOfMeasureId, c.Sum(r => r.Quantity.Value)));
+            
             await balanceService.DecreaseBalances(balanceDeltaToDecrease, cancellationToken);
           
             receiptRepository.Delete(document);
             await unitOfWork.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
-        
     }
 }

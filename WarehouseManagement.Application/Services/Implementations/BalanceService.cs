@@ -3,78 +3,44 @@ using WarehouseManagement.Application.Dtos;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class BalanceService(IBalanceRepository balanceRepository) : IBalanceService
+public class BalanceService(IBalanceRepository balanceRepository,
+    INamedEntityRepository<Resource> resourceRepository,
+    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository) : IBalanceService
 {
     public async Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        
         var positiveDeltas = deltas.Select(d => d with { Quantity = Math.Abs(d.Quantity) });
         await AdjustBalances(positiveDeltas, ct);
     }
     
     public async Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        // Все дельты считаем отрицательными
         var negativeDeltas = deltas.Select(d => d with { Quantity = -Math.Abs(d.Quantity) });
         await AdjustBalances(negativeDeltas, ct);
     }
     
     public async Task ValidateBalanceAvailability(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        var aggregated = deltas
-            .GroupBy(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId))
-            .Select(g => new BalanceDelta(
-                g.Key.ResourceId,
-                g.Key.UnitOfMeasureId,
-                g.Sum(x => x.Quantity)))
-            .Where(d => d.Quantity > 0) // проверяем только положительные дельты
-            .ToList();
-
-        if (!aggregated.Any())
-            return;
-
-        var keys = aggregated.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
-        var balances = await balanceRepository.GetForUpdateAsync(keys, ct);
-
-        foreach (var delta in aggregated)
-        {
-            var key = new ResourceUnitKey(delta.ResourceId, delta.UnitOfMeasureId);
-            balances.TryGetValue(key, out var balance);
-
-            if (balance == null || balance.Quantity.Value < delta.Quantity)
-            {
-                throw new InsufficientBalanceException(
-                    "Resource", 
-                    "Unit",
-                    delta.Quantity,
-                    balance?.Quantity.Value ?? 0);
-            }
-        }
+        await ValidateBalanceForDecrease(deltas, ct: ct);
     }
     
     public async Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
     {
-        var aggregated = deltas
-            .GroupBy(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId))
-            .Select(g => new BalanceDelta(
-                g.Key.ResourceId,
-                g.Key.UnitOfMeasureId,
-                g.Sum(x => x.Quantity)))
-            .Where(d => d.Quantity != 0)
-            .ToList();
+        var deltasList = deltas.ToList();
 
-        if (!aggregated.Any())
+        if (!deltasList.Any())
             return;
 
-        var keys = aggregated.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
+        var keys = deltasList.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
         var balances = await balanceRepository.GetForUpdateAsync(keys, ct);
 
-        foreach (var delta in aggregated)
+        foreach (var delta in deltasList.Where(d => d.Quantity != 0))
         {
             var key = new ResourceUnitKey(delta.ResourceId, delta.UnitOfMeasureId);
             balances.TryGetValue(key, out var balance);
@@ -95,18 +61,54 @@ public class BalanceService(IBalanceRepository balanceRepository) : IBalanceServ
             }
             else
             {
+                await ValidateBalanceForDecrease([delta], balances, ct);
+                
                 var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
-
-                if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
-                {
-                    throw new InsufficientBalanceException(
-                        "Resource",
-                        "Unit",
-                        decreaseAmount.Value,
-                        balance?.Quantity.Value ?? 0);
-                }
-
-                balance.Decrease(decreaseAmount);
+                
+                balance!.Decrease(decreaseAmount);
+            }
+        }
+    }
+    
+    private async Task ValidateBalanceForDecrease(IEnumerable<BalanceDelta> deltas, 
+        IDictionary<ResourceUnitKey, Balance>? preFetchedBalances = null,
+        CancellationToken ct = default)
+    {
+        var deltasList = deltas
+            .Select(c => c with { Quantity = Math.Abs(c.Quantity) })
+            .ToList();
+        
+        if (!deltasList.Any())
+            return;
+            
+        IDictionary<ResourceUnitKey, Balance> balances;
+        if (preFetchedBalances != null)
+        {
+            balances = preFetchedBalances;
+        }
+        else
+        {
+            var keys = deltasList.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
+            balances = await balanceRepository.GetForUpdateAsync(keys, ct);
+        }
+        
+        foreach (var delta in deltasList)
+        {
+            var key = new ResourceUnitKey(delta.ResourceId, delta.UnitOfMeasureId);
+            balances.TryGetValue(key, out var balance);
+            
+            var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
+            
+            if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
+            {
+                var resourceName = (await resourceRepository.GetByIdAsync(delta.ResourceId, ct)).Name;
+                var unitOfMeasureName = (await unitOfMeasureRepository.GetByIdAsync(delta.UnitOfMeasureId, ct)).Name;
+                
+                throw new InsufficientBalanceException(
+                    resourceName,
+                    unitOfMeasureName,
+                    decreaseAmount.Value,
+                    balance?.Quantity.Value ?? 0);
             }
         }
     }
