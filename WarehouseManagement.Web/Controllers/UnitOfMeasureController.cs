@@ -9,10 +9,12 @@ namespace WarehouseManagement.Web.Controllers;
 public class UnitOfMeasureController : ControllerBase
 {
     private readonly IUnitOfMeasureService _unitOfMeasureService;
+    private readonly ILogger<UnitOfMeasureController> _logger;
 
-    public UnitOfMeasureController(IUnitOfMeasureService unitOfMeasureService)
+    public UnitOfMeasureController(IUnitOfMeasureService unitOfMeasureService, ILogger<UnitOfMeasureController> logger)
     {
         _unitOfMeasureService = unitOfMeasureService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -23,6 +25,7 @@ public class UnitOfMeasureController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<UnitOfMeasureDto>>> GetUnitsOfMeasure(CancellationToken ctx)
     {
+        _logger.LogInformation("Getting all units of measure");
         var units = await _unitOfMeasureService.GetAllAsync(ctx);
         var unitDtos = units.Select(u => new UnitOfMeasureDto(
             u.Id,
@@ -30,6 +33,7 @@ public class UnitOfMeasureController : ControllerBase
             u.IsActive
         )).ToList();
         
+        _logger.LogInformation("Successfully retrieved {Count} units of measure", unitDtos.Count);
         return Ok(unitDtos);
     }
 
@@ -85,7 +89,9 @@ public class UnitOfMeasureController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateUnitOfMeasure([FromBody] CreateUnitOfMeasureRequest request, CancellationToken ctx)
     {
+        _logger.LogInformation("Creating new unit of measure with name: {UnitName}", request.Name);
         var unitId = await _unitOfMeasureService.CreateUnitOfMeasureAsync(request.Name, ctx);
+        _logger.LogInformation("Successfully created unit of measure with ID: {UnitId}", unitId);
         return CreatedAtAction(nameof(GetUnitOfMeasureById), new { id = unitId }, unitId);
     }
 
@@ -118,7 +124,9 @@ public class UnitOfMeasureController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteUnitOfMeasure(Guid id, CancellationToken ctx)
     {
+        _logger.LogInformation("Deleting unit of measure with ID: {UnitId}", id);
         await _unitOfMeasureService.DeleteAsync(id, ctx);
+        _logger.LogInformation("Successfully deleted unit of measure with ID: {UnitId}", id);
         return NoContent();
     }
 

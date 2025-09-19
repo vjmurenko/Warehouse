@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using WarehouseManagement.Application.Behaviors;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 using WarehouseManagement.Application.Services.Implementations;
@@ -10,6 +12,12 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 using WarehouseManagement.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -37,6 +45,7 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetBalancesQuery).Assembly);
+    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
 // Register repositories
@@ -83,6 +92,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         await context.Database.MigrateAsync();
+        // Log successful migration
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<WarehouseManagement.Web.Program>>();
+        logger.LogInformation("Database migration completed successfully");
     }
     catch (Exception ex)
     {

@@ -1,11 +1,12 @@
+using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class UnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> repository, IUnitOfWork unitOfWork)
-    : NamedEntityService<UnitOfMeasure>(repository, unitOfWork), IUnitOfMeasureService
+public class UnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> repository, IUnitOfWork unitOfWork, ILogger<UnitOfMeasureService> logger)
+    : NamedEntityService<UnitOfMeasure>(repository, unitOfWork, logger), IUnitOfMeasureService
 {
     public async Task<Guid> CreateUnitOfMeasureAsync(string name, CancellationToken ctx)
     {

@@ -7,7 +7,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BalanceController(IMediator mediator) : ControllerBase
+public class BalanceController(IMediator mediator, ILogger<BalanceController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all balances with optional filtering by resource IDs and unit of measure IDs
@@ -20,8 +20,13 @@ public class BalanceController(IMediator mediator) : ControllerBase
         [FromQuery] List<Guid>? resourceIds = null,
         [FromQuery] List<Guid>? unitIds = null)
     {
+        logger.LogInformation("Getting balances with {ResourceCount} resource filters and {UnitCount} unit filters",
+            resourceIds?.Count ?? 0, unitIds?.Count ?? 0);
+        
         var query = new GetBalancesQuery(resourceIds, unitIds);
         var result = await mediator.Send(query);
+        
+        logger.LogInformation("Successfully retrieved {Count} balances", result.Count);
         return Ok(result);
     }
 }

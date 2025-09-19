@@ -11,7 +11,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
+public class ReceiptDocumentsController(IMediator mediator, ILogger<ReceiptDocumentsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all receipt documents with optional filtering
@@ -30,8 +30,13 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
         [FromQuery] List<Guid>? resourceIds = null,
         [FromQuery] List<Guid>? unitIds = null)
     {
+        logger.LogInformation("Getting receipt documents with filters - FromDate: {FromDate}, ToDate: {ToDate}, DocumentNumbers: {DocumentNumbersCount}, ResourceIds: {ResourceIdsCount}, UnitIds: {UnitIdsCount}",
+            fromDate, toDate, documentNumbers?.Count ?? 0, resourceIds?.Count ?? 0, unitIds?.Count ?? 0);
+        
         var query = new GetReceiptsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds);
         var result = await mediator.Send(query);
+        
+        logger.LogInformation("Successfully retrieved {Count} receipt documents", result.Count);
         return Ok(result);
     }
 
@@ -43,13 +48,16 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ReceiptDocumentDto>> GetReceiptById(Guid id)
     {
+        logger.LogInformation("Getting receipt document by ID: {ReceiptId}", id);
         var result = await mediator.Send(new GetReceiptByIdQuery(id));
         
         if (result == null)
         {
+            logger.LogWarning("Receipt document with ID {ReceiptId} not found", id);
             return NotFound();
         }
         
+        logger.LogInformation("Successfully retrieved receipt document with ID: {ReceiptId}", id);
         return Ok(result);
     }
 
@@ -61,7 +69,9 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateReceipt([FromBody] CreateReceiptCommand request)
     {
+        logger.LogInformation("Creating new receipt document");
         var result = await mediator.Send(request);
+        logger.LogInformation("Successfully created receipt document with ID: {ReceiptId}", result);
         return CreatedAtAction(nameof(GetReceiptById), new { id = result }, result);
     }
 
@@ -74,7 +84,9 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateReceipt([FromBody] UpdateReceiptCommand request)
     {
+        logger.LogInformation("Updating receipt document with ID: {ReceiptId}", request.Id);
         await mediator.Send(request);
+        logger.LogInformation("Successfully updated receipt document with ID: {ReceiptId}", request.Id);
         return NoContent();
     }
 
@@ -86,7 +98,9 @@ public class ReceiptDocumentsController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteReceipt(Guid id)
     {
+        logger.LogInformation("Deleting receipt document with ID: {ReceiptId}", id);
         await mediator.Send(new DeleteReceiptCommand(id));
+        logger.LogInformation("Successfully deleted receipt document with ID: {ReceiptId}", id);
         return NoContent();
     }
 }

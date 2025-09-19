@@ -12,7 +12,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
+public class ShipmentDocumentsController(IMediator mediator, ILogger<ShipmentDocumentsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all shipment documents with optional filtering
@@ -33,8 +33,13 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
         [FromQuery] List<Guid>? unitIds = null,
         [FromQuery] List<Guid>? clientIds = null)
     {
+        logger.LogInformation("Getting shipment documents with filters - FromDate: {FromDate}, ToDate: {ToDate}, DocumentNumbers: {DocumentNumbersCount}, ResourceIds: {ResourceIdsCount}, UnitIds: {UnitIdsCount}, ClientIds: {ClientIdsCount}",
+            fromDate, toDate, documentNumbers?.Count ?? 0, resourceIds?.Count ?? 0, unitIds?.Count ?? 0, clientIds?.Count ?? 0);
+        
         var query = new GetShipmentsQuery(fromDate, toDate, documentNumbers, resourceIds, unitIds, clientIds);
         var result = await mediator.Send(query);
+        
+        logger.LogInformation("Successfully retrieved {Count} shipment documents", result.Count);
         return Ok(result);
     }
 
@@ -46,13 +51,16 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ShipmentDocumentDto>> GetShipmentById(Guid id)
     {
+        logger.LogInformation("Getting shipment document by ID: {ShipmentId}", id);
         var result = await mediator.Send(new GetShipmentByIdQuery(id));
         
         if (result == null)
         {
+            logger.LogWarning("Shipment document with ID {ShipmentId} not found", id);
             return NotFound();
         }
         
+        logger.LogInformation("Successfully retrieved shipment document with ID: {ShipmentId}", id);
         return Ok(result);
     }
 
@@ -64,7 +72,9 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateShipment([FromBody] CreateShipmentCommand request)
     {
+        logger.LogInformation("Creating new shipment document");
         var result = await mediator.Send(request);
+        logger.LogInformation("Successfully created shipment document with ID: {ShipmentId}", result);
         return CreatedAtAction(nameof(GetShipmentById), new { id = result }, result);
     }
 
@@ -89,7 +99,9 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteShipment(Guid id)
     {
+        logger.LogInformation("Deleting shipment document with ID: {ShipmentId}", id);
         await mediator.Send(new DeleteShipmentCommand(id));
+        logger.LogInformation("Successfully deleted shipment document with ID: {ShipmentId}", id);
         return NoContent();
     }
 
@@ -101,7 +113,9 @@ public class ShipmentDocumentsController(IMediator mediator) : ControllerBase
     [HttpPost("{id}/revoke")]
     public async Task<ActionResult> RevokeShipment(Guid id)
     {
+        logger.LogInformation("Revoking shipment document with ID: {ShipmentId}", id);
         await mediator.Send(new RevokeShipmentCommand(id));
+        logger.LogInformation("Successfully revoked shipment document with ID: {ShipmentId}", id);
         return NoContent();
     }
 }

@@ -14,7 +14,7 @@ public class CreateReceiptCommandHandler(
 {
     public async Task<Guid> Handle(CreateReceiptCommand command, CancellationToken cancellationToken)
     {
-        if (await receiptRepository.ExistsByNumberAsync(command.Number))
+        if (await receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: cancellationToken))
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
         
         await validationService.ValidateResourcesAsync(command.Resources.Select(c => c.ResourceId), cancellationToken);

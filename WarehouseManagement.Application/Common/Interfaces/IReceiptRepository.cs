@@ -4,7 +4,6 @@ namespace WarehouseManagement.Application.Common.Interfaces;
 
 public interface IReceiptRepository : IRepositoryBase<ReceiptDocument>
 {
-    Task<bool> ExistsByNumberAsync(string number);
     
     Task<ReceiptDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> ExistsByNumberAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default);

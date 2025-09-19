@@ -9,10 +9,12 @@ namespace WarehouseManagement.Web.Controllers;
 public class ResourcesController : ControllerBase
 {
     private readonly IResourceService _resourceService;
+    private readonly ILogger<ResourcesController> _logger;
 
-    public ResourcesController(IResourceService resourceService)
+    public ResourcesController(IResourceService resourceService, ILogger<ResourcesController> logger)
     {
         _resourceService = resourceService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -23,6 +25,7 @@ public class ResourcesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ResourceDto>>> GetResources(CancellationToken ctx)
     {
+        _logger.LogInformation("Getting all resources");
         var resources = await _resourceService.GetAllAsync(ctx);
         var resourceDtos = resources.Select(r => new ResourceDto(
             r.Id,
@@ -30,6 +33,7 @@ public class ResourcesController : ControllerBase
             r.IsActive
         )).ToList();
         
+        _logger.LogInformation("Successfully retrieved {Count} resources", resourceDtos.Count);
         return Ok(resourceDtos);
     }
 
@@ -85,7 +89,9 @@ public class ResourcesController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request, CancellationToken ctx)
     {
+        _logger.LogInformation("Creating new resource with name: {ResourceName}", request.Name);
         var resourceId = await _resourceService.CreateResourceAsync(request.Name, ctx);
+        _logger.LogInformation("Successfully created resource with ID: {ResourceId}", resourceId);
         return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceId);
     }
 
@@ -118,7 +124,9 @@ public class ResourcesController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteResource(Guid id, CancellationToken ctx)
     {
+        _logger.LogInformation("Deleting resource with ID: {ResourceId}", id);
         await _resourceService.DeleteAsync(id, ctx);
+        _logger.LogInformation("Successfully deleted resource with ID: {ResourceId}", id);
         return NoContent();
     }
 

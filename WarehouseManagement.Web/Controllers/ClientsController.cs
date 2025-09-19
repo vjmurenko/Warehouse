@@ -6,7 +6,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ClientsController(IClientService clientService) : ControllerBase
+public class ClientsController(IClientService clientService, ILogger<ClientsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all clients
@@ -16,6 +16,7 @@ public class ClientsController(IClientService clientService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ClientDto>>> GetClients(CancellationToken ctx)
     {
+        logger.LogInformation("Getting all clients");
         var clients = await clientService.GetAllAsync(ctx);
         var clientDtos = clients.Select(c => new ClientDto(
             c.Id,
@@ -24,6 +25,7 @@ public class ClientsController(IClientService clientService) : ControllerBase
             c.IsActive
         )).ToList();
         
+        logger.LogInformation("Successfully retrieved {Count} clients", clientDtos.Count);
         return Ok(clientDtos);
     }
 
@@ -81,7 +83,9 @@ public class ClientsController(IClientService clientService) : ControllerBase
     [HttpPost]
     public async Task<ActionResult<Guid>> CreateClient([FromBody] CreateClientRequest request, CancellationToken ctx)
     {
+        logger.LogInformation("Creating new client with name: {ClientName}", request.Name);
         var clientId = await clientService.CreateClientAsync(request.Name, request.Address, ctx);
+        logger.LogInformation("Successfully created client with ID: {ClientId}", clientId);
         return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientId);
     }
 
@@ -114,13 +118,16 @@ public class ClientsController(IClientService clientService) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteClient(Guid id, CancellationToken ctx)
     {
+        logger.LogInformation("Deleting client with ID: {ClientId}", id);
         var success = await clientService.DeleteAsync(id, ctx);
         
         if (!success)
         {
+            logger.LogWarning("Client with ID: {ClientId} not found for deletion", id);
             return NotFound();
         }
         
+        logger.LogInformation("Successfully deleted client with ID: {ClientId}", id);
         return NoContent();
     }
 
