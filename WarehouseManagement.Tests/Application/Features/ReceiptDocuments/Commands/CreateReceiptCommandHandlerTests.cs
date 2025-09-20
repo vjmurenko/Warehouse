@@ -5,11 +5,10 @@ using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateR
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Tests.TestBuilders;
 
 namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Commands;
 
-public class CreateReceiptCommandHandlerSimpleTests
+public class CreateReceiptCommandHandlerTests
 {
     private readonly IReceiptRepository _receiptRepository;
     private readonly IBalanceService _balanceService;
@@ -17,7 +16,7 @@ public class CreateReceiptCommandHandlerSimpleTests
     private readonly IUnitOfWork _unitOfWork;
     private readonly CreateReceiptCommandHandler _handler;
 
-    public CreateReceiptCommandHandlerSimpleTests()
+    public CreateReceiptCommandHandlerTests()
     {
         _receiptRepository = Substitute.For<IReceiptRepository>();
         _balanceService = Substitute.For<IBalanceService>();
@@ -38,15 +37,11 @@ public class CreateReceiptCommandHandlerSimpleTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var command = TestDataBuilders.CreateReceiptCommand()
-            .WithNumber("REC-001")
-            .WithResources(
-                TestDataBuilders.ReceiptResourceDto()
-                    .WithResourceId(resourceId)
-                    .WithUnitId(unitId)
-                    .WithQuantity(100m)
-                    .Build())
-            .Build();
+        var command = new CreateReceiptCommand(
+            "REC-001",
+            DateTime.UtcNow,
+            new List<ReceiptResourceDto> { new ReceiptResourceDto(resourceId, unitId, 100m) }
+        );
 
         _receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: Arg.Any<CancellationToken>())
             .Returns(false);
@@ -58,7 +53,7 @@ public class CreateReceiptCommandHandlerSimpleTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeEmpty();
+        result.Should().NotBe(Guid.Empty);
         
         await _validationService.Received(1).ValidateResourcesAsync(
             Arg.Is<IEnumerable<Guid>>(ids => ids.Contains(resourceId)),
@@ -81,9 +76,7 @@ public class CreateReceiptCommandHandlerSimpleTests
     public async Task handle_should_throw_exception_when_document_number_already_exists()
     {
         // Arrange
-        var command = TestDataBuilders.CreateReceiptCommand()
-            .WithNumber("REC-001")
-            .Build();
+        var command = new CreateReceiptCommand("REC-001", DateTime.UtcNow, new List<ReceiptResourceDto>());
 
         _receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: Arg.Any<CancellationToken>())
             .Returns(true);
@@ -103,10 +96,7 @@ public class CreateReceiptCommandHandlerSimpleTests
     public async Task handle_should_allow_empty_receipt_document()
     {
         // Arrange
-        var command = TestDataBuilders.CreateReceiptCommand()
-            .WithNumber("REC-001")
-            .WithResources() // Empty resources
-            .Build();
+        var command = new CreateReceiptCommand("REC-001", DateTime.UtcNow, new List<ReceiptResourceDto>());
 
         _receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: Arg.Any<CancellationToken>())
             .Returns(false);
@@ -118,7 +108,7 @@ public class CreateReceiptCommandHandlerSimpleTests
         var result = await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        result.Should().NotBeEmpty();
+        result.Should().NotBe(Guid.Empty);
         
         _receiptRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ReceiptAggregate.ReceiptDocument>());
         
@@ -127,5 +117,38 @@ public class CreateReceiptCommandHandlerSimpleTests
             Arg.Any<CancellationToken>());
         
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task handle_should_increase_balance_for_each_resource()
+    {
+        // Arrange
+        var resourceId1 = Guid.NewGuid();
+        var resourceId2 = Guid.NewGuid();
+        var unitId = Guid.NewGuid();
+        
+        var command = new CreateReceiptCommand(
+            "REC-001",
+            DateTime.UtcNow,
+            new List<ReceiptResourceDto> 
+            { 
+                new(resourceId1, unitId, 50m),
+                new(resourceId2, unitId, 75m)
+            });
+
+        _receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: Arg.Any<CancellationToken>())
+            .Returns(false);
+        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        // Act
+        await _handler.Handle(command, CancellationToken.None);
+
+        // Assert
+        await _balanceService.Received(1).IncreaseBalances(
+            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
+                deltas.Count() == 2 &&
+                deltas.Any(d => d.ResourceId == resourceId1 && d.Quantity == 50m) &&
+                deltas.Any(d => d.ResourceId == resourceId2 && d.Quantity == 75m)),
+            Arg.Any<CancellationToken>());
     }
 }

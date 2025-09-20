@@ -4,7 +4,7 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Tests.TestBuilders;
+
 
 namespace WarehouseManagement.Tests.Application.Services;
 
@@ -37,13 +37,9 @@ public class NamedEntityValidationServiceTests
 
         var resources = new List<Resource>
         {
-            TestDataBuilders.Resource().WithName("Resource 1").Build(),
-            TestDataBuilders.Resource().WithName("Resource 2").Build()
+            new Resource("Resource 1") { Id = resourceId1 },
+            new Resource("Resource 2") { Id = resourceId2 }
         };
-
-        // Set the IDs using reflection to match the expected IDs
-        SetEntityId(resources[0], resourceId1);
-        SetEntityId(resources[1], resourceId2);
 
         _resourceRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(resources);
@@ -65,9 +61,8 @@ public class NamedEntityValidationServiceTests
 
         var resources = new List<Resource>
         {
-            TestDataBuilders.Resource().WithName("Resource 1").Build()
+            new Resource("Resource 1") { Id = resourceId1 }
         };
-        SetEntityId(resources[0], resourceId1);
 
         _resourceRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(resources);
@@ -87,9 +82,8 @@ public class NamedEntityValidationServiceTests
         var resourceId = Guid.NewGuid();
         var resourceIds = new[] { resourceId };
 
-        var archivedResource = TestDataBuilders.Resource().WithName("Archived Resource").Build();
+        var archivedResource = new Resource("Archived Resource") { Id = resourceId };
         archivedResource.Archive();
-        SetEntityId(archivedResource, resourceId);
 
         var resources = new List<Resource> { archivedResource };
 
@@ -125,8 +119,7 @@ public class NamedEntityValidationServiceTests
         var resourceId = Guid.NewGuid();
         var resourceIds = new[] { resourceId, resourceId, resourceId };
 
-        var resource = TestDataBuilders.Resource().WithName("Test Resource").Build();
-        SetEntityId(resource, resourceId);
+        var resource = new Resource("Test Resource") { Id = resourceId };
 
         var resources = new List<Resource> { resource };
 
@@ -150,12 +143,9 @@ public class NamedEntityValidationServiceTests
 
         var units = new List<UnitOfMeasure>
         {
-            TestDataBuilders.UnitOfMeasure().WithName("Kilogram").Build(),
-            TestDataBuilders.UnitOfMeasure().WithName("Piece").Build()
+            new UnitOfMeasure("Kilogram") { Id = unitId1 },
+            new UnitOfMeasure("Piece") { Id = unitId2 }
         };
-
-        SetEntityId(units[0], unitId1);
-        SetEntityId(units[1], unitId2);
 
         _unitRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(units);
@@ -177,9 +167,8 @@ public class NamedEntityValidationServiceTests
 
         var units = new List<UnitOfMeasure>
         {
-            TestDataBuilders.UnitOfMeasure().WithName("Kilogram").Build()
+            new UnitOfMeasure("Kilogram") { Id = unitId1 }
         };
-        SetEntityId(units[0], unitId1);
 
         _unitRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(units);
@@ -199,9 +188,8 @@ public class NamedEntityValidationServiceTests
         var unitId = Guid.NewGuid();
         var unitIds = new[] { unitId };
 
-        var archivedUnit = TestDataBuilders.UnitOfMeasure().WithName("Archived Unit").Build();
+        var archivedUnit = new UnitOfMeasure("Archived Unit") { Id = unitId };
         archivedUnit.Archive();
-        SetEntityId(archivedUnit, unitId);
 
         var units = new List<UnitOfMeasure> { archivedUnit };
 
@@ -228,11 +216,5 @@ public class NamedEntityValidationServiceTests
         // Assert
         await action.Should().NotThrowAsync();
         await _unitRepository.DidNotReceive().GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>());
-    }
-
-    private static void SetEntityId<T>(T entity, Guid id) where T : class
-    {
-        var idProperty = typeof(T).GetProperty("Id");
-        idProperty?.SetValue(entity, id);
     }
 }

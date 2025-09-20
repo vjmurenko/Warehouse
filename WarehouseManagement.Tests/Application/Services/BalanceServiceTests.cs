@@ -9,7 +9,7 @@ using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Domain.ValueObjects;
-using WarehouseManagement.Tests.TestBuilders;
+
 
 namespace WarehouseManagement.Tests.Application.Services;
 
@@ -42,11 +42,7 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(100m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(100m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
@@ -98,11 +94,7 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(100m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(100m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
@@ -127,18 +119,14 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(30m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(30m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = TestDataBuilders.Resource().WithName("Test Resource").Build();
-        var unit = TestDataBuilders.UnitOfMeasure().WithName("kg").Build();
+        var resource = new Resource("Test Resource");
+        var unit = new UnitOfMeasure("kg");
         
         _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
             .Returns(resource);
@@ -169,8 +157,8 @@ public class BalanceServiceTests
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = TestDataBuilders.Resource().WithName("Test Resource").Build();
-        var unit = TestDataBuilders.UnitOfMeasure().WithName("kg").Build();
+        var resource = new Resource("Test Resource");
+        var unit = new UnitOfMeasure("kg");
         
         _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
             .Returns(resource);
@@ -197,11 +185,7 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(100m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(100m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
@@ -226,18 +210,14 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(30m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(30m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = TestDataBuilders.Resource().WithName("Test Resource").Build();
-        var unit = TestDataBuilders.UnitOfMeasure().WithName("kg").Build();
+        var resource = new Resource("Test Resource");
+        var unit = new UnitOfMeasure("kg");
         
         _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
             .Returns(resource);
@@ -277,11 +257,7 @@ public class BalanceServiceTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         var key = new ResourceUnitKey(resourceId, unitId);
-        var existingBalance = TestDataBuilders.Balance()
-            .WithResourceId(resourceId)
-            .WithUnitOfMeasureId(unitId)
-            .WithQuantity(100m)
-            .Build();
+        var existingBalance = new Balance(resourceId, unitId, new Quantity(100m));
 
         var balances = new Dictionary<ResourceUnitKey, Balance> { { key, existingBalance } };
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())

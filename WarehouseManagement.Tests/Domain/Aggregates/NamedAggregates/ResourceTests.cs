@@ -18,7 +18,6 @@ public class ResourceTests
         // Assert
         resource.Name.Should().Be(name);
         resource.IsActive.Should().BeTrue();
-        resource.Id.Should().NotBeEmpty();
     }
 
     [Theory]

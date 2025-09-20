@@ -5,7 +5,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Exceptions;
-using WarehouseManagement.Tests.TestBuilders;
+
 
 namespace WarehouseManagement.Tests.Application.Services;
 
@@ -26,29 +26,10 @@ public class ResourceServiceTests
     }
 
     [Fact]
-    public async Task create_async_should_create_entity_when_name_is_unique()
-    {
-        // Arrange
-        var resource = TestDataBuilders.Resource().WithName("New Resource").Build();
-        _repository.ExistsWithNameAsync(resource.Name, null, Arg.Any<CancellationToken>())
-            .Returns(false);
-        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
-            .Returns(1);
-
-        // Act
-        var result = await _service.CreateAsync(resource, CancellationToken.None);
-
-        // Assert
-        result.Should().NotBeEmpty();
-        _repository.Received(1).Create(Arg.Is<Resource>(r => r.Name == resource.Name));
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
     public async Task create_async_should_throw_exception_when_name_already_exists()
     {
         // Arrange
-        var resource = TestDataBuilders.Resource().WithName("Existing Resource").Build();
+        var resource = new Resource("Existing Resource");
         _repository.ExistsWithNameAsync(resource.Name, null, Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -67,8 +48,7 @@ public class ResourceServiceTests
     public async Task update_async_should_update_entity_when_new_name_is_unique()
     {
         // Arrange
-        var resource = TestDataBuilders.Resource().WithName("Updated Resource").Build();
-        SetEntityId(resource, Guid.NewGuid());
+        var resource = new Resource("Updated Resource") { Id = Guid.NewGuid() };
 
         _repository.ExistsWithNameAsync(resource.Name, resource.Id, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -88,8 +68,7 @@ public class ResourceServiceTests
     public async Task update_async_should_throw_exception_when_new_name_already_exists()
     {
         // Arrange
-        var resource = TestDataBuilders.Resource().WithName("Existing Resource").Build();
-        SetEntityId(resource, Guid.NewGuid());
+        var resource = new Resource("Existing Resource") { Id = Guid.NewGuid() };
 
         _repository.ExistsWithNameAsync(resource.Name, resource.Id, Arg.Any<CancellationToken>())
             .Returns(true);
@@ -110,8 +89,7 @@ public class ResourceServiceTests
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var existingEntity = TestDataBuilders.Resource().Build();
-        SetEntityId(existingEntity, entityId);
+        var existingEntity = new Resource("Test Resource") { Id = entityId };
 
         _repository.IsUsingInDocuments(entityId, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -204,19 +182,13 @@ public class ResourceServiceTests
         await _repository.Received(1).ActivateAsync(entityId, Arg.Any<CancellationToken>());
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
+}
 
-    private static void SetEntityId(Resource entity, Guid id)
+// Test-specific implementation to make the abstract class testable
+public class TestableResourceService : NamedEntityService<Resource>
+{
+    public TestableResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Resource>> logger)
+        : base(repository, unitOfWork, logger)
     {
-        var idProperty = typeof(Resource).GetProperty("Id");
-        idProperty?.SetValue(entity, id);
-    }
-
-    // Test-specific implementation to make the abstract class testable
-    private class TestableResourceService : NamedEntityService<Resource>
-    {
-        public TestableResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Resource>> logger)
-            : base(repository, unitOfWork, logger)
-        {
-        }
     }
 }

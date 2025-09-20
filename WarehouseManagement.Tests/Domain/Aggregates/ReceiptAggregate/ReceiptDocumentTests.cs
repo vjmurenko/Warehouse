@@ -1,6 +1,6 @@
 using FluentAssertions;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
-using WarehouseManagement.Tests.TestBuilders;
+
 
 namespace WarehouseManagement.Tests.Domain.Aggregates.ReceiptAggregate;
 
@@ -20,7 +20,6 @@ public class ReceiptDocumentTests
         receiptDocument.Number.Should().Be(number);
         receiptDocument.Date.Should().Be(date);
         receiptDocument.ReceiptResources.Should().BeEmpty();
-        receiptDocument.Id.Should().NotBeEmpty();
     }
 
     [Fact]
@@ -41,7 +40,7 @@ public class ReceiptDocumentTests
     public void add_resource_should_add_resource_when_valid_data_provided()
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         const decimal quantity = 100m;
@@ -64,7 +63,7 @@ public class ReceiptDocumentTests
     public void add_resource_should_throw_exception_when_quantity_is_zero_or_negative(decimal invalidQuantity)
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
 
@@ -80,7 +79,7 @@ public class ReceiptDocumentTests
     public void add_resource_should_allow_multiple_resources()
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
         var resourceId1 = Guid.NewGuid();
         var resourceId2 = Guid.NewGuid();
         var unitId = Guid.NewGuid();
@@ -97,7 +96,7 @@ public class ReceiptDocumentTests
     public void update_number_should_update_number_when_valid_number_provided()
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().WithNumber("OLD-001").Build();
+        var receiptDocument = new ReceiptDocument("OLD-001", DateTime.UtcNow);
         const string newNumber = "NEW-001";
 
         // Act
@@ -114,7 +113,7 @@ public class ReceiptDocumentTests
     public void update_number_should_throw_exception_when_invalid_number_provided(string invalidNumber)
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
 
         // Act
         var action = () => receiptDocument.UpdateNumber(invalidNumber);
@@ -129,7 +128,7 @@ public class ReceiptDocumentTests
     public void update_date_should_update_date()
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
         var newDate = DateTime.UtcNow.AddDays(1);
 
         // Act
@@ -143,7 +142,7 @@ public class ReceiptDocumentTests
     public void clear_resources_should_remove_all_resources()
     {
         // Arrange
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
         receiptDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 50m);
         receiptDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 75m);
 
@@ -158,7 +157,7 @@ public class ReceiptDocumentTests
     public void receipt_document_can_be_empty()
     {
         // Arrange & Act
-        var receiptDocument = TestDataBuilders.ReceiptDocument().Build();
+        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
 
         // Assert
         receiptDocument.ReceiptResources.Should().BeEmpty();

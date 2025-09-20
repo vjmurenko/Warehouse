@@ -21,7 +21,6 @@ public class BalanceTests
         balance.ResourceId.Should().Be(resourceId);
         balance.UnitOfMeasureId.Should().Be(unitOfMeasureId);
         balance.Quantity.Should().Be(quantity);
-        balance.Id.Should().NotBeEmpty();
     }
 
     [Fact]

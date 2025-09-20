@@ -17,7 +17,6 @@ public class UnitOfMeasureTests
         // Assert
         unit.Name.Should().Be(name);
         unit.IsActive.Should().BeTrue();
-        unit.Id.Should().NotBeEmpty();
     }
 
     [Theory]

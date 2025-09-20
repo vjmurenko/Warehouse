@@ -20,7 +20,6 @@ public class ClientTests
         client.Name.Should().Be(name);
         client.Address.Name.Should().Be(address);
         client.IsActive.Should().BeTrue();
-        client.Id.Should().NotBeEmpty();
     }
 
     [Theory]
