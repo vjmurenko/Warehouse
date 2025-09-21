@@ -6,7 +6,7 @@ using WarehouseManagement.Domain.Events;
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
 public class ShipmentDocumentChangedResourcesEventHandler(
-    IBalanceService balanceService,
+    IBalanceValidatorService balanceValidatorService,
     ILogger<ShipmentDocumentChangedResourcesEventHandler> logger)
     : INotificationHandler<ShipmentDocumentChangedResourcesEvent>
 {
@@ -14,7 +14,7 @@ public class ShipmentDocumentChangedResourcesEventHandler(
     {
         logger.LogInformation("Handling ShipmentDocumentChangedResourcesEvent for document {DocumentId}", notification.DocumentId);
         
-        await balanceService.ValidateBalanceAvailability(notification.BalanceDeltas, cancellationToken);
+        await balanceValidatorService.ValidateBalanceAvailability(notification.BalanceDeltas,ctx: cancellationToken);
         
         logger.LogInformation("Successfully processed ShipmentDocumentChangedResourcesEvent for document {DocumentId}", notification.DocumentId);
     }

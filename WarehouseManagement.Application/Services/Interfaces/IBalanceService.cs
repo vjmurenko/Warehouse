@@ -5,8 +5,7 @@ namespace WarehouseManagement.Application.Services.Interfaces;
 
 public interface IBalanceService
 {
-     Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct);
-     Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct);
-     Task ValidateBalanceAvailability(IEnumerable<BalanceDelta> deltas, CancellationToken ct);
-     Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct);
+     Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx);
+     Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx);
+     Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx);
 }

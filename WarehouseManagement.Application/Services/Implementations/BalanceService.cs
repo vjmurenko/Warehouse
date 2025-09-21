@@ -1,54 +1,40 @@
 ﻿using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Dtos;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
-using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.Exceptions;
 using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class BalanceService(IBalanceRepository balanceRepository,
-    INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,
+public class BalanceService(
+    IBalanceRepository balanceRepository,
+    IBalanceValidatorService validatorService,
     ILogger<BalanceService> logger) : IBalanceService
 {
-    public async Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
+    public async Task IncreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx)
     {
         logger.LogInformation("Increasing balances for {DeltaCount} items", deltas.Count());
-        
+
         var positiveDeltas = deltas.Select(d => d with { Quantity = Math.Abs(d.Quantity) });
-        await AdjustBalances(positiveDeltas, ct);
-        
+        await AdjustBalances(positiveDeltas, ctx);
+
         logger.LogInformation("Successfully increased balances for {DeltaCount} items", deltas.Count());
     }
-    
-    public async Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
+
+    public async Task DecreaseBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx)
     {
         logger.LogInformation("Decreasing balances for {DeltaCount} items", deltas.Count());
-        
+
         var negativeDeltas = deltas.Select(d => d with { Quantity = -Math.Abs(d.Quantity) });
-        await AdjustBalances(negativeDeltas, ct);
-        
+        await AdjustBalances(negativeDeltas, ctx);
+
         logger.LogInformation("Successfully decreased balances for {DeltaCount} items", deltas.Count());
     }
-    
-    public async Task ValidateBalanceAvailability(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
+
+    public async Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ctx)
     {
-        logger.LogInformation("Validating balance availability for {DeltaCount} items", deltas.Count());
-        
-        await ValidateBalanceForDecrease(deltas, ct: ct);
-        
-        logger.LogInformation("Successfully validated balance availability for {DeltaCount} items", deltas.Count());
-    }
-    
-    public async Task AdjustBalances(IEnumerable<BalanceDelta> deltas, CancellationToken ct)
-    {
-        logger.LogInformation("Adjusting balances for {DeltaCount} items", deltas.Count());
-        
-        var deltasList = deltas.ToList();
+        var deltasList = deltas.Where(d => d.Quantity != 0).ToList();
 
         if (!deltasList.Any())
         {
@@ -56,98 +42,59 @@ public class BalanceService(IBalanceRepository balanceRepository,
             return;
         }
 
-        var keys = deltasList.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
-        
-        logger.LogInformation("Retrieving balances for {KeyCount} keys", keys.Count());
-        
-        var balances = await balanceRepository.GetForUpdateAsync(keys, ct);
+        logger.LogInformation("Adjusting balances for {DeltaCount} items", deltasList.Count);
 
-        foreach (var delta in deltasList.Where(d => d.Quantity != 0))
+        var keys = deltasList.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
+        var balances = await balanceRepository.GetForUpdateAsync(keys, ctx);
+
+        await ProcessDelta(deltasList, balances, ctx);
+
+        logger.LogInformation("Successfully adjusted balances for {DeltaCount} items", deltasList.Count);
+    }
+
+    private async Task ProcessDelta(List<BalanceDelta> deltaList, IDictionary<ResourceUnitKey, Balance> balances, CancellationToken ctx)
+    {
+        foreach (var delta in deltaList)
         {
             var key = new ResourceUnitKey(delta.ResourceId, delta.UnitOfMeasureId);
             balances.TryGetValue(key, out var balance);
 
             if (delta.Quantity > 0)
             {
-                var qty = new Quantity(delta.Quantity);
-
-                if (balance == null)
-                {
-                    balance = new Balance(delta.ResourceId, delta.UnitOfMeasureId, qty);
-                    await balanceRepository.AddAsync(balance, ct);
-                }
-                else
-                {
-                    balance.Increase(qty);
-                }
+                await ApplyIncrease(delta, balance, ctx);
             }
             else
             {
-                await ValidateBalanceForDecrease([delta], balances, ct);
-                
-                var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
-                
-                balance!.Decrease(decreaseAmount);
+                await ApplyDecrease(delta, balance!, balances, ctx);
             }
-            
+
             if (balance is { Quantity.Value: 0 })
             {
-                 balanceRepository.Delete(balance);
+                balanceRepository.Delete(balance);
             }
         }
-        logger.LogInformation("Successfully adjusted balances for {DeltaCount} items", deltas.Count());
     }
-    
-    private async Task ValidateBalanceForDecrease(IEnumerable<BalanceDelta> deltas,
-        IDictionary<ResourceUnitKey, Balance>? preFetchedBalances = null,
-        CancellationToken ct = default)
+
+    private async Task ApplyIncrease(BalanceDelta delta, Balance? balance, CancellationToken ctx)
     {
-        logger.LogInformation("Validating balance for decrease for {DeltaCount} items", deltas.Count());
-        var deltasList = deltas
-            .Select(c => c with { Quantity = Math.Abs(c.Quantity) })
-            .ToList();
-        
-        if (!deltasList.Any())
+        var qty = new Quantity(delta.Quantity);
+
+        if (balance == null)
         {
-            logger.LogInformation("No deltas to validate, returning early");
-            return;
-        }
-            
-        IDictionary<ResourceUnitKey, Balance> balances;
-        if (preFetchedBalances != null)
-        {
-            balances = preFetchedBalances;
+            balance = new Balance(delta.ResourceId, delta.UnitOfMeasureId, qty);
+            await balanceRepository.AddAsync(balance, ctx);
         }
         else
         {
-            var keys = deltasList.Select(d => new ResourceUnitKey(d.ResourceId, d.UnitOfMeasureId));
-            balances = await balanceRepository.GetForUpdateAsync(keys, ct);
+            balance.Increase(qty);
         }
-        
-        foreach (var delta in deltasList)
-        {
-            var key = new ResourceUnitKey(delta.ResourceId, delta.UnitOfMeasureId);
-            balances.TryGetValue(key, out var balance);
-            
-            var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
-            
-            if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
-            {
-                logger.LogWarning("Insufficient balance for resource {ResourceId} and unit {UnitOfMeasureId}. Required: {Required}, Available: {Available}",
-                    delta.ResourceId, delta.UnitOfMeasureId, decreaseAmount.Value, balance?.Quantity.Value ?? 0);
-                
-                var resourceName = (await resourceRepository.GetByIdAsync(delta.ResourceId, ct)).Name;
+    }
 
-                var a = await unitOfMeasureRepository.GetByIdAsync(delta.UnitOfMeasureId, ct);
-                var unitOfMeasureName = (await unitOfMeasureRepository.GetByIdAsync(delta.UnitOfMeasureId, ct)).Name;
-                
-                throw new InsufficientBalanceException(
-                    resourceName,
-                    unitOfMeasureName,
-                    decreaseAmount.Value,
-                    balance?.Quantity.Value ?? 0);
-            }
-        }
-        logger.LogInformation("Successfully validated balance for decrease for {DeltaCount} items", deltas.Count());
+    private async Task ApplyDecrease(BalanceDelta delta, Balance balance, IDictionary<ResourceUnitKey, Balance> balances, CancellationToken ctx)
+    {
+        await validatorService.ValidateBalanceAvailability([delta], balances, ctx);
+
+        var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
+        balance.Decrease(decreaseAmount);
     }
 }
