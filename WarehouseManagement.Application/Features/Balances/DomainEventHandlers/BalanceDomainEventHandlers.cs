@@ -24,7 +24,7 @@ public class ReceiptDocumentCreatedEventHandler : INotificationHandler<ReceiptDo
     {
         _logger.LogInformation("Handling ReceiptDocumentCreatedEvent for document {DocumentId}", notification.DocumentId);
         
-        await _balanceService.IncreaseBalances(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.IncreaseBalances(notification.BalanceDeltas, cancellationToken);
         
         _logger.LogInformation("Successfully processed ReceiptDocumentCreatedEvent for document {DocumentId}", notification.DocumentId);
     }
@@ -47,7 +47,7 @@ public class ReceiptDocumentUpdatedEventHandler : INotificationHandler<ReceiptDo
     {
         _logger.LogInformation("Handling ReceiptDocumentUpdatedEvent for document {DocumentId}", notification.DocumentId);
         
-        await _balanceService.AdjustBalances(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.AdjustBalances(notification.BalanceDeltas, cancellationToken);
         
         _logger.LogInformation("Successfully processed ReceiptDocumentUpdatedEvent for document {DocumentId}", notification.DocumentId);
     }
@@ -70,7 +70,7 @@ public class ReceiptDocumentDeletedEventHandler : INotificationHandler<ReceiptDo
     {
         _logger.LogInformation("Handling ReceiptDocumentDeletedEvent for document {DocumentId}", notification.DocumentId);
         
-        await _balanceService.DecreaseBalances(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.DecreaseBalances(notification.BalanceDeltas, cancellationToken);
         
         _logger.LogInformation("Successfully processed ReceiptDocumentDeletedEvent for document {DocumentId}", notification.DocumentId);
     }
@@ -95,10 +95,10 @@ public class ShipmentDocumentSignedEventHandler : INotificationHandler<ShipmentD
         _logger.LogInformation("Handling ShipmentDocumentSignedEvent for document {DocumentId}", notification.DocumentId);
         
         // First validate that balance is available
-        await _balanceService.ValidateBalanceAvailability(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.ValidateBalanceAvailability(notification.BalanceDeltas, cancellationToken);
         
         // Then decrease the balance
-        await _balanceService.DecreaseBalances(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.DecreaseBalances(notification.BalanceDeltas, cancellationToken);
         
         _logger.LogInformation("Successfully processed ShipmentDocumentSignedEvent for document {DocumentId}", notification.DocumentId);
     }
@@ -121,7 +121,7 @@ public class ShipmentDocumentRevokedEventHandler : INotificationHandler<Shipment
     {
         _logger.LogInformation("Handling ShipmentDocumentRevokedEvent for document {DocumentId}", notification.DocumentId);
         
-        await _balanceService.IncreaseBalances(notification.BalanceDeltas.ToApplicationDtos(), cancellationToken);
+        await _balanceService.IncreaseBalances(notification.BalanceDeltas, cancellationToken);
         
         _logger.LogInformation("Successfully processed ShipmentDocumentRevokedEvent for document {DocumentId}", notification.DocumentId);
     }

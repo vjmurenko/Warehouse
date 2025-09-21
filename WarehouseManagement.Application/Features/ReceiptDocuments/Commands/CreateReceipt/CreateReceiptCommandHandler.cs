@@ -1,8 +1,9 @@
-﻿﻿﻿using MediatR;
+﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 

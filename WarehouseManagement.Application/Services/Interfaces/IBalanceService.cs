@@ -1,4 +1,5 @@
 ﻿using WarehouseManagement.Application.Features.Balances.DTOs;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Interfaces;
 

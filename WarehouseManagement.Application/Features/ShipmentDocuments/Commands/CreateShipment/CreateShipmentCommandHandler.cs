@@ -1,6 +1,5 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Features.ShipmentDocuments.Adapters;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 

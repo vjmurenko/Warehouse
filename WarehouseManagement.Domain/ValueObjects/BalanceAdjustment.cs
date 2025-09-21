@@ -1,3 +1,3 @@
 namespace WarehouseManagement.Domain.ValueObjects;
 
-public record BalanceAdjustment(Guid ResourceId, Guid UnitOfMeasureId, decimal Quantity);
+public record BalanceDelta(Guid ResourceId, Guid UnitOfMeasureId, decimal Quantity);

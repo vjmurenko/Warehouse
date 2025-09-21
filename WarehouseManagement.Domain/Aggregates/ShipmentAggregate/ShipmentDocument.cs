@@ -89,11 +89,11 @@ public class ShipmentDocument : Entity, IAggregateRoot
         IsSigned = true;
     }
     
-    private IReadOnlyCollection<BalanceAdjustment> GetBalanceDeltas()
+    private IReadOnlyCollection<BalanceDelta> GetBalanceDeltas()
     {
         return ShipmentResources
             .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .Select(g => new BalanceAdjustment(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
+            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
             .ToList();
     }
 }

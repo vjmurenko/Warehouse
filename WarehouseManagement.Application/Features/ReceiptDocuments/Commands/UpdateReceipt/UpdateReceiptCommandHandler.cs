@@ -6,6 +6,7 @@ using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
@@ -42,7 +43,7 @@ public class UpdateReceiptCommandHandler(
         // 6. Add domain event to handle balance adjustments
         if (deltas.Any())
         {
-            document.AddReceiptUpdatedEvent(deltas.ToDomainAdjustments().ToList());
+            document.AddReceiptUpdatedEvent(deltas);
         }
 
         receiptRepository.Update(document);

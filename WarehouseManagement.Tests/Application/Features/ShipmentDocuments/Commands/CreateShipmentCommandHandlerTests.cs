@@ -5,6 +5,7 @@ using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Create
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Commands;
 

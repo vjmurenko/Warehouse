@@ -54,7 +54,7 @@ public class ReceiptDocument : Entity, IAggregateRoot
         AddDomainEvent(new ReceiptDocumentCreatedEvent(Id, balanceDeltas));
     }
     
-    public void AddReceiptUpdatedEvent(IReadOnlyCollection<BalanceAdjustment> deltaAdjustments)
+    public void AddReceiptUpdatedEvent(IReadOnlyCollection<BalanceDelta> deltaAdjustments)
     {
         AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id, deltaAdjustments));
     }
@@ -65,11 +65,13 @@ public class ReceiptDocument : Entity, IAggregateRoot
         AddDomainEvent(new ReceiptDocumentDeletedEvent(Id, balanceDeltas));
     }
     
-    private IReadOnlyCollection<BalanceAdjustment> GetBalanceDeltas()
+    
+    
+    private IReadOnlyCollection<BalanceDelta> GetBalanceDeltas()
     {
         return _receiptResources
             .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .Select(g => new BalanceAdjustment(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
+            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
             .ToList();
     }
 }
