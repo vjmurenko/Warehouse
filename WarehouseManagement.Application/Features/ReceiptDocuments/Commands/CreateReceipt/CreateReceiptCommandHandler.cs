@@ -22,22 +22,10 @@ public class CreateReceiptCommandHandler(
         
         var receiptDocument = new ReceiptDocument(command.Number, command.Date);
         
-        var balanceDeltas  = command.Resources
-            .GroupBy(r => new { r.ResourceId, r.UnitId })
-            .Select(c => new BalanceDelta(c.Key.ResourceId, c.Key.UnitId, c.Sum(r => r.Quantity)))
-            .ToList();
-
-        foreach (var balanceDelta in balanceDeltas)
-        {
-            receiptDocument.AddResource(balanceDelta.ResourceId, balanceDelta.UnitOfMeasureId, balanceDelta.Quantity);
-        }
-        
-        // Add domain event to handle balance increase
-        receiptDocument.AddReceiptCreatedEvent();
+        receiptDocument.SetResources(command.Resources.Select(c => new BalanceDelta(c.ResourceId, c.UnitId, c.Quantity)));
         
         receiptRepository.Create(receiptDocument);
         
-        // Use SaveEntitiesAsync to trigger domain events within the same transaction
         await unitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return receiptDocument.Id;

@@ -2,6 +2,7 @@ using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 
@@ -24,10 +25,7 @@ public class CreateShipmentCommandHandler(
         
         // 4. Создание документа
         var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
-        foreach (var dto in command.Resources)
-        {
-            shipmentDocument.AddResource(dto.ResourceId, dto.UnitId, dto.Quantity);
-        }
+        shipmentDocument.SetResources(command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity)));
         
         // 4.2. Проверка что документ не пустой
         shipmentDocument.ValidateNotEmpty();

@@ -13,3 +13,8 @@ public record ShipmentDocumentRevokedEvent(
     Guid DocumentId,
     IReadOnlyCollection<BalanceDelta> BalanceDeltas
 ) : INotification;
+
+public record ShipmentDocumentChangedResourcesEvent(
+    Guid DocumentId,
+    IReadOnlyCollection<BalanceDelta> BalanceDeltas
+) : INotification;

@@ -1,4 +1,4 @@
-﻿﻿using WarehouseManagement.Application.Common.Interfaces;
+﻿using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Infrastructure.Repositories.Common;

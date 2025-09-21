@@ -18,3 +18,4 @@ public record ReceiptDocumentDeletedEvent(
     Guid DocumentId,
     IReadOnlyCollection<BalanceDelta> BalanceDeltas
 ) : INotification;
+

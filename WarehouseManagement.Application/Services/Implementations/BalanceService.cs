@@ -89,6 +89,11 @@ public class BalanceService(IBalanceRepository balanceRepository,
                 
                 balance!.Decrease(decreaseAmount);
             }
+            
+            if (balance is { Quantity.Value: 0 })
+            {
+                 balanceRepository.Delete(balance);
+            }
         }
         logger.LogInformation("Successfully adjusted balances for {DeltaCount} items", deltas.Count());
     }
@@ -132,6 +137,8 @@ public class BalanceService(IBalanceRepository balanceRepository,
                     delta.ResourceId, delta.UnitOfMeasureId, decreaseAmount.Value, balance?.Quantity.Value ?? 0);
                 
                 var resourceName = (await resourceRepository.GetByIdAsync(delta.ResourceId, ct)).Name;
+
+                var a = await unitOfMeasureRepository.GetByIdAsync(delta.UnitOfMeasureId, ct);
                 var unitOfMeasureName = (await unitOfMeasureRepository.GetByIdAsync(delta.UnitOfMeasureId, ct)).Name;
                 
                 throw new InsufficientBalanceException(

@@ -1,4 +1,4 @@
-﻿﻿﻿﻿﻿﻿﻿﻿using WarehouseManagement.Domain.Common;
+﻿using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.Events;
 using WarehouseManagement.Domain.ValueObjects;
 
@@ -10,9 +10,11 @@ public class ShipmentDocument : Entity, IAggregateRoot
     public Guid ClientId { get; private set; }
     public DateTime Date { get; private set; }
     public bool IsSigned { get; private set; }
-    public List<ShipmentResource> ShipmentResources { get; } = new();
     
-    // Private constructor for EF Core
+    public IReadOnlyCollection<ShipmentResource> ShipmentResources  => _shipmentResources.AsReadOnly();
+    
+    private List<ShipmentResource> _shipmentResources = new();
+  
     private ShipmentDocument()
     {
     }
@@ -29,8 +31,7 @@ public class ShipmentDocument : Entity, IAggregateRoot
     
     public void Revoke() 
     {
-        var balanceDeltas = GetBalanceDeltas();
-        AddDomainEvent(new ShipmentDocumentRevokedEvent(Id, balanceDeltas));
+        AddDomainEvent(new ShipmentDocumentRevokedEvent(Id, GetBalanceDeltas()));
         IsSigned = false;
     }
 
@@ -51,9 +52,19 @@ public class ShipmentDocument : Entity, IAggregateRoot
         Date = date;
     }
 
+    public void SetResources(IEnumerable<BalanceDelta> balanceDeltas)
+    {
+        ClearResources();
+        foreach (var bd in balanceDeltas)
+        {
+            AddResource(bd.ResourceId, bd.UnitOfMeasureId, bd.Quantity);
+        }
+        AddDomainEvent(new ShipmentDocumentChangedResourcesEvent(Id, GetBalanceDeltas()));
+    }
+
     public void ClearResources()
     {
-        ShipmentResources.Clear();
+        _shipmentResources.Clear();
     }
     
     public void ValidateNotEmpty()
@@ -70,7 +81,7 @@ public class ShipmentDocument : Entity, IAggregateRoot
         {
             ShipmentDocumentId = Id
         };
-        ShipmentResources.Add(resource);
+        _shipmentResources.Add(resource);
     }
     
     private void Validate()
@@ -84,8 +95,7 @@ public class ShipmentDocument : Entity, IAggregateRoot
     public void Sign()
     {
         Validate();
-        var balanceDeltas = GetBalanceDeltas();
-        AddDomainEvent(new ShipmentDocumentSignedEvent(Id, balanceDeltas));
+        AddDomainEvent(new ShipmentDocumentSignedEvent(Id, GetBalanceDeltas()));
         IsSigned = true;
     }
     

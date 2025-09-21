@@ -1,4 +1,4 @@
-﻿﻿namespace WarehouseManagement.Application.Common.Interfaces;
+﻿namespace WarehouseManagement.Application.Common.Interfaces;
 
 public interface IUnitOfWork : IDisposable
 {
