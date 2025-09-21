@@ -1,21 +1,26 @@
+using MediatR;
 using Microsoft.EntityFrameworkCore;
+using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Infrastructure.Data.Configurations;
+using WarehouseManagement.Infrastructure.Extensions;
 
 namespace WarehouseManagement.Infrastructure.Data;
 
-public class WarehouseDbContext : DbContext
+public class WarehouseDbContext : DbContext, IUnitOfWork
 {
+    private readonly IMediator _mediator;
 
     public WarehouseDbContext()
     {
         
     }
-    public WarehouseDbContext(DbContextOptions<WarehouseDbContext> options) : base(options)
+    public WarehouseDbContext(DbContextOptions<WarehouseDbContext> options, IMediator mediator) : base(options)
     {
+        _mediator = mediator;
     }
 
     public DbSet<Resource> Resources { get; set; }
@@ -39,5 +44,27 @@ public class WarehouseDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ReceiptResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentDocumentEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentResourceEntityTypeConfiguration());
+    }
+
+    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
+    {
+        // Dispatch Domain Events collection. 
+        // Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+        // side effects from the domain event handlers which are using the same DbContext with "scoped" lifetime
+        if (_mediator != null)
+        {
+            await _mediator.DispatchDomainEventsAsync(this);
+        }
+
+        // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+        // performed through the DbContext will be committed
+        _ = await base.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
+    public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        return await base.SaveChangesAsync(cancellationToken);
     }
 }

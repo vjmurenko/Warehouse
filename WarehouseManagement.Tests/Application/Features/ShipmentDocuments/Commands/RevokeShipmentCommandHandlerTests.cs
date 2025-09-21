@@ -13,19 +13,16 @@ namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Comma
 public class RevokeShipmentCommandHandlerTests
 {
     private readonly IShipmentRepository _shipmentRepository;
-    private readonly IBalanceService _balanceService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly RevokeShipmentCommandHandler _handler;
 
     public RevokeShipmentCommandHandlerTests()
     {
         _shipmentRepository = Substitute.For<IShipmentRepository>();
-        _balanceService = Substitute.For<IBalanceService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         
         _handler = new RevokeShipmentCommandHandler(
             _shipmentRepository,
-            _balanceService,
             _unitOfWork);
     }
 

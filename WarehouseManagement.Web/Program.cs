@@ -38,8 +38,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add Entity Framework
-builder.Services.AddDbContext<WarehouseDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<WarehouseDbContext>((serviceProvider, options) =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    // The IMediator will be injected separately through the constructor
+});
 
 // Add MediatR
 builder.Services.AddMediatR(cfg =>

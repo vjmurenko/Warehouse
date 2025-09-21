@@ -13,19 +13,16 @@ namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Comman
 public class DeleteReceiptCommandHandlerTests
 {
     private readonly IReceiptRepository _receiptRepository;
-    private readonly IBalanceService _balanceService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly DeleteReceiptCommandHandler _handler;
 
     public DeleteReceiptCommandHandlerTests()
     {
         _receiptRepository = Substitute.For<IReceiptRepository>();
-        _balanceService = Substitute.For<IBalanceService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         
         _handler = new DeleteReceiptCommandHandler(
             _receiptRepository,
-            _balanceService,
             _unitOfWork);
     }
 

@@ -8,7 +8,6 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Up
 
 public class UpdateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
-    IBalanceService balanceService,
     IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateShipmentCommand, Unit>
 {
@@ -36,22 +35,16 @@ public class UpdateShipmentCommandHandler(
         Updatedocument(document, command);
 
         document.ValidateNotEmpty();
-
-        var delta = document.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
-
-        // 6. Проверка доступности балансов (для новых ресурсов)
-        await balanceService.ValidateBalanceAvailability(delta, cancellationToken);
-
-        // 7. Если подписываем, делаем списание баланса
+        
+        // 6. Подписание документа если требуется (domain event will handle balance validation and decrease)
         if (command.Sign)
         {
-            await balanceService.DecreaseBalances(delta, cancellationToken);
             document.Sign();
         }
 
-        // 8. Сохранение изменений
+        // 7. Сохранение изменений
         shipmentRepository.Update(document);
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return Unit.Value;
     }

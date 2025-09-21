@@ -8,7 +8,6 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Cr
 
 public class CreateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
-    IBalanceService balanceService,
     IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateShipmentCommand, Guid>
 {
@@ -33,22 +32,17 @@ public class CreateShipmentCommandHandler(
         
         // 4.2. Проверка что документ не пустой
         shipmentDocument.ValidateNotEmpty();
-
-        // 5. Проверка доступности баланса
-        var deltas = shipmentDocument.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
-        await balanceService.ValidateBalanceAvailability(deltas, cancellationToken);
         
-        // 6. Подписание документа и списание с баланса если требуется
+        // 5. Подписание документа если требуется (domain event will handle balance validation and decrease)
         if (command.Sign)
         {
-            await balanceService.DecreaseBalances(deltas, cancellationToken);
             shipmentDocument.Sign();
         }
 
-        // 7. Сохранение документа
+        // 6. Сохранение документа
         shipmentRepository.Create(shipmentDocument);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveEntitiesAsync(cancellationToken);
         return shipmentDocument.Id;
     }
 }

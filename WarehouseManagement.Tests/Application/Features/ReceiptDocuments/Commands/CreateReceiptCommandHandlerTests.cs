@@ -11,7 +11,6 @@ namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Comman
 public class CreateReceiptCommandHandlerTests
 {
     private readonly IReceiptRepository _receiptRepository;
-    private readonly IBalanceService _balanceService;
     private readonly INamedEntityValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly CreateReceiptCommandHandler _handler;
@@ -19,13 +18,11 @@ public class CreateReceiptCommandHandlerTests
     public CreateReceiptCommandHandlerTests()
     {
         _receiptRepository = Substitute.For<IReceiptRepository>();
-        _balanceService = Substitute.For<IBalanceService>();
         _validationService = Substitute.For<INamedEntityValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         
         _handler = new CreateReceiptCommandHandler(
             _receiptRepository,
-            _balanceService,
             _validationService,
             _unitOfWork);
     }
@@ -65,11 +62,8 @@ public class CreateReceiptCommandHandlerTests
         
         _receiptRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ReceiptAggregate.ReceiptDocument>());
         
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Any<IEnumerable<BalanceDelta>>(),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance increase, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿﻿﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
@@ -8,7 +8,6 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Cre
 
 public class CreateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    IBalanceService balanceService,
     INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateReceiptCommand, Guid>
 {
@@ -32,11 +31,13 @@ public class CreateReceiptCommandHandler(
             receiptDocument.AddResource(balanceDelta.ResourceId, balanceDelta.UnitOfMeasureId, balanceDelta.Quantity);
         }
         
+        // Add domain event to handle balance increase
+        receiptDocument.AddReceiptCreatedEvent();
+        
         receiptRepository.Create(receiptDocument);
         
-        await balanceService.IncreaseBalances(balanceDeltas, cancellationToken);
-        
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        // Use SaveEntitiesAsync to trigger domain events within the same transaction
+        await unitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return receiptDocument.Id;
     }

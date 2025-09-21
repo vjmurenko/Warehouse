@@ -11,7 +11,6 @@ namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Comma
 public class CreateShipmentCommandHandlerTests
 {
     private readonly IShipmentRepository _shipmentRepository;
-    private readonly IBalanceService _balanceService;
     private readonly IShipmentValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly CreateShipmentCommandHandler _handler;
@@ -19,13 +18,11 @@ public class CreateShipmentCommandHandlerTests
     public CreateShipmentCommandHandlerTests()
     {
         _shipmentRepository = Substitute.For<IShipmentRepository>();
-        _balanceService = Substitute.For<IBalanceService>();
         _validationService = Substitute.For<IShipmentValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         
         _handler = new CreateShipmentCommandHandler(
             _shipmentRepository,
-            _balanceService,
             _validationService,
             _unitOfWork);
     }

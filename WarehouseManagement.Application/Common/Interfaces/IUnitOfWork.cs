@@ -1,6 +1,7 @@
-﻿namespace WarehouseManagement.Application.Common.Interfaces;
+﻿﻿namespace WarehouseManagement.Application.Common.Interfaces;
 
-public interface IUnitOfWork
+public interface IUnitOfWork : IDisposable
 {
-    Task<int> SaveChangesAsync(CancellationToken token);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default);
 }

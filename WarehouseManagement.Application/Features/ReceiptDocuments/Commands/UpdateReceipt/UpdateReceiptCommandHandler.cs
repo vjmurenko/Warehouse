@@ -1,4 +1,5 @@
 using MediatR;
+using WarehouseManagement.Application.Common.Extensions;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Dtos;
 using WarehouseManagement.Application.Features.Balances.DTOs;
@@ -10,7 +11,6 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Upd
 
 public class UpdateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    IBalanceService balanceService,
     INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>
 {
@@ -36,18 +36,17 @@ public class UpdateReceiptCommandHandler(
         // 4. Рассчитываем дельты для изменения балансов
         var deltas = CalculateBalanceDeltas(document, command.Resources);
 
-        // 5. Применяем изменения к балансам
+        // 5. Обновляем документ
+        UpdateDocumentResources(document, command);
+        
+        // 6. Add domain event to handle balance adjustments
         if (deltas.Any())
         {
-            await balanceService.ValidateBalanceAvailability(deltas, ct);
-            await balanceService.AdjustBalances(deltas, ct);
+            document.AddReceiptUpdatedEvent(deltas.ToDomainAdjustments().ToList());
         }
 
-        // 6. Обновляем документ
-        UpdateDocumentResources(document, command);
-
         receiptRepository.Update(document);
-        await unitOfWork.SaveChangesAsync(ct);
+        await unitOfWork.SaveEntitiesAsync(ct);
 
         return Unit.Value;
     }

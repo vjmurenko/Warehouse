@@ -1,4 +1,6 @@
-﻿using WarehouseManagement.Domain.Common;
+﻿﻿﻿﻿﻿﻿﻿﻿using WarehouseManagement.Domain.Common;
+using WarehouseManagement.Domain.Events;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
@@ -25,7 +27,12 @@ public class ShipmentDocument : Entity, IAggregateRoot
         IsSigned = isSigned;
     }
     
-    public void Revoke() => IsSigned = false;
+    public void Revoke() 
+    {
+        var balanceDeltas = GetBalanceDeltas();
+        AddDomainEvent(new ShipmentDocumentRevokedEvent(Id, balanceDeltas));
+        IsSigned = false;
+    }
 
     public void UpdateNumber(string number)
     {
@@ -77,6 +84,16 @@ public class ShipmentDocument : Entity, IAggregateRoot
     public void Sign()
     {
         Validate();
+        var balanceDeltas = GetBalanceDeltas();
+        AddDomainEvent(new ShipmentDocumentSignedEvent(Id, balanceDeltas));
         IsSigned = true;
+    }
+    
+    private IReadOnlyCollection<BalanceAdjustment> GetBalanceDeltas()
+    {
+        return ShipmentResources
+            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
+            .Select(g => new BalanceAdjustment(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
+            .ToList();
     }
 }

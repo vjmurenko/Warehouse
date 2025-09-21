@@ -7,7 +7,6 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Re
 
 public class RevokeShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
-    IBalanceService balanceService,
     IUnitOfWork unitOfWork) : IRequestHandler<RevokeShipmentCommand, Unit>
 {
     public async Task<Unit> Handle(RevokeShipmentCommand command, CancellationToken cancellationToken)
@@ -21,17 +20,13 @@ public class RevokeShipmentCommandHandler(
         if (!document.IsSigned)
             throw new InvalidOperationException("Документ не подписан и не может быть отозван");
 
-        // 3. Восстановление баланса
-        var deltas = document.ShipmentResources.Select(r => new ShipmentResourceAdapter(r).ToDelta()).ToList();
-        await balanceService.IncreaseBalances(deltas, cancellationToken);
-        
-        // 4. Отзыв документа
+        // 3. Отзыв документа (domain event will handle balance increase)
         document.Revoke();
 
-        // 5. Сохранение изменений
+        // 4. Сохранение изменений
         shipmentRepository.Update(document);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await unitOfWork.SaveEntitiesAsync(cancellationToken);
         return Unit.Value;
     }
 }

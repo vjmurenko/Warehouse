@@ -13,7 +13,6 @@ namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Comman
 public class UpdateReceiptCommandHandlerTests
 {
     private readonly IReceiptRepository _receiptRepository;
-    private readonly IBalanceService _balanceService;
     private readonly INamedEntityValidationService _validationService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly UpdateReceiptCommandHandler _handler;
@@ -21,13 +20,11 @@ public class UpdateReceiptCommandHandlerTests
     public UpdateReceiptCommandHandlerTests()
     {
         _receiptRepository = Substitute.For<IReceiptRepository>();
-        _balanceService = Substitute.For<IBalanceService>();
         _validationService = Substitute.For<INamedEntityValidationService>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         
         _handler = new UpdateReceiptCommandHandler(
             _receiptRepository,
-            _balanceService,
             _validationService,
             _unitOfWork);
     }

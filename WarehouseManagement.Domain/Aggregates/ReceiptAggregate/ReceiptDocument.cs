@@ -1,4 +1,5 @@
-﻿using WarehouseManagement.Domain.Common;
+﻿﻿﻿﻿﻿﻿using WarehouseManagement.Domain.Common;
+using WarehouseManagement.Domain.Events;
 using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -17,6 +18,8 @@ public class ReceiptDocument : Entity, IAggregateRoot
         Id = Guid.NewGuid(); 
         Number = number ?? throw new ArgumentNullException(nameof(number));
         Date = date;
+        
+        // Add domain event for receipt creation - will be handled after resources are added
     }
     
     public void AddResource(Guid resourceId, Guid unitId, decimal quantity)
@@ -43,5 +46,30 @@ public class ReceiptDocument : Entity, IAggregateRoot
     public void ClearResources()
     {
         _receiptResources.Clear();
+    }
+    
+    public void AddReceiptCreatedEvent()
+    {
+        var balanceDeltas = GetBalanceDeltas();
+        AddDomainEvent(new ReceiptDocumentCreatedEvent(Id, balanceDeltas));
+    }
+    
+    public void AddReceiptUpdatedEvent(IReadOnlyCollection<BalanceAdjustment> deltaAdjustments)
+    {
+        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id, deltaAdjustments));
+    }
+    
+    public void AddReceiptDeletedEvent()
+    {
+        var balanceDeltas = GetBalanceDeltas();
+        AddDomainEvent(new ReceiptDocumentDeletedEvent(Id, balanceDeltas));
+    }
+    
+    private IReadOnlyCollection<BalanceAdjustment> GetBalanceDeltas()
+    {
+        return _receiptResources
+            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
+            .Select(g => new BalanceAdjustment(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
+            .ToList();
     }
 }
