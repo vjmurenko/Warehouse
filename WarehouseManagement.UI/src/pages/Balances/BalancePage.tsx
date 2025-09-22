@@ -46,22 +46,7 @@ const BalancePage: React.FC = () => {
     setFilters(newFilters);
     loadBalances(newFilters);
   };
-
-  const getTotalQuantity = (): number => {
-    return balances.reduce((sum, balance) => sum + balance.quantity, 0);
-  };
-
-  const getPositiveBalancesCount = (): number => {
-    return balances.filter(balance => balance.quantity > 0).length;
-  };
-
-  const formatQuantity = (quantity: number): string => {
-    return new Intl.NumberFormat('ru-RU', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3
-    }).format(quantity);
-  };
-
+  
   return (
     <Container fluid className="p-4">
       <Row>

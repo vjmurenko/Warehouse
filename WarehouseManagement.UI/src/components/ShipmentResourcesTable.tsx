@@ -4,8 +4,11 @@ import { BalanceDto, ResourceDto, UnitOfMeasureDto } from '../types/api';
 import apiService from '../services/api';
 
 export interface ShipmentResourceItem {
+  id?: string;
   resourceId: string;
+  resourceName?: string;
   unitId: string;
+  unitName?: string;
   quantity: number;
 }
 
@@ -24,27 +27,25 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
   isSigned = false,
   existingDocumentResources = []
 }) => {
+  const [allResources, setAllResources] = useState<ResourceDto[]>([]);
+  const [allUnits, setAllUnits] = useState<UnitOfMeasureDto[]>([]);
   const [balances, setBalances] = useState<BalanceDto[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [activeResourceData, activeUnitsData, balancesData] = await Promise.all([
-          apiService.getActiveResources(),
-          apiService.getActiveUnitsOfMeasure(),
+        const [resourcesData, unitsData, balancesData] = await Promise.all([
+          apiService.getResources(),
+          apiService.getUnitsOfMeasure(),
           apiService.getBalances()
         ]);
-
-        // фильтруем активные + ресурсы текущего документа
-        const filteredBalances = balancesData.filter(
-          b => existingDocumentResources.some(r => ((r.resourceId === b.resourceId) && (r.unitId === b.unitOfMeasureId)))
-            || (activeResourceData.some(r => r.id === b.resourceId) && activeUnitsData.some(u => u.id === b.unitOfMeasureId))
-        )
-
-        setBalances(filteredBalances);
+        
+        setAllResources(resourcesData);
+        setAllUnits(unitsData);
+        setBalances(balancesData);
       } catch (err) {
-        console.error('Error loading resources:', err);
+        console.error('Error loading data:', err);
       } finally {
         setLoading(false);
       }
@@ -53,9 +54,41 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
     loadData();
   }, []);
 
+  // Получить имя ресурса по ID
+  const getResourceName = (resourceId: string) => {
+    const resource = allResources.find(r => r.id === resourceId);
+    return resource ? resource.name : '';
+  };
+
+  // Получить имя единицы измерения по ID
+  const getUnitName = (unitId: string) => {
+    const unit = allUnits.find(u => u.id === unitId);
+    return unit ? unit.name : '';
+  };
+
+  // Получить баланс для комбинации ресурса и единицы измерения
+  const getBalance = (resourceId: string, unitId: string) => {
+    const balance = balances.find(b => b.resourceId === resourceId && b.unitOfMeasureId === unitId);
+    return balance ? balance.quantity : 0;
+  };
+
+  // Проверить, активен ли ресурс
+  const isResourceActive = (resourceId: string) => {
+    const resource = allResources.find(r => r.id === resourceId);
+    return resource ? resource.isActive : false;
+  };
+
+  // Проверить, активна ли единица измерения
+  const isUnitActive = (unitId: string) => {
+    const unit = allUnits.find(u => u.id === unitId);
+    return unit ? unit.isActive : false;
+  };
+
+  // Получить количество для ресурса
   const getQuantity = (resourceId: string, unitId: string) =>
     resources.find(r => r.resourceId === resourceId && r.unitId === unitId)?.quantity || 0;
 
+  // Обработчик изменения количества
   const handleQuantityChange = (resourceId: string, unitId: string, quantity: number) => {
     const updated = [...resources];
     const index = updated.findIndex(r => r.resourceId === resourceId && r.unitId === unitId);
@@ -70,7 +103,57 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
     onResourcesChange(updated);
   };
 
+ // Создать уникальный ключ для ресурса
+  const getResourceKey = (resourceId: string, unitId: string) => `${resourceId}-${unitId}`;
+
+  // Подготовить список ресурсов для отображения
+  const prepareResourcesForDisplay = () => {
+    const resourceMap = new Map<string, {
+      resourceId: string;
+      resourceName: string;
+      unitId: string;
+      unitName: string;
+      availableQuantity: number;
+    }>();
+    
+    // Добавляем ресурсы из existingDocumentResources
+    existingDocumentResources.forEach(resource => {
+      const key = getResourceKey(resource.resourceId, resource.unitId);
+      if (!resourceMap.has(key)) {
+        resourceMap.set(key, {
+          resourceId: resource.resourceId,
+          resourceName: resource.resourceName || getResourceName(resource.resourceId),
+          unitId: resource.unitId,
+          unitName: resource.unitName || getUnitName(resource.unitId),
+          availableQuantity: getBalance(resource.resourceId, resource.unitId)
+        });
+      }
+    });
+    
+    // Добавляем активные балансы
+    balances.forEach(balance => {
+      // Проверяем, что ресурс и единица измерения активны
+      if (isResourceActive(balance.resourceId) && isUnitActive(balance.unitOfMeasureId)) {
+        const key = getResourceKey(balance.resourceId, balance.unitOfMeasureId);
+        // Добавляем только если еще не добавили
+        if (!resourceMap.has(key)) {
+          resourceMap.set(key, {
+            resourceId: balance.resourceId,
+            resourceName: balance.resourceName,
+            unitId: balance.unitOfMeasureId,
+            unitName: balance.unitOfMeasureName,
+            availableQuantity: balance.quantity
+          });
+        }
+      }
+    });
+    
+    return Array.from(resourceMap.values());
+  };
+
   if (loading) return <div>Loading resources...</div>;
+
+  const displayResources = prepareResourcesForDisplay();
 
   return (
     <div className="table-responsive">
@@ -84,15 +167,15 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
         </tr>
         </thead>
         <tbody>
-        {balances.map(balance => {
-          const currentQuantity = getQuantity(balance.resourceId, balance.unitOfMeasureId);
-          const maxQuantity = balance.quantity;
+        {displayResources.map(resource => {
+          const currentQuantity = getQuantity(resource.resourceId, resource.unitId);
+          const maxQuantity = resource.availableQuantity;
           const hasError = !isSigned && (currentQuantity > maxQuantity);
 
           return(
-            <tr>
-              <td>{balance.resourceName}</td>
-              <td>{balance.unitOfMeasureName}</td>
+            <tr key={`${resource.resourceId}-${resource.unitId}`}>
+              <td>{resource.resourceName}</td>
+              <td>{resource.unitName}</td>
               <td>
                 <FormControl
                   type="number"
@@ -100,7 +183,7 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
                   step={0.001}
                   value={currentQuantity}
                   onChange={e =>
-                handleQuantityChange(balance.resourceId, balance.unitOfMeasureId, parseFloat(e.target.value) || 0)
+                handleQuantityChange(resource.resourceId, resource.unitId, parseFloat(e.target.value) || 0)
                 }
                   disabled={disabled}
                   className={hasError ? 'is-invalid' : ''}
@@ -108,17 +191,17 @@ const ShipmentResourcesTable: React.FC<ShipmentResourcesTableProps> = ({
                 </FormControl>
                 {hasError && (
                   <div className="invalid-feedback">
-                    Exceeds available quantity ({balance?.quantity ?? 0})
+                    Exceeds available quantity ({resource.availableQuantity})
                   </div>
                 )}
               </td>
-              <td>{balance.quantity ?? 0}</td>
+              <td>{resource.availableQuantity}</td>
             </tr>
             )
         })}
         </tbody>
       </Table>
-      {balances.length === 0 && <div className="text-center text-muted py-4">No resources available</div>}
+      {displayResources.length === 0 && <div className="text-center text-muted py-4">No resources available</div>}
     </div>
   );
 };

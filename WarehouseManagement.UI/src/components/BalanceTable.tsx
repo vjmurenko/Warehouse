@@ -39,14 +39,7 @@ const BalanceTable: React.FC<BalanceTableProps> = ({ balances, loading, error })
       </Alert>
     );
   }
-
-  const formatQuantity = (quantity: number): string => {
-    return new Intl.NumberFormat('ru-RU', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 3
-    }).format(quantity);
-  };
-
+  
   return (
     <div className="table-responsive">
       <Table hover className="balance-table mb-0">
@@ -69,7 +62,7 @@ const BalanceTable: React.FC<BalanceTableProps> = ({ balances, loading, error })
                 </span>
               </td>
               <td>
-                  {formatQuantity(balance.quantity)}
+                  {balance.quantity}
               </td>
             </tr>
           ))}
