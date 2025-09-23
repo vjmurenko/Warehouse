@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Dtos;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Implementations;
+using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Exceptions;
@@ -16,22 +16,19 @@ namespace WarehouseManagement.Tests.Application.Services;
 public class BalanceServiceTests
 {
     private readonly IBalanceRepository _balanceRepository;
-    private readonly INamedEntityRepository<Resource> _resourceRepository;
-    private readonly INamedEntityRepository<UnitOfMeasure> _unitOfMeasureRepository;
+    private readonly IBalanceValidatorService _validatorService;
     private readonly ILogger<BalanceService> _logger;
     private readonly BalanceService _balanceService;
 
     public BalanceServiceTests()
     {
         _balanceRepository = Substitute.For<IBalanceRepository>();
-        _resourceRepository = Substitute.For<INamedEntityRepository<Resource>>();
-        _unitOfMeasureRepository = Substitute.For<INamedEntityRepository<UnitOfMeasure>>();
+        _validatorService = Substitute.For<IBalanceValidatorService>();
         _logger = Substitute.For<ILogger<BalanceService>>();
         
         _balanceService = new BalanceService(
             _balanceRepository,
-            _resourceRepository,
-            _unitOfMeasureRepository,
+            _validatorService,
             _logger);
     }
 
@@ -125,13 +122,11 @@ public class BalanceServiceTests
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = new Resource("Test Resource");
-        var unit = new UnitOfMeasure("kg");
-        
-        _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
-            .Returns(resource);
-        _unitOfMeasureRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
-            .Returns(unit);
+        _validatorService.ValidateBalanceAvailability(
+            Arg.Any<IEnumerable<BalanceDelta>>(), 
+            Arg.Any<IDictionary<ResourceUnitKey, Balance>>(), 
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InsufficientBalanceException("Test Resource", "kg", 50m, 30m)));
 
         var deltas = new List<BalanceDelta>
         {
@@ -157,13 +152,11 @@ public class BalanceServiceTests
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = new Resource("Test Resource");
-        var unit = new UnitOfMeasure("kg");
-        
-        _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
-            .Returns(resource);
-        _unitOfMeasureRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
-            .Returns(unit);
+        _validatorService.ValidateBalanceAvailability(
+            Arg.Any<IEnumerable<BalanceDelta>>(), 
+            Arg.Any<IDictionary<ResourceUnitKey, Balance>>(), 
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InsufficientBalanceException("Test Resource", "kg", 50m, 0m)));
 
         var deltas = new List<BalanceDelta>
         {
@@ -179,7 +172,7 @@ public class BalanceServiceTests
     }
 
     [Fact]
-    public async Task validate_balance_availability_should_not_throw_when_sufficient_balance_exists()
+    public async Task adjust_balances_should_not_throw_when_sufficient_balance_exists_for_decrease()
     {
         // Arrange
         var resourceId = Guid.NewGuid();
@@ -193,18 +186,19 @@ public class BalanceServiceTests
 
         var deltas = new List<BalanceDelta>
         {
-            new(resourceId, unitId, 50m)
+            new(resourceId, unitId, -50m)
         };
 
         // Act
-        var action = async () => await _balanceService.ValidateBalanceAvailability(deltas, CancellationToken.None);
+        var action = async () => await _balanceService.AdjustBalances(deltas, CancellationToken.None);
 
         // Assert
         await action.Should().NotThrowAsync();
+        existingBalance.Quantity.Value.Should().Be(50m);
     }
 
     [Fact]
-    public async Task validate_balance_availability_should_throw_when_insufficient_balance()
+    public async Task adjust_balances_should_throw_when_insufficient_balance_for_decrease()
     {
         // Arrange
         var resourceId = Guid.NewGuid();
@@ -216,21 +210,19 @@ public class BalanceServiceTests
         _balanceRepository.GetForUpdateAsync(Arg.Any<IEnumerable<ResourceUnitKey>>(), Arg.Any<CancellationToken>())
             .Returns(balances);
 
-        var resource = new Resource("Test Resource");
-        var unit = new UnitOfMeasure("kg");
-        
-        _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
-            .Returns(resource);
-        _unitOfMeasureRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
-            .Returns(unit);
+        _validatorService.ValidateBalanceAvailability(
+            Arg.Any<IEnumerable<BalanceDelta>>(), 
+            Arg.Any<IDictionary<ResourceUnitKey, Balance>>(), 
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InsufficientBalanceException("Test Resource", "kg", 50m, 0m)));
 
         var deltas = new List<BalanceDelta>
         {
-            new(resourceId, unitId, 50m)
+            new(resourceId, unitId, -50m)
         };
 
         // Act
-        var action = async () => await _balanceService.ValidateBalanceAvailability(deltas, CancellationToken.None);
+        var action = async () => await _balanceService.AdjustBalances(deltas, CancellationToken.None);
 
         // Assert
         await action.Should().ThrowAsync<InsufficientBalanceException>();

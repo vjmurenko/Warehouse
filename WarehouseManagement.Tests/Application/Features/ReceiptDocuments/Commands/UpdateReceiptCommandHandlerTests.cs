@@ -3,7 +3,6 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using MediatR;
@@ -55,13 +54,8 @@ public class UpdateReceiptCommandHandlerTests
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert - Should increase balance by difference (50m)
-        await _balanceService.Received(1).AdjustBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 1 &&
-                deltas.First().ResourceId == resourceId &&
-                deltas.First().Quantity == 50m), // Difference between 150 and 100
-            Arg.Any<CancellationToken>());
+        // Domain events should handle balance adjustments, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -171,6 +165,6 @@ public class UpdateReceiptCommandHandlerTests
 
         // Assert
         result.Should().Be(Unit.Value);
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 }

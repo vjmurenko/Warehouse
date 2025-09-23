@@ -2,7 +2,6 @@ using FluentAssertions;
 using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.RevokeShipment;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Domain.Exceptions;
@@ -84,15 +83,8 @@ public class RevokeShipmentCommandHandlerTests
         // Assert
         result.Should().Be(Unit.Value);
         
-        // Should restore balance by increasing it
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 1 &&
-                deltas.First().ResourceId == resourceId &&
-                deltas.First().Quantity == 100m),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -119,15 +111,8 @@ public class RevokeShipmentCommandHandlerTests
         // Assert
         result.Should().Be(Unit.Value);
         
-        // Should restore balance for all resources
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 2 &&
-                deltas.Any(d => d.ResourceId == resourceId1 && d.Quantity == 50m) &&
-                deltas.Any(d => d.ResourceId == resourceId2 && d.Quantity == 75m)),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -154,15 +139,8 @@ public class RevokeShipmentCommandHandlerTests
         // Assert
         result.Should().Be(Unit.Value);
         
-        // Should restore balance for both unit combinations
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 2 &&
-                deltas.Any(d => d.ResourceId == resourceId && d.UnitOfMeasureId == unitId1 && d.Quantity == 50m) &&
-                deltas.Any(d => d.ResourceId == resourceId && d.UnitOfMeasureId == unitId2 && d.Quantity == 75m)),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -188,15 +166,8 @@ public class RevokeShipmentCommandHandlerTests
         // Assert
         result.Should().Be(Unit.Value);
         
-        // Should create separate deltas for each resource (not grouped)
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 2 &&
-                deltas.Any(d => d.ResourceId == resourceId && d.UnitOfMeasureId == unitId && d.Quantity == 25m) &&
-                deltas.Any(d => d.ResourceId == resourceId && d.UnitOfMeasureId == unitId && d.Quantity == 75m)),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -212,8 +183,7 @@ public class RevokeShipmentCommandHandlerTests
         var action = async () => await _handler.Handle(new RevokeShipmentCommand(shipmentId), CancellationToken.None);
         await action.Should().ThrowAsync<InvalidOperationException>();
         
-        await _balanceService.DidNotReceive().IncreaseBalances(Arg.Any<IEnumerable<BalanceDelta>>(), Arg.Any<CancellationToken>());
-        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _unitOfWork.DidNotReceive().SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -231,7 +201,6 @@ public class RevokeShipmentCommandHandlerTests
         var action = async () => await _handler.Handle(new RevokeShipmentCommand(shipmentId), CancellationToken.None);
         await action.Should().ThrowAsync<InvalidOperationException>();
         
-        await _balanceService.DidNotReceive().IncreaseBalances(Arg.Any<IEnumerable<BalanceDelta>>(), Arg.Any<CancellationToken>());
-        await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _unitOfWork.DidNotReceive().SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 }

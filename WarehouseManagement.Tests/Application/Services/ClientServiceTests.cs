@@ -116,7 +116,7 @@ public class ClientServiceTests
         _repository.IsUsingInDocuments(clientId, Arg.Any<CancellationToken>())
             .Returns(false);
         _repository.GetByIdAsync(clientId, Arg.Any<CancellationToken>())
-            .Returns(existingClient);
+            .Returns((Client?)existingClient);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>())
             .Returns(1);
 

@@ -3,7 +3,6 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 
 namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Commands;
@@ -106,11 +105,8 @@ public class CreateReceiptCommandHandlerTests
         
         _receiptRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ReceiptAggregate.ReceiptDocument>());
         
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => !deltas.Any()),
-            Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance increase, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -138,11 +134,9 @@ public class CreateReceiptCommandHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         // Assert
-        await _balanceService.Received(1).IncreaseBalances(
-            Arg.Is<IEnumerable<BalanceDelta>>(deltas => 
-                deltas.Count() == 2 &&
-                deltas.Any(d => d.ResourceId == resourceId1 && d.Quantity == 50m) &&
-                deltas.Any(d => d.ResourceId == resourceId2 && d.Quantity == 75m)),
-            Arg.Any<CancellationToken>());
+        _receiptRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ReceiptAggregate.ReceiptDocument>());
+        
+        // Domain events should handle balance increase, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 }

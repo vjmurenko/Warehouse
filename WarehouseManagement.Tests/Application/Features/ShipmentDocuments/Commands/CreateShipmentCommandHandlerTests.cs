@@ -3,7 +3,6 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
-using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.ValueObjects;
 
@@ -62,10 +61,8 @@ public class CreateShipmentCommandHandlerTests
         
         _shipmentRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
         
-        // Should not decrease balance for unsigned shipment
-        await _balanceService.DidNotReceive().DecreaseBalances(Arg.Any<IEnumerable<BalanceDelta>>(), Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance changes, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -102,10 +99,8 @@ public class CreateShipmentCommandHandlerTests
         
         _shipmentRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
         
-        // Should decrease balance for signed shipment
-        await _balanceService.Received(1).DecreaseBalances(Arg.Any<IEnumerable<BalanceDelta>>(), Arg.Any<CancellationToken>());
-        
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        // Domain events should handle balance changes, so we verify SaveEntitiesAsync was called
+        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
     [Fact]
