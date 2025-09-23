@@ -5,19 +5,67 @@ services:
     image: postgres:16-alpine
     container_name: warehouse_postgres
     environment:
-      POSTGRES_DB: warehouse_management
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 30s
-      timeout: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 3s
       retries: 5
+    networks:
+      - warehouse-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: ./WarehouseManagement.Web/Dockerfile
+    container_name: warehouse_backend
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "dotnet --info || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - warehouse-network
+
+  frontend:
+    build:
+      context: ./WarehouseManagement.UI
+      dockerfile: Dockerfile
+    container_name: warehouse_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+       backend:
+         condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /usr/share/nginx/html/index.html"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - warehouse-network
+
+networks:
+  warehouse-network:
+    driver: bridge
 
 volumes:
   postgres_data:

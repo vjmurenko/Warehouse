@@ -14,8 +14,8 @@ import {
   ApiError
 } from '../types/api';
 
-// For development with ASP.NET Core, make sure it matches launchSettings.json
-const API_BASE_URL = 'https://localhost:7230/api';
+// Используем переменную окружения или значение по умолчанию для разработки
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
