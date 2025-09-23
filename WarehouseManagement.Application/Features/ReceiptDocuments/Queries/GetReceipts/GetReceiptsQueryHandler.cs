@@ -1,14 +1,14 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
-using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceipts;
 
 public class GetReceiptsQueryHandler(
     IReceiptRepository receiptRepository,
-    IResourceService resourceService,
-    IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>
+    INamedEntityRepository<Resource> resourceRepository,
+    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>
 {
     public async Task<List<ReceiptDocumentDto>> Handle(GetReceiptsQuery query, CancellationToken ctx)
     {
@@ -22,14 +22,20 @@ public class GetReceiptsQueryHandler(
 
         var result = new List<ReceiptDocumentDto>();
         
+        var resourceIds = documents.SelectMany(d => d.ReceiptResources.Select(r => r.ResourceId)).Distinct();
+        var unitIds = documents.SelectMany(d => d.ReceiptResources.Select(r => r.UnitOfMeasureId)).Distinct();
+        
+        var resources = (await resourceRepository.GetByIdsAsync(resourceIds, ctx)).ToList();
+        var units = (await unitOfMeasureRepository.GetByIdsAsync(unitIds, ctx)).ToList();
+        
         foreach (var document in documents)
         {
             var resourceDetails = new List<ReceiptResourceDetailDto>();
             
             foreach (var resource in document.ReceiptResources)
             {
-                var resourceEntity = await resourceService.GetByIdAsync(resource.ResourceId, ctx);
-                var unitEntity = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId, ctx);
+                var resourceEntity = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
+                var unitEntity = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
                 
                 if (resourceEntity != null && unitEntity != null)
                 {

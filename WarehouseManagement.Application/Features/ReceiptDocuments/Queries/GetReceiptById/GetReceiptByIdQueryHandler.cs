@@ -1,14 +1,14 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
-using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceiptById;
 
 public class GetReceiptByIdQueryHandler(
     IReceiptRepository receiptRepository,
-    IResourceService resourceService,
-    IUnitOfMeasureService unitOfMeasureService) : IRequestHandler<GetReceiptByIdQuery, ReceiptDocumentDto?>
+    INamedEntityRepository<Resource> resourceRepository,
+    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository) : IRequestHandler<GetReceiptByIdQuery, ReceiptDocumentDto?>
 {
     public async Task<ReceiptDocumentDto?> Handle(GetReceiptByIdQuery query, CancellationToken ctx)
     {
@@ -19,10 +19,16 @@ public class GetReceiptByIdQueryHandler(
 
         var resourceDetails = new List<ReceiptResourceDetailDto>();
         
+        var resourceIds = document.ReceiptResources.Select(r => r.ResourceId).Distinct();
+        var unitIds = document.ReceiptResources.Select(r => r.UnitOfMeasureId).Distinct();
+        
+        var resources = (await resourceRepository.GetByIdsAsync(resourceIds, ctx)).ToList();
+        var units = (await unitOfMeasureRepository.GetByIdsAsync(unitIds, ctx)).ToList();
+        
         foreach (var resource in document.ReceiptResources)
         {
-            var resourceEntity = await resourceService.GetByIdAsync(resource.ResourceId, ctx);
-            var unitEntity = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId, ctx);
+            var resourceEntity = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
+            var unitEntity = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
             
             if (resourceEntity != null && unitEntity != null)
             {

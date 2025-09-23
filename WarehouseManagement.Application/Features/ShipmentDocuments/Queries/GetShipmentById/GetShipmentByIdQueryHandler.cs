@@ -2,13 +2,14 @@ using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipmentById;
 
 public class GetShipmentByIdQueryHandler(
     IShipmentRepository shipmentRepository,
-    IResourceService resourceService,
-    IUnitOfMeasureService unitOfMeasureService,
+    INamedEntityRepository<Resource> resourceRepository,
+    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,
     IClientService clientService) : IRequestHandler<GetShipmentByIdQuery, ShipmentDocumentDto?>
 {
     public async Task<ShipmentDocumentDto?> Handle(GetShipmentByIdQuery request, CancellationToken ctx)
@@ -18,13 +19,17 @@ public class GetShipmentByIdQueryHandler(
             return null;
 
         var client = await clientService.GetByIdAsync(document.ClientId, ctx);
-        var clientName = client?.Name ?? "Unknown Client";
+        var resourceIds = document.ShipmentResources.Select(r => r.ResourceId).Distinct();
+        var unitIds = document.ShipmentResources.Select(r => r.UnitOfMeasureId).Distinct();
+        
+        var resources = (await resourceRepository.GetByIdsAsync(resourceIds, ctx)).ToList();
+        var units = (await unitOfMeasureRepository.GetByIdsAsync(unitIds, ctx)).ToList();
         
         var resourceDetails = new List<ShipmentResourceDetailDto>();
         foreach (var resource in document.ShipmentResources)
         {
-            var resourceInfo = await resourceService.GetByIdAsync(resource.ResourceId, ctx);
-            var unitInfo = await unitOfMeasureService.GetByIdAsync(resource.UnitOfMeasureId, ctx);
+            var resourceInfo = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
+            var unitInfo = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
 
             resourceDetails.Add(new ShipmentResourceDetailDto(
                 resource.Id,
@@ -39,7 +44,7 @@ public class GetShipmentByIdQueryHandler(
             document.Id,
             document.Number,
             document.ClientId,
-            clientName,
+            client?.Name ?? "Unknown Client",
             document.Date,
             document.IsSigned,
             resourceDetails);
