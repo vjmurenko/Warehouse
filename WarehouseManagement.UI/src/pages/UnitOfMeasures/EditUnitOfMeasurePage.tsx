@@ -168,12 +168,12 @@ const EditUnitOfMeasurePage: React.FC = () => {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Название</Form.Label>
+              <Form.Label>Наименование</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Введите название единицы"
+                placeholder="Введите наименование единицы измерения"
                 disabled={isSubmitting}
                 required
               />

@@ -15,7 +15,7 @@ import {
 } from '../types/api';
 
 // Используем переменную окружения или значение по умолчанию для разработки
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5072/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

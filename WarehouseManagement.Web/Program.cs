@@ -88,11 +88,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Container"
     });
 }
 
-if (!app.Environment.IsEnvironment("Container"))
-{
-    app.UseHttpsRedirection();
-}
-
 app.UseCors("AllowFrontend");
 
 // Map health check endpoint

@@ -7,7 +7,7 @@ import { getErrorMessage, isDuplicateEntityError } from '../../utils/errorUtils'
 
 const AddResourcePage: React.FC = () => {
   const [formData, setFormData] = useState<CreateResourceDto>({ name: '' });
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -19,13 +19,12 @@ const AddResourcePage: React.FC = () => {
     }
 
     try {
-      setSubmitting(true);
+      setIsSubmitting(true);
       setError(null);
       
       const createDto: CreateResourceDto = { name: formData.name.trim() };
       await apiService.createResource(createDto);
-      
-      // Возвращаемся на страницу ресурсов после успешного создания
+
       navigate('/resources');
     } catch (err) {
       console.error('Error creating resource:', err);
@@ -36,34 +35,19 @@ const AddResourcePage: React.FC = () => {
         setError(getErrorMessage(err));
       }
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleCancel = () => {
+    navigate('/resources');
   };
 
   return (
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Ресурс</h2>
-        </Col>
-      </Row>
-
-      <Row className="mb-3">
-        <Col>
-          <Button 
-            variant="success" 
-            onClick={handleSubmit}
-            disabled={submitting || !formData.name.trim()}
-          >
-            {submitting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Сохранение...
-              </>
-            ) : (
-              'Сохранить'
-            )}
-          </Button>
+          <h2>Добавить новый ресурс</h2>
         </Col>
       </Row>
 
@@ -86,10 +70,25 @@ const AddResourcePage: React.FC = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder=""
-                disabled={submitting}
+                placeholder="Введите наименование ресурса"
+                disabled={isSubmitting}
               />
             </Form.Group>
+            <div className="d-flex gap-2">
+              <Button variant="success" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Сохранение...
+                  </>
+                ) : (
+                  'Сохранить'
+                )}
+              </Button>
+              <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
+                Отмена
+              </Button>
+            </div>
           </Form>
         </Col>
       </Row>

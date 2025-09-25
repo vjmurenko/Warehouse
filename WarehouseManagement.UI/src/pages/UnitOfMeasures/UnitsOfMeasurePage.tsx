@@ -84,7 +84,7 @@ const UnitsOfMeasurePage: React.FC = () => {
               </>
             ) : (
               <Button variant="primary" onClick={handleToggleArchived}>
-                К активным
+                К рабочим
               </Button>
             )}
           </div>

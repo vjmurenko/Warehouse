@@ -74,15 +74,15 @@ const ResourcesPage: React.FC = () => {
             {!showArchived ? (
               <>
                 <Button variant="success" onClick={handleAddResource}>
-                  добавить
+                  Добавить
                 </Button>
                 <Button variant="warning" onClick={handleToggleArchived}>
-                  к архиву
+                  К архиву
                 </Button>
               </>
             ) : (
               <Button variant="primary" onClick={handleToggleArchived}>
-                к рабочим
+                К рабочим
               </Button>
             )}
           </div>

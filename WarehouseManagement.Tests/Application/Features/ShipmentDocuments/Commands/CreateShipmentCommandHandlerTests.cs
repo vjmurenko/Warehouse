@@ -4,6 +4,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Commands;
@@ -59,7 +60,7 @@ public class CreateShipmentCommandHandlerTests
             Arg.Is<List<ShipmentResourceDto>>(resources => resources.Count() == 1),
             Arg.Any<CancellationToken>());
         
-        _shipmentRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
+        _shipmentRepository.Received(1).Create(Arg.Any<ShipmentDocument>());
         
         // Domain events should handle balance changes, so we verify SaveEntitiesAsync was called
         await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
@@ -97,7 +98,7 @@ public class CreateShipmentCommandHandlerTests
             Arg.Is<List<ShipmentResourceDto>>(resources => resources.Count() == 1),
             Arg.Any<CancellationToken>());
         
-        _shipmentRepository.Received(1).Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
+        _shipmentRepository.Received(1).Create(Arg.Any<ShipmentDocument>());
         
         // Domain events should handle balance changes, so we verify SaveEntitiesAsync was called
         await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
@@ -120,7 +121,7 @@ public class CreateShipmentCommandHandlerTests
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Документ с номером SHIP-001 уже существует");
         
-        _shipmentRepository.DidNotReceive().Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
+        _shipmentRepository.DidNotReceive().Create(Arg.Any<ShipmentDocument>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -183,7 +184,7 @@ public class CreateShipmentCommandHandlerTests
         await action.Should().ThrowAsync<InvalidOperationException>()
             .WithMessage("Client not found");
         
-        _shipmentRepository.DidNotReceive().Create(Arg.Any<WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentDocument>());
+        _shipmentRepository.DidNotReceive().Create(Arg.Any<ShipmentDocument>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

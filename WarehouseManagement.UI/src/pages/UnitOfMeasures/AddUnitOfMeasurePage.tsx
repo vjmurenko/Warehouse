@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Container, Row, Col, Form, Button, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
 
@@ -42,7 +42,7 @@ const AddUnitOfMeasurePage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Add New Unit of Measure</h2>
+          <h2>Добавить единицу измерения</h2>
         </Col>
       </Row>
       
@@ -60,23 +60,30 @@ const AddUnitOfMeasurePage: React.FC = () => {
         <Col md={6}>
           <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label>Name</Form.Label>
+              <Form.Label>Наименование</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter unit name"
+                placeholder="Введите наименование единицы измерения"
                 disabled={isSubmitting}
                 required
               />
             </Form.Group>
             
             <div className="d-flex gap-2">
-              <Button variant="primary" type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save'}
+              <Button variant="success" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Сохранение...
+                  </>
+                ) : (
+                  'Сохранить'
+                )}
               </Button>
               <Button variant="secondary" onClick={handleCancel} disabled={isSubmitting}>
-                Cancel
+                Отмена
               </Button>
             </div>
           </Form>

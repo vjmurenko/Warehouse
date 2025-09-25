@@ -139,7 +139,7 @@ const EditResourcePage: React.FC = () => {
     <Container fluid className="p-4">
       <Row className="mb-3">
         <Col>
-          <h2>Ресурс</h2>
+          <h2>Редактирование ресурса</h2>
         </Col>
       </Row>
 
@@ -162,7 +162,7 @@ const EditResourcePage: React.FC = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder=""
+                placeholder="Введите наименование ресурса"
                 disabled={isSubmitting}
               />
             </Form.Group>

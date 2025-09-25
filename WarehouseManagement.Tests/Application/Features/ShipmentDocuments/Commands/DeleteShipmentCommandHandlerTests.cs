@@ -56,7 +56,7 @@ public class DeleteShipmentCommandHandlerTests
         var action = async () => await _handler.Handle(new DeleteShipmentCommand(shipmentId), CancellationToken.None);
 
         // Assert
-        await action.Should().ThrowAsync<WarehouseManagement.Domain.Exceptions.SignedDocumentException>();
+        await action.Should().ThrowAsync<SignedDocumentException>();
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class DeleteShipmentCommandHandlerTests
 
         // Act & Assert
         var action = async () => await _handler.Handle(new DeleteShipmentCommand(shipmentId), CancellationToken.None);
-        await action.Should().ThrowAsync<WarehouseManagement.Domain.Exceptions.SignedDocumentException>();
+        await action.Should().ThrowAsync<SignedDocumentException>();
         
         _shipmentRepository.DidNotReceive().Delete(Arg.Any<ShipmentDocument>());
         await _unitOfWork.DidNotReceive().SaveChangesAsync(Arg.Any<CancellationToken>());
