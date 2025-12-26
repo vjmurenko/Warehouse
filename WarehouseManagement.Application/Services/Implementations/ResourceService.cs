@@ -17,7 +17,7 @@ public class ResourceService(INamedEntityRepository<Resource> repository, IUnitO
     public async Task<bool> UpdateResourceAsync(Guid id, string name, CancellationToken ctx)
     {
         var resource = await GetByIdAsync(id, ctx);
-        if (resource == null)
+        if (resource is null)
         {
             throw new EntityNotFoundException("Resource", id);
         }

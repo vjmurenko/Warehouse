@@ -11,7 +11,7 @@ public class RevokeShipmentCommandHandler(
     {
         // 1. Получение документа
         var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-        if (document == null)
+        if (document is null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
         // 2. Проверка что документ подписан

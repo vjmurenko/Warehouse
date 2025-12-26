@@ -38,7 +38,7 @@ public class BalanceValidatorService (IBalanceRepository balanceRepository,
             
             var decreaseAmount = new Quantity(Math.Abs(delta.Quantity));
             
-            if (balance == null || balance.Quantity.Value < decreaseAmount.Value)
+            if (balance is null || balance.Quantity.Value < decreaseAmount.Value)
             {
                 logger.LogWarning("Insufficient balance for resource {ResourceId} and unit {UnitOfMeasureId}. Required: {Required}, Available: {Available}",
                     delta.ResourceId, delta.UnitOfMeasureId, decreaseAmount.Value, balance?.Quantity.Value ?? 0);

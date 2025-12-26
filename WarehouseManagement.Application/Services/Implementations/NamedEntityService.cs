@@ -74,7 +74,7 @@ public abstract class NamedEntityService<T>(INamedEntityRepository<T> repository
         }
 
         var entity = await Repository.GetByIdAsync(id, ctx);
-        if (entity == null)
+        if (entity is null)
         {
             logger.LogWarning("Entity of type {EntityType} with ID: {EntityId} not found for deletion", typeof(T).Name, id);
             throw new EntityNotFoundException(typeof(T).Name, id);

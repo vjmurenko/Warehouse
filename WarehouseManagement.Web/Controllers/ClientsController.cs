@@ -59,7 +59,7 @@ public class ClientsController(IClientService clientService, ILogger<ClientsCont
     {
         var client = await clientService.GetByIdAsync(id, ctx);
         
-        if (client == null)
+        if (client is null)
         {
             return NotFound();
         }

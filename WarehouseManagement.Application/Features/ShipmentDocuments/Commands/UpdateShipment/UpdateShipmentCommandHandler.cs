@@ -15,7 +15,7 @@ public class UpdateShipmentCommandHandler(
     {
         // 1. Получение документа
         var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-        if (document == null)
+        if (document is null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
         if (document.IsSigned)

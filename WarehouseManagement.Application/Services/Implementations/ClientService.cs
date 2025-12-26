@@ -30,7 +30,7 @@ public class ClientService(INamedEntityRepository<Client> repository, IUnitOfWor
         logger.LogInformation("Updating client with ID: {ClientId}", id);
         
         var client = await GetByIdAsync(id, ctx);
-        if (client == null)
+        if (client is null)
         {
             logger.LogWarning("Client with ID: {ClientId} not found for update", id);
             return false;

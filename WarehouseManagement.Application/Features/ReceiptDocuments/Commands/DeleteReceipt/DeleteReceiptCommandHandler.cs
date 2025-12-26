@@ -11,7 +11,7 @@ public class DeleteReceiptCommandHandler(
     public async Task<Unit> Handle(DeleteReceiptCommand command, CancellationToken cancellationToken)
     {
         var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-        if (document == null)
+        if (document is null)
             throw new EntityNotFoundException("ReceiptDocument", command.Id);
         
         // Add domain event to handle balance decrease

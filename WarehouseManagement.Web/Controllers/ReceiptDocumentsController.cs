@@ -51,7 +51,7 @@ public class ReceiptDocumentsController(IMediator mediator, ILogger<ReceiptDocum
         logger.LogInformation("Getting receipt document by ID: {ReceiptId}", id);
         var result = await mediator.Send(new GetReceiptByIdQuery(id));
         
-        if (result == null)
+        if (result is null)
         {
             logger.LogWarning("Receipt document with ID {ReceiptId} not found", id);
             return NotFound();

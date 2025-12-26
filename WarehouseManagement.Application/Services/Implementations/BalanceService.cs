@@ -79,7 +79,7 @@ public class BalanceService(
     {
         var qty = new Quantity(delta.Quantity);
 
-        if (balance == null)
+        if (balance is null)
         {
             balance = new Balance(delta.ResourceId, delta.UnitOfMeasureId, qty);
             await balanceRepository.AddAsync(balance, ctx);

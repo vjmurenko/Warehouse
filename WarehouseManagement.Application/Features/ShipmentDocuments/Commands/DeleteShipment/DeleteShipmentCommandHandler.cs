@@ -12,7 +12,7 @@ public class DeleteShipmentCommandHandler(
     {
         // 1. Получение документа
         var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
-        if (document == null)
+        if (document is null)
             throw new EntityNotFoundException("ShipmentDocument", command.Id);
 
         // 2. Проверка, что документ не подписан

@@ -122,7 +122,7 @@ public class GlobalExceptionHandlerMiddleware
 
     private static Dictionary<string, object>? CreateParametersDictionary(object[] parameters)
     {
-        if (parameters == null || parameters.Length == 0)
+        if (parameters is null || parameters.Length == 0)
             return null;
 
         var dict = new Dictionary<string, object>();

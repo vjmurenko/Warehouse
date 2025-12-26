@@ -16,7 +16,7 @@ public class UpdateReceiptCommandHandler(
     {
         // 1. Получаем существующий документ
         var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, ct);
-        if (document == null)
+        if (document is null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
         // 2. Проверяем уникальность номера

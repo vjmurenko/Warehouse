@@ -23,7 +23,7 @@ public class Balance : Entity, IAggregateRoot
 
     public void Increase(Quantity amount)
     {
-        if (amount == null)
+        if (amount is null)
         {
             throw new ArgumentNullException(nameof(amount));
         }
@@ -32,7 +32,7 @@ public class Balance : Entity, IAggregateRoot
 
     public void Decrease(Quantity amount)
     {
-        if (amount == null)
+        if (amount is null)
         {
             throw new ArgumentNullException(nameof(amount));
         }

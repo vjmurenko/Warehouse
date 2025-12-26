@@ -15,7 +15,7 @@ public class GetShipmentByIdQueryHandler(
     public async Task<ShipmentDocumentDto?> Handle(GetShipmentByIdQuery request, CancellationToken ctx)
     {
         var document = await shipmentRepository.GetByIdWithResourcesAsync(request.Id, ctx);
-        if (document == null)
+        if (document is null)
             return null;
 
         var client = await clientService.GetByIdAsync(document.ClientId, ctx);

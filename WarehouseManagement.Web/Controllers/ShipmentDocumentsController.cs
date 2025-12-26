@@ -54,7 +54,7 @@ public class ShipmentDocumentsController(IMediator mediator, ILogger<ShipmentDoc
         logger.LogInformation("Getting shipment document by ID: {ShipmentId}", id);
         var result = await mediator.Send(new GetShipmentByIdQuery(id));
         
-        if (result == null)
+        if (result is null)
         {
             logger.LogWarning("Shipment document with ID {ShipmentId} not found", id);
             return NotFound();

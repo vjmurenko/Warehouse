@@ -14,7 +14,7 @@ public class GetReceiptByIdQueryHandler(
     {
         var document = await receiptRepository.GetByIdWithResourcesAsync(query.Id, ctx);
         
-        if (document == null)
+        if (document is null)
             return null;
 
         var resourceDetails = new List<ReceiptResourceDetailDto>();

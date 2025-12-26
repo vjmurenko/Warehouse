@@ -17,7 +17,7 @@ public class UnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> reposito
     public async Task<bool> UpdateUnitOfMeasureAsync(Guid id, string name, CancellationToken ctx)
     {
         var unitOfMeasure = await repository.GetByIdAsync(id, ctx);
-        if (unitOfMeasure == null)
+        if (unitOfMeasure is null)
         {
             throw new ArgumentNullException(nameof(id));
         }

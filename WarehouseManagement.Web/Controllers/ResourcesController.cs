@@ -66,7 +66,7 @@ public class ResourcesController : ControllerBase
     {
         var resource = await _resourceService.GetByIdAsync(id, ctx);
         
-        if (resource == null)
+        if (resource is null)
         {
             return NotFound();
         }

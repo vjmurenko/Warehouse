@@ -66,7 +66,7 @@ public class UnitOfMeasureController : ControllerBase
     {
         var unit = await _unitOfMeasureService.GetByIdAsync(id, ctx);
         
-        if (unit == null)
+        if (unit is null)
         {
             return NotFound();
         }
