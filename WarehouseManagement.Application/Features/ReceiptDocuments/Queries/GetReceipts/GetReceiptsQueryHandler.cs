@@ -37,7 +37,7 @@ public sealed class GetReceiptsQueryHandler(
                 var resourceEntity = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
                 var unitEntity = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
                 
-                if (resourceEntity != null && unitEntity != null)
+                if (resourceEntity is not null && unitEntity is not null)
                 {
                     resourceDetails.Add(new ReceiptResourceDetailDto(
                         resource.Id,

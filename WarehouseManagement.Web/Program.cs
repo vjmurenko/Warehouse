@@ -13,19 +13,15 @@ using WarehouseManagement.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
 builder.Host.UseSerilog();
 
-// Add services to the container
 builder.Services.AddControllers();
 
-// Add health checks
 builder.Services.AddHealthChecks();
 
-// Add CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -36,25 +32,20 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Swagger/OpenAPI services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add Entity Framework
 builder.Services.AddDbContext<WarehouseDbContext>((serviceProvider, options) =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
-    // The IMediator will be injected separately through the constructor
 });
 
-// Add MediatR
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetBalancesQuery).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
-// Register repositories
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
@@ -63,7 +54,6 @@ builder.Services.AddScoped<INamedEntityRepository<Resource>, ResourceRepository>
 builder.Services.AddScoped<INamedEntityRepository<Client>, ClientRepository>();
 builder.Services.AddScoped<INamedEntityRepository<UnitOfMeasure>, UnitOfMeasureRepository>();
 
-// Register services
 builder.Services.AddScoped<IBalanceService, BalanceService>();
 builder.Services.AddScoped<IBalanceValidatorService, BalanceValidatorService>();
 builder.Services.AddScoped<INamedEntityValidationService, NamedEntityValidationService>();
@@ -74,10 +64,8 @@ builder.Services.AddScoped<IUnitOfMeasureService, UnitOfMeasureService>();
 
 var app = builder.Build();
 
-// Add global exception handling middleware
 app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Container"))
 {
     app.UseSwagger();
@@ -90,19 +78,16 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Container"
 
 app.UseCors("AllowFrontend");
 
-// Map health check endpoint
 app.MapHealthChecks("/health");
 
 app.MapControllers();
 
-// Apply database migrations on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<WarehouseDbContext>();
     try
     {
         await context.Database.MigrateAsync();
-        // Log successful migration
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<WarehouseManagement.Web.Program>>();
         logger.LogInformation("Database migration completed successfully");
     }
@@ -116,7 +101,6 @@ using (var scope = app.Services.CreateScope())
 
 app.Run();
 
-// Make Program class accessible for testing
 namespace WarehouseManagement.Web
 {
     public partial class Program { }

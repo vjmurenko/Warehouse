@@ -30,7 +30,7 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
         var result = await context.ShipmentDocuments
             .Include(s => s.ShipmentResources)
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
-        logger.LogInformation("Shipment document with ID {Id} found: {Found}", id, result != null);
+        logger.LogInformation("Shipment document with ID {Id} found: {Found}", id, result is not null);
         return result;
     }
 
@@ -65,22 +65,22 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
             query = query.Where(s => s.Date <= toDateUtc);
         }
         
-        if (documentNumbers != null && documentNumbers.Any())
+        if (documentNumbers is not null && documentNumbers.Any())
         {
             query = query.Where(s => documentNumbers.Contains(s.Number));
         }
         
-        if (clientIds != null && clientIds.Any())
+        if (clientIds is not null && clientIds.Any())
         {
             query = query.Where(s => clientIds.Contains(s.ClientId));
         }
         
-        if (resourceIds != null && resourceIds.Any())
+        if (resourceIds is not null && resourceIds.Any())
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => resourceIds.Contains(sr.ResourceId)));
         }
         
-        if (unitIds != null && unitIds.Any())
+        if (unitIds is not null && unitIds.Any())
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => unitIds.Contains(sr.UnitOfMeasureId)));
         }

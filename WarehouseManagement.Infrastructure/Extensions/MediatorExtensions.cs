@@ -10,7 +10,7 @@ public static class MediatorExtensions
     {
         var domainEntities = context.ChangeTracker
             .Entries<Entity>()
-            .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+            .Where(x => x.Entity.DomainEvents is not null && x.Entity.DomainEvents.Any())
             .ToList();
 
         var domainEvents = domainEntities

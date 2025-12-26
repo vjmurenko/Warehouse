@@ -20,7 +20,7 @@ public sealed class ShipmentValidationService(
         logger.LogInformation("Validating shipment resources for update. Updated resources count: {ResourceCount}", updatedShipmentResources.Count);
         var resourcesForExclude = new List<ShipmentResourceDto>();
 
-        if (currentDocumentForExclude != null)
+        if (currentDocumentForExclude is not null)
         {
             resourcesForExclude.AddRange(currentDocumentForExclude.ShipmentResources
                 .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity.Value)));
@@ -42,7 +42,7 @@ public sealed class ShipmentValidationService(
         var clients = await clientRepository.GetArchivedAsync(ctx);
         var archivedClient = clients.Where(c => c.Id != excludeCurrentClient).FirstOrDefault(c => c.Id == clientId);
 
-        if (archivedClient != null)
+        if (archivedClient is not null)
         {
             logger.LogWarning("Client {ClientId} is archived and cannot be used. Client name: {ClientName}", clientId, archivedClient.Name);
             throw new InvalidOperationException($"Клиент {archivedClient.Name} находится в архиве и не может быть использован");

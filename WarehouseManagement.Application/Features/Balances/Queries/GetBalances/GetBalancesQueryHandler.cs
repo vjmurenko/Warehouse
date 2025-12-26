@@ -27,7 +27,7 @@ public sealed class GetBalancesQueryHandler(
             var resource = resources.FirstOrDefault(r => r.Id == balance.ResourceId);
             var unit = units.FirstOrDefault(u => u.Id == balance.UnitOfMeasureId);
 
-            if (resource != null && unit != null)
+            if (resource is not null && unit is not null)
             {
                 balanceDtos.Add(new BalanceDto(
                     balance.Id,

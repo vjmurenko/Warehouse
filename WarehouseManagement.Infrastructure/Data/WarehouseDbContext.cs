@@ -51,7 +51,7 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
         // Dispatch Domain Events collection. 
         // Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
         // side effects from the domain event handlers which are using the same DbContext with "scoped" lifetime
-        if (_mediator != null)
+        if (_mediator is not null)
         {
             await _mediator.DispatchDomainEventsAsync(this);
         }

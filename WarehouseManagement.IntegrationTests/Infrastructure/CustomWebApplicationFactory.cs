@@ -25,7 +25,7 @@ public class TestcontainersWebApplicationFactory<TProgram> : WebApplicationFacto
             // Remove the default DbContext registration
             var descriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(DbContextOptions<WarehouseDbContext>));
-            if (descriptor != null)
+            if (descriptor is not null)
                 services.Remove(descriptor);
 
             // Add test database context with testcontainers connection string

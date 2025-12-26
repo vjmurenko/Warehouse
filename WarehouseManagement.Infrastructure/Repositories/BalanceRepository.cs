@@ -25,12 +25,12 @@ public sealed class BalanceRepository(WarehouseDbContext context, ILogger<Balanc
 
         query = query.Where(b => b.Quantity.Value > 0);
 
-        if (resourceIds != null && resourceIds.Any())
+        if (resourceIds is not null && resourceIds.Any())
         {
             query = query.Where(b => resourceIds.Contains(b.ResourceId));
         }
 
-        if (unitIds != null && unitIds.Any())
+        if (unitIds is not null && unitIds.Any())
         {
             query = query.Where(b => unitIds.Contains(b.UnitOfMeasureId));
         }

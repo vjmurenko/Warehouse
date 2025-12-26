@@ -43,7 +43,7 @@ public sealed class GetShipmentsQueryHandler(
                 var unitOfMeasure = units.FirstOrDefault(u => u.Id == shipmentResource.UnitOfMeasureId);
                 var resource = resources.FirstOrDefault(r => r.Id == shipmentResource.ResourceId);
                 
-                if (resource != null && unitOfMeasure != null)
+                if (resource is not null && unitOfMeasure is not null)
                 {
                     shipmentResourceDetailDtos.Add(new ShipmentResourceDetailDto(shipmentResource.Id,
                         resource.Id,

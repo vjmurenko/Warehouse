@@ -14,16 +14,13 @@ public sealed class UpdateReceiptCommandHandler(
 {
     public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken ct)
     {
-        // 1. Получаем существующий документ
         var document = await receiptRepository.GetByIdWithResourcesAsync(command.Id, ct);
         if (document is null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
-        // 2. Проверяем уникальность номера
         if (await receiptRepository.ExistsByNumberAsync(command.Number, command.Id, ct))
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
-        // 3. Валидируем только новые ресурсы (которые ещё не в документе)
         var newResources = GetNewResources(document, command.Resources);
         if (newResources.Any())
         {
@@ -31,7 +28,6 @@ public sealed class UpdateReceiptCommandHandler(
             await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
         
-        // 5. Обновляем документ
         document.UpdateNumber(command.Number);
         document.UpdateDate(command.Date);
         document.UpdateResources(command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity)));

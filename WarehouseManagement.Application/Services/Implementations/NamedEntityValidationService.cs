@@ -24,7 +24,6 @@ public sealed class NamedEntityValidationService(
 
         var resources = await resourceRepository.GetByIdsAsync(ids, cancellationToken);
 
-        // Проверяем, что все ресурсы найдены
         var missingIds = ids.Except(resources.Select(r => r.Id)).ToList();
         if (missingIds.Count > 0)
         {
@@ -32,7 +31,6 @@ public sealed class NamedEntityValidationService(
             throw new ArgumentException($"Не найдены ресурсы с ID: {string.Join(", ", missingIds)}");
         }
 
-        // Проверяем на архив
         var archived = resources.Where(r => !r.IsActive).ToList();
         if (archived.Count > 0)
         {

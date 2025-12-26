@@ -15,7 +15,7 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
         var result = await context.ReceiptDocuments
             .Include(r => r.ReceiptResources)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
-        logger.LogInformation("Receipt document with ID {Id} found: {Found}", id, result != null);
+        logger.LogInformation("Receipt document with ID {Id} found: {Found}", id, result is not null);
         return result;
     }
 
@@ -64,17 +64,17 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
             query = query.Where(r => r.Date <= toDateUtc);
         }
 
-        if (documentNumbers != null && documentNumbers.Any())
+        if (documentNumbers is not null && documentNumbers.Any())
         {
             query = query.Where(r => documentNumbers.Contains(r.Number));
         }
 
-        if (resourceIds != null && resourceIds.Any())
+        if (resourceIds is not null && resourceIds.Any())
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => resourceIds.Contains(rr.ResourceId)));
         }
 
-        if (unitIds != null && unitIds.Any())
+        if (unitIds is not null && unitIds.Any())
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => unitIds.Contains(rr.UnitOfMeasureId)));
         }

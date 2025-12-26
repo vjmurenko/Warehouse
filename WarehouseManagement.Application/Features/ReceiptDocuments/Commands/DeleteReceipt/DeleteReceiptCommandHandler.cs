@@ -14,7 +14,6 @@ public sealed class DeleteReceiptCommandHandler(
         if (document is null)
             throw new EntityNotFoundException("ReceiptDocument", command.Id);
         
-        // Add domain event to handle balance decrease
         document.AddReceiptDeletedEvent();
       
         receiptRepository.Delete(document);

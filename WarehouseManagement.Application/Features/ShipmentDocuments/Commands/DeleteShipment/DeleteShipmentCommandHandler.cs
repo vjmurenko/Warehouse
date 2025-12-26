@@ -10,16 +10,13 @@ public sealed class DeleteShipmentCommandHandler(
 {
     public async Task<Unit> Handle(DeleteShipmentCommand command, CancellationToken cancellationToken)
     {
-        // 1. Получение документа
         var document = await shipmentRepository.GetByIdWithResourcesAsync(command.Id, cancellationToken);
         if (document is null)
             throw new EntityNotFoundException("ShipmentDocument", command.Id);
 
-        // 2. Проверка, что документ не подписан
         if (document.IsSigned)
             throw new SignedDocumentException("delete", "shipment", document.Number);
 
-        // 3. Удаление документа
         shipmentRepository.Delete(document);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
