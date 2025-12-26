@@ -132,7 +132,6 @@ public class ReceiptDocumentTests
 
         // Assert
         action.Should().Throw<ArgumentException>()
-            .WithMessage("Номер документа не может быть пустым*")
             .WithParameterName("number");
     }
 

@@ -29,7 +29,7 @@ public class UnitOfMeasureTests
         var action = () => new UnitOfMeasure(invalidName);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Fact]

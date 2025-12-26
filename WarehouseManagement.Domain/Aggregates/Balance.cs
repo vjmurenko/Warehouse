@@ -13,7 +13,7 @@ public class Balance : Entity, IAggregateRoot
     {
         ResourceId = resourceId;
         UnitOfMeasureId = unitOfMeasureId;
-        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
+        Quantity = quantity;
     }
     
     private Balance()
@@ -23,19 +23,13 @@ public class Balance : Entity, IAggregateRoot
 
     public void Increase(Quantity amount)
     {
-        if (amount is null)
-        {
-            throw new ArgumentNullException(nameof(amount));
-        }
+        ArgumentNullException.ThrowIfNull(amount);
         Quantity = new Quantity(Quantity.Value + amount.Value);
     }
 
     public void Decrease(Quantity amount)
     {
-        if (amount is null)
-        {
-            throw new ArgumentNullException(nameof(amount));
-        }
+        ArgumentNullException.ThrowIfNull(amount);
 
         if (Quantity.Value < amount.Value)
         {

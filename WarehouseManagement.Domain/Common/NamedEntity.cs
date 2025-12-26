@@ -18,7 +18,8 @@ public abstract class NamedEntity : Entity, IAggregateRoot
 
     public void Rename(string name)
     {
-        Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException(nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        Name = name;
     }
 
     public void Archive() => IsActive = false;

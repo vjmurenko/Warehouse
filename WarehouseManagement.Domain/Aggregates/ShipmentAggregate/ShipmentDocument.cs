@@ -23,7 +23,9 @@ public class ShipmentDocument : Entity, IAggregateRoot
     public ShipmentDocument(string number, Guid clientId, DateTime date, bool isSigned = false)
     {
         Id = Guid.NewGuid();
-        Number = !string.IsNullOrWhiteSpace(number) ? number.Trim() : throw new ArgumentNullException(nameof(number));
+        
+        ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
+        Number = number.Trim();
         ClientId = clientId;
         Date = date;
         IsSigned = isSigned;
@@ -37,8 +39,7 @@ public class ShipmentDocument : Entity, IAggregateRoot
 
     public void UpdateNumber(string number)
     {
-        if (string.IsNullOrWhiteSpace(number))
-            throw new ArgumentNullException(nameof(number));
+        ArgumentException.ThrowIfNullOrWhiteSpace(number);
         Number = number.Trim();
     }
 

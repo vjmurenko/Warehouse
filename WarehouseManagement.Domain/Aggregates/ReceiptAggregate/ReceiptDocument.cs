@@ -18,7 +18,9 @@ public class ReceiptDocument : Entity, IAggregateRoot
     public ReceiptDocument(string number, DateTime date)
     {
         Id = Guid.NewGuid();
-        Number = number ?? throw new ArgumentNullException(nameof(number));
+        
+        ArgumentException.ThrowIfNullOrEmpty(number);
+        Number = number;
         Date = date;
     }
 
@@ -30,8 +32,7 @@ public class ReceiptDocument : Entity, IAggregateRoot
 
     public void UpdateNumber(string number)
     {
-        if (string.IsNullOrWhiteSpace(number))
-            throw new ArgumentException("Номер документа не может быть пустым", nameof(number));
+        ArgumentException.ThrowIfNullOrWhiteSpace(number);
         Number = number;
     }
 

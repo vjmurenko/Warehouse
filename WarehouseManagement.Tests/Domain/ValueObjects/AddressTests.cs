@@ -42,7 +42,7 @@ public class AddressTests
         var action = () => new Address(invalidName);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>()
+        action.Should().Throw<ArgumentException>()
             .WithParameterName("name");
     }
 

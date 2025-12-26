@@ -40,7 +40,7 @@ public class ShipmentDocumentTests
         var action = () => new ShipmentDocument(invalidNumber, clientId, date);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>()
+        action.Should().Throw<ArgumentException>()
             .WithParameterName("number");
     }
 
@@ -178,7 +178,7 @@ public class ShipmentDocumentTests
         var action = () => shipmentDocument.UpdateNumber(invalidNumber);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>()
+        action.Should().Throw<ArgumentException>()
             .WithParameterName("number");
     }
 

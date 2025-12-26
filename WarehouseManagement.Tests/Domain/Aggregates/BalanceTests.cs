@@ -24,21 +24,6 @@ public class BalanceTests
     }
 
     [Fact]
-    public void constructor_should_throw_exception_when_quantity_is_null()
-    {
-        // Arrange
-        var resourceId = Guid.NewGuid();
-        var unitOfMeasureId = Guid.NewGuid();
-
-        // Act
-        var action = () => new Balance(resourceId, unitOfMeasureId, null);
-
-        // Assert
-        action.Should().Throw<ArgumentNullException>()
-            .WithParameterName("quantity");
-    }
-
-    [Fact]
     public void increase_should_add_quantity_to_existing_balance()
     {
         // Arrange

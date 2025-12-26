@@ -8,7 +8,8 @@ public class Address : ValueObject
     
     public Address(string name)
     {
-        Name = !string.IsNullOrWhiteSpace(name) ? name.Trim() : throw new ArgumentNullException(nameof(name));
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        Name = name.Trim();
     }
     
     private Address()

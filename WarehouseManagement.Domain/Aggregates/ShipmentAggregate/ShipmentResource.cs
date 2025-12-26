@@ -14,7 +14,7 @@ public class ShipmentResource : Entity
     {
         ResourceId = resourceId;
         UnitOfMeasureId = unitOfMeasureId;
-        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
+        Quantity = quantity;
     }
     
     public ShipmentResource(Guid resourceId, Guid unitOfMeasureId, decimal quantity)

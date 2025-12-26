@@ -30,7 +30,7 @@ public class ResourceTests
         var action = () => new Resource(invalidName);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class ResourceTests
         var action = () => resource.Rename(invalidName);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Fact]

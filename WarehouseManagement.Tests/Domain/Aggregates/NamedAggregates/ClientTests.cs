@@ -32,7 +32,7 @@ public class ClientTests
         var action = () => new Client(invalidName, "Valid Address");
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Theory]
@@ -45,7 +45,7 @@ public class ClientTests
         var action = () => new Client("Valid Name", invalidAddress);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Fact]
@@ -75,7 +75,7 @@ public class ClientTests
         var action = () => client.ChangeAddress(invalidAddress);
 
         // Assert
-        action.Should().Throw<ArgumentNullException>();
+        action.Should().Throw<ArgumentException>();
     }
 
     [Fact]

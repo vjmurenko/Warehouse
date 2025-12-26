@@ -15,7 +15,7 @@ public class ReceiptResource : Entity
         ReceiptDocumentId = receiptDocumentId;
         ResourceId = resourceId;
         UnitOfMeasureId = unitOfMeasureId;
-        Quantity = quantity ?? throw new ArgumentNullException(nameof(quantity));
+        Quantity = quantity;
     }
 
     public Guid ReceiptDocumentId { get; set; }
