@@ -46,17 +46,12 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
         _receiptResources.Clear();
     }
     
-    public void AddReceiptUpdatedEvent(IReadOnlyCollection<BalanceDelta> deltaAdjustments)
-    {
-        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id, deltaAdjustments));
-    }
-
-    public void AddReceiptDeletedEvent()
+    public void Delete()
     {
         var balanceDeltas = _receiptResources
             .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
             .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
-            .ToList();;
+            .ToList();
         AddDomainEvent(new ReceiptDocumentDeletedEvent(Id, balanceDeltas));
     }
     
@@ -111,6 +106,6 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
             AddResource(kv.Key.ResourceId, kv.Key.UnitOfMeasureId, kv.Value);
         }
 
-        AddReceiptUpdatedEvent(deltas);
+        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id, deltas));
     }
 }

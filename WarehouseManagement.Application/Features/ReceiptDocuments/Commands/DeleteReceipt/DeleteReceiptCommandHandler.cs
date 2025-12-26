@@ -14,7 +14,7 @@ public sealed class DeleteReceiptCommandHandler(
         if (document is null)
             throw new EntityNotFoundException("ReceiptDocument", command.Id);
         
-        document.AddReceiptDeletedEvent();
+        document.Delete();
       
         receiptRepository.Delete(document);
         await unitOfWork.SaveEntitiesAsync(cancellationToken);

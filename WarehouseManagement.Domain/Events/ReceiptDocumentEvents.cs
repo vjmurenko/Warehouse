@@ -3,7 +3,6 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Events;
 
-// Receipt document events
 public record ReceiptDocumentCreatedEvent(
     Guid DocumentId,
     IReadOnlyCollection<BalanceDelta> BalanceDeltas
