@@ -9,7 +9,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class BalanceValidatorService (IBalanceRepository balanceRepository,
+public sealed class BalanceValidatorService (IBalanceRepository balanceRepository,
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,
     ILogger<BalanceService> logger) : IBalanceValidatorService

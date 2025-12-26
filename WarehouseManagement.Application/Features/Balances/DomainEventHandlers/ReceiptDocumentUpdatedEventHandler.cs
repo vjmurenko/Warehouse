@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
-public class ReceiptDocumentUpdatedEventHandler(
+public sealed class ReceiptDocumentUpdatedEventHandler(
     IBalanceService balanceService,
     ILogger<ReceiptDocumentUpdatedEventHandler> logger)
     : INotificationHandler<ReceiptDocumentUpdatedEvent>

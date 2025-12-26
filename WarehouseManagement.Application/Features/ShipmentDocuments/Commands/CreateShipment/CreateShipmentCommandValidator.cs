@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 
-public class CreateShipmentCommandValidator : AbstractValidator<CreateShipmentCommand>
+public sealed class CreateShipmentCommandValidator : AbstractValidator<CreateShipmentCommand>
 {
     public CreateShipmentCommandValidator()
     {
@@ -34,7 +34,7 @@ public class CreateShipmentCommandValidator : AbstractValidator<CreateShipmentCo
     }
 }
 
-public class ShipmentResourceDtoValidator : AbstractValidator<ShipmentResourceDto>
+public sealed class ShipmentResourceDtoValidator : AbstractValidator<ShipmentResourceDto>
 {
     public ShipmentResourceDtoValidator()
     {

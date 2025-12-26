@@ -29,7 +29,7 @@ public class ErrorResponse
 /// <summary>
 /// Validation error response with field-specific errors
 /// </summary>
-public class ValidationErrorResponse : ErrorResponse
+public sealed class ValidationErrorResponse : ErrorResponse
 {
     public Dictionary<string, string[]> Errors { get; set; } = new();
 

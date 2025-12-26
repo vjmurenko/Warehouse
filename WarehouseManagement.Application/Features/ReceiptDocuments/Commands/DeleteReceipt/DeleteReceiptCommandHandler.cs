@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
 
-public class DeleteReceiptCommandHandler(
+public sealed class DeleteReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<DeleteReceiptCommand, Unit>
 {

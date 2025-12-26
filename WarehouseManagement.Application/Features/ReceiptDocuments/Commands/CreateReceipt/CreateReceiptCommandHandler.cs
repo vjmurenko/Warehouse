@@ -7,7 +7,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 
-public class CreateReceiptCommandHandler(
+public sealed class CreateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateReceiptCommand, Guid>

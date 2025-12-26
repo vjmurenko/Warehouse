@@ -6,7 +6,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ClientsController(IClientService clientService, ILogger<ClientsController> logger) : ControllerBase
+public sealed class ClientsController(IClientService clientService, ILogger<ClientsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all clients

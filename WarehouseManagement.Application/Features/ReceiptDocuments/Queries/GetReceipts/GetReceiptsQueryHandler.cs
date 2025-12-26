@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetReceipts;
 
-public class GetReceiptsQueryHandler(
+public sealed class GetReceiptsQueryHandler(
     IReceiptRepository receiptRepository,
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>

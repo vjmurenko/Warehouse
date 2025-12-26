@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class ReceiptResourceEntityTypeConfiguration : IEntityTypeConfiguration<ReceiptResource>
+public sealed class ReceiptResourceEntityTypeConfiguration : IEntityTypeConfiguration<ReceiptResource>
 {
     public void Configure(EntityTypeBuilder<ReceiptResource> builder)
     {

@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
-public class ShipmentDocumentChangedResourcesEventHandler(
+public sealed class ShipmentDocumentChangedResourcesEventHandler(
     IBalanceValidatorService balanceValidatorService,
     ILogger<ShipmentDocumentChangedResourcesEventHandler> logger)
     : INotificationHandler<ShipmentDocumentChangedResourcesEvent>

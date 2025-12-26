@@ -6,7 +6,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ResourcesController : ControllerBase
+public sealed class ResourcesController : ControllerBase
 {
     private readonly IResourceService _resourceService;
     private readonly ILogger<ResourcesController> _logger;

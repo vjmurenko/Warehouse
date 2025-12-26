@@ -6,7 +6,7 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 
 namespace WarehouseManagement.Infrastructure.Repositories;
 
-public class ResourceRepository(WarehouseDbContext dbContext, ILogger<ResourceRepository> logger) : NamedEntityRepository<Resource>(dbContext)
+public sealed class ResourceRepository(WarehouseDbContext dbContext, ILogger<ResourceRepository> logger) : NamedEntityRepository<Resource>(dbContext)
 {
     public override async Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx)
     {

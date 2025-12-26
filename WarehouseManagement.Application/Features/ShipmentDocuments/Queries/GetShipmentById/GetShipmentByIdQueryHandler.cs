@@ -6,7 +6,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipmentById;
 
-public class GetShipmentByIdQueryHandler(
+public sealed class GetShipmentByIdQueryHandler(
     IShipmentRepository shipmentRepository,
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,

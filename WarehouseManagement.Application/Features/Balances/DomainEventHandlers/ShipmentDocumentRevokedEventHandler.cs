@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
-public class ShipmentDocumentRevokedEventHandler(
+public sealed class ShipmentDocumentRevokedEventHandler(
     IBalanceService balanceService,
     ILogger<ShipmentDocumentRevokedEventHandler> logger)
     : INotificationHandler<ShipmentDocumentRevokedEvent>

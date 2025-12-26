@@ -11,7 +11,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ReceiptDocumentsController(IMediator mediator, ILogger<ReceiptDocumentsController> logger) : ControllerBase
+public sealed class ReceiptDocumentsController(IMediator mediator, ILogger<ReceiptDocumentsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all receipt documents with optional filtering

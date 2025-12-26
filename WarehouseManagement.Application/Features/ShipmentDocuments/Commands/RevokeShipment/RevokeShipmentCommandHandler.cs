@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.RevokeShipment;
 
-public class RevokeShipmentCommandHandler(
+public sealed class RevokeShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<RevokeShipmentCommand, Unit>
 {

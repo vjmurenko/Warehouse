@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
 
-public class DeleteReceiptCommandValidator : AbstractValidator<DeleteReceiptCommand>
+public sealed class DeleteReceiptCommandValidator : AbstractValidator<DeleteReceiptCommand>
 {
     public DeleteReceiptCommandValidator()
     {

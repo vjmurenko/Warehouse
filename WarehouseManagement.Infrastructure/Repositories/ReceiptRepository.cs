@@ -7,7 +7,7 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 
 namespace WarehouseManagement.Infrastructure.Repositories;
 
-public class ReceiptRepository(WarehouseDbContext context, ILogger<ReceiptRepository> logger) : RepositoryBase<ReceiptDocument>(context), IReceiptRepository
+public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<ReceiptRepository> logger) : RepositoryBase<ReceiptDocument>(context), IReceiptRepository
 {
     public async Task<ReceiptDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default)
     {

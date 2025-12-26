@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class ShipmentResourceEntityTypeConfiguration : IEntityTypeConfiguration<ShipmentResource>
+public sealed class ShipmentResourceEntityTypeConfiguration : IEntityTypeConfiguration<ShipmentResource>
 {
     public void Configure(EntityTypeBuilder<ShipmentResource> builder)
     {

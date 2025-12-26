@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 
-public class GetBalancesQueryHandler(
+public sealed class GetBalancesQueryHandler(
     IBalanceRepository balanceRepository,
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository

@@ -3,7 +3,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
-public class ReceiptResource : Entity
+public sealed class ReceiptResource : Entity
 {
     private ReceiptResource()
     {

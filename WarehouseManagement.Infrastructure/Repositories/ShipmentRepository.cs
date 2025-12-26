@@ -7,7 +7,7 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 
 namespace WarehouseManagement.Infrastructure.Repositories;
 
-public class ShipmentRepository(WarehouseDbContext context, ILogger<ShipmentRepository> logger) : RepositoryBase<ShipmentDocument>(context), IShipmentRepository
+public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<ShipmentRepository> logger) : RepositoryBase<ShipmentDocument>(context), IShipmentRepository
 {
     public async Task<bool> ExistsByNumberAsync(string number, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {

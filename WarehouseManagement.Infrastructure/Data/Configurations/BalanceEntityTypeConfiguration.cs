@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class BalanceEntityTypeConfiguration : IEntityTypeConfiguration<Balance>
+public sealed class BalanceEntityTypeConfiguration : IEntityTypeConfiguration<Balance>
 {
     public void Configure(EntityTypeBuilder<Balance> builder)
     {

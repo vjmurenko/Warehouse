@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
-public class UpdateReceiptCommandValidator : AbstractValidator<UpdateReceiptCommand>
+public sealed class UpdateReceiptCommandValidator : AbstractValidator<UpdateReceiptCommand>
 {
     public UpdateReceiptCommandValidator()
     {
@@ -32,7 +32,7 @@ public class UpdateReceiptCommandValidator : AbstractValidator<UpdateReceiptComm
     }
 }
 
-public class ReceiptResourceDtoValidator : AbstractValidator<ReceiptResourceDto>
+public sealed class ReceiptResourceDtoValidator : AbstractValidator<ReceiptResourceDto>
 {
     public ReceiptResourceDtoValidator()
     {

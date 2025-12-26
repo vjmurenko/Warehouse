@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
-public class ReceiptDocument : Entity, IAggregateRoot
+public sealed class ReceiptDocument : Entity, IAggregateRoot
 {
     private readonly List<ReceiptResource> _receiptResources = new();
     public string Number { get; private set; }

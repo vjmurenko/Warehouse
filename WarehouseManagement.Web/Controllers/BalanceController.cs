@@ -7,7 +7,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class BalanceController(IMediator mediator, ILogger<BalanceController> logger) : ControllerBase
+public sealed class BalanceController(IMediator mediator, ILogger<BalanceController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all balances with optional filtering by resource IDs and unit of measure IDs

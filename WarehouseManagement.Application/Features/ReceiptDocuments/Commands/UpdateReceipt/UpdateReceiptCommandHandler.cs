@@ -7,7 +7,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
-public class UpdateReceiptCommandHandler(
+public sealed class UpdateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     INamedEntityValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>

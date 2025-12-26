@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 
-public class CreateReceiptCommandValidator : AbstractValidator<CreateReceiptCommand>
+public sealed class CreateReceiptCommandValidator : AbstractValidator<CreateReceiptCommand>
 {
     public CreateReceiptCommandValidator()
     {
@@ -28,7 +28,7 @@ public class CreateReceiptCommandValidator : AbstractValidator<CreateReceiptComm
     }
 }
 
-public class ReceiptResourceDtoValidator : AbstractValidator<ReceiptResourceDto>
+public sealed class ReceiptResourceDtoValidator : AbstractValidator<ReceiptResourceDto>
 {
     public ReceiptResourceDtoValidator()
     {

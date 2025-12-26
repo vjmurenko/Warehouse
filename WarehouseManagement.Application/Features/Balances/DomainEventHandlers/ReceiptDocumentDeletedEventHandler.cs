@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
-public class ReceiptDocumentDeletedEventHandler(
+public sealed class ReceiptDocumentDeletedEventHandler(
     IBalanceService balanceService,
     ILogger<ReceiptDocumentDeletedEventHandler> logger)
     : INotificationHandler<ReceiptDocumentDeletedEvent>

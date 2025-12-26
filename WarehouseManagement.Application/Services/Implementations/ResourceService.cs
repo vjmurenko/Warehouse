@@ -6,7 +6,7 @@ using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class ResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<ResourceService> logger) : NamedEntityService<Resource>(repository, unitOfWork, logger), IResourceService
+public sealed class ResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<ResourceService> logger) : NamedEntityService<Resource>(repository, unitOfWork, logger), IResourceService
 {
     public async Task<Guid> CreateResourceAsync(string name, CancellationToken ctx)
     {

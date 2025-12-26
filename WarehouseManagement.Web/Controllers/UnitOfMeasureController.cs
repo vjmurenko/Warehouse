@@ -6,7 +6,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UnitOfMeasureController : ControllerBase
+public sealed class UnitOfMeasureController : ControllerBase
 {
     private readonly IUnitOfMeasureService _unitOfMeasureService;
     private readonly ILogger<UnitOfMeasureController> _logger;

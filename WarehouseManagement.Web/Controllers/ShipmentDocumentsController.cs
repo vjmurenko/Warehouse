@@ -12,7 +12,7 @@ namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ShipmentDocumentsController(IMediator mediator, ILogger<ShipmentDocumentsController> logger) : ControllerBase
+public sealed class ShipmentDocumentsController(IMediator mediator, ILogger<ShipmentDocumentsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all shipment documents with optional filtering

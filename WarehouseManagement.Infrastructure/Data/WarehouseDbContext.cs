@@ -10,7 +10,7 @@ using WarehouseManagement.Infrastructure.Extensions;
 
 namespace WarehouseManagement.Infrastructure.Data;
 
-public class WarehouseDbContext : DbContext, IUnitOfWork
+public sealed class WarehouseDbContext : DbContext, IUnitOfWork
 {
     private readonly IMediator _mediator;
 

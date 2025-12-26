@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;
 
-public class DeleteShipmentCommandHandler(
+public sealed class DeleteShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IUnitOfWork unitOfWork) : IRequestHandler<DeleteShipmentCommand, Unit>
 {

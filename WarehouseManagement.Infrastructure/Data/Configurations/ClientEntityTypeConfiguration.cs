@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Client>
+public sealed class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Client>
 {
     public void Configure(EntityTypeBuilder<Client> builder)
     {

@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 
-public class UpdateShipmentCommandValidator : AbstractValidator<UpdateShipmentCommand>
+public sealed class UpdateShipmentCommandValidator : AbstractValidator<UpdateShipmentCommand>
 {
     public UpdateShipmentCommandValidator()
     {
@@ -38,7 +38,7 @@ public class UpdateShipmentCommandValidator : AbstractValidator<UpdateShipmentCo
     }
 }
 
-public class ShipmentResourceDtoValidator : AbstractValidator<ShipmentResourceDto>
+public sealed class ShipmentResourceDtoValidator : AbstractValidator<ShipmentResourceDto>
 {
     public ShipmentResourceDtoValidator()
     {

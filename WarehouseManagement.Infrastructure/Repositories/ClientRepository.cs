@@ -6,7 +6,7 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 
 namespace WarehouseManagement.Infrastructure.Repositories;
 
-public class ClientRepository(WarehouseDbContext dbContext, ILogger<ClientRepository> logger) : NamedEntityRepository<Client>(dbContext)
+public sealed class ClientRepository(WarehouseDbContext dbContext, ILogger<ClientRepository> logger) : NamedEntityRepository<Client>(dbContext)
 {
     public override async Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx)
     {

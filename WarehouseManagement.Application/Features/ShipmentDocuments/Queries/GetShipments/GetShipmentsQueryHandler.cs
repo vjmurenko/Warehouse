@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipments;
 
-public class GetShipmentsQueryHandler(
+public sealed class GetShipmentsQueryHandler(
     IShipmentRepository shipmentRepository,
     INamedEntityRepository<Client> clientRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,

@@ -6,7 +6,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 
-public class UpdateShipmentCommandHandler(
+public sealed class UpdateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateShipmentCommand, Unit>

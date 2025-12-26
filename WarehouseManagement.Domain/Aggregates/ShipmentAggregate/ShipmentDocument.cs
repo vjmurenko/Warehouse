@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
-public class ShipmentDocument : Entity, IAggregateRoot
+public sealed class ShipmentDocument : Entity, IAggregateRoot
 {
     public string Number { get; private set; }
     public Guid ClientId { get; private set; }

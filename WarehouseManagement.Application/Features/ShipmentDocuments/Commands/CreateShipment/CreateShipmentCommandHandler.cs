@@ -6,7 +6,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 
-public class CreateShipmentCommandHandler(
+public sealed class CreateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IShipmentValidationService validationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateShipmentCommand, Guid>

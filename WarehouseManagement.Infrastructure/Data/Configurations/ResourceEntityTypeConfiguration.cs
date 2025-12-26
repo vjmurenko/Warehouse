@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class ResourceEntityTypeConfiguration : IEntityTypeConfiguration<Resource>
+public sealed class ResourceEntityTypeConfiguration : IEntityTypeConfiguration<Resource>
 {
     public void Configure(EntityTypeBuilder<Resource> builder)
     {

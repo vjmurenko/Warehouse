@@ -4,7 +4,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Infrastructure.Data.Configurations;
 
-public class UnitOfMeasureEntityTypeConfiguration : IEntityTypeConfiguration<UnitOfMeasure>
+public sealed class UnitOfMeasureEntityTypeConfiguration : IEntityTypeConfiguration<UnitOfMeasure>
 {
     public void Configure(EntityTypeBuilder<UnitOfMeasure> builder)
     {

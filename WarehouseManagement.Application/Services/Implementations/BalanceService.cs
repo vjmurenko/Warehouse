@@ -7,7 +7,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class BalanceService(
+public sealed class BalanceService(
     IBalanceRepository balanceRepository,
     IBalanceValidatorService validatorService,
     ILogger<BalanceService> logger) : IBalanceService

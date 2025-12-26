@@ -2,7 +2,7 @@
 
 namespace WarehouseManagement.Domain.ValueObjects;
 
-public class Quantity : ValueObject
+public sealed class Quantity : ValueObject
 {
     public decimal Value { get; }
 

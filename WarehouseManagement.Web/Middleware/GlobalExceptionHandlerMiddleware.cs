@@ -8,7 +8,7 @@ namespace WarehouseManagement.Web.Middleware;
 /// <summary>
 /// Global exception handling middleware that converts exceptions to standardized error responses
 /// </summary>
-public class GlobalExceptionHandlerMiddleware
+public sealed class GlobalExceptionHandlerMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionHandlerMiddleware> _logger;

@@ -3,7 +3,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
-public class ShipmentResource : Entity
+public sealed class ShipmentResource : Entity
 {
     private ShipmentResource()
     {

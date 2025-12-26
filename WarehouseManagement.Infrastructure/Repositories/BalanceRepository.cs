@@ -9,7 +9,7 @@ using WarehouseManagement.Infrastructure.Repositories.Common;
 
 namespace WarehouseManagement.Infrastructure.Repositories;
 
-public class BalanceRepository(WarehouseDbContext context, ILogger<BalanceRepository> logger) : RepositoryBase<Balance>(context), IBalanceRepository
+public sealed class BalanceRepository(WarehouseDbContext context, ILogger<BalanceRepository> logger) : RepositoryBase<Balance>(context), IBalanceRepository
 {
     public async Task AddAsync(Balance balance, CancellationToken ct)
     {

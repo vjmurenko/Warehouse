@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class NamedEntityValidationService(
+public sealed class NamedEntityValidationService(
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitRepository,
     ILogger<NamedEntityValidationService> logger)

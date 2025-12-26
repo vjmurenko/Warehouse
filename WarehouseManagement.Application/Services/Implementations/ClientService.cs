@@ -5,7 +5,7 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
-public class ClientService(INamedEntityRepository<Client> repository, IUnitOfWork unitOfWork, ILogger<ClientService> logger)
+public sealed class ClientService(INamedEntityRepository<Client> repository, IUnitOfWork unitOfWork, ILogger<ClientService> logger)
     : NamedEntityService<Client>(repository, unitOfWork, logger), IClientService
 {
     public async Task<Guid> CreateClientAsync(string name, string addressName, CancellationToken ctx)

@@ -3,7 +3,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates;
 
-public class Balance : Entity, IAggregateRoot
+public sealed class Balance : Entity, IAggregateRoot
 {
     public Guid ResourceId { get; private set; }
     public Guid UnitOfMeasureId { get; private set; }

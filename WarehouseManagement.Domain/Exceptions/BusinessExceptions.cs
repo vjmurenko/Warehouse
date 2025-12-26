@@ -3,7 +3,7 @@ namespace WarehouseManagement.Domain.Exceptions;
 /// <summary>
 /// Exception thrown when attempting to delete an entity that is referenced by other entities
 /// </summary>
-public class EntityInUseException : DomainException
+public sealed class EntityInUseException : DomainException
 {
     public EntityInUseException(string entityType, Guid entityId, string referencingEntities)
         : base("ENTITY_IN_USE", 
@@ -16,7 +16,7 @@ public class EntityInUseException : DomainException
 /// <summary>
 /// Exception thrown when attempting to access an entity that does not exist
 /// </summary>
-public class EntityNotFoundException : DomainException
+public sealed class EntityNotFoundException : DomainException
 {
     public EntityNotFoundException(string entityType, Guid entityId)
         : base("ENTITY_NOT_FOUND",
@@ -36,7 +36,7 @@ public class EntityNotFoundException : DomainException
 /// <summary>
 /// Exception thrown when attempting to create an entity with a duplicate name
 /// </summary>
-public class DuplicateEntityException : DomainException
+public sealed class DuplicateEntityException : DomainException
 {
     public DuplicateEntityException(string entityType, string name)
         : base("DUPLICATE_ENTITY",
@@ -49,7 +49,7 @@ public class DuplicateEntityException : DomainException
 /// <summary>
 /// Exception thrown when business rule validation fails
 /// </summary>
-public class BusinessRuleValidationException : DomainException
+public sealed class BusinessRuleValidationException : DomainException
 {
     public BusinessRuleValidationException(string rule, string message, params object[] parameters)
         : base($"BUSINESS_RULE_{rule}",
@@ -62,7 +62,7 @@ public class BusinessRuleValidationException : DomainException
 /// <summary>
 /// Exception thrown when insufficient inventory balance exists
 /// </summary>
-public class InsufficientBalanceException : DomainException
+public sealed class InsufficientBalanceException : DomainException
 {
     public InsufficientBalanceException(string resourceName, string unitName, decimal requested, decimal available)
         : base("INSUFFICIENT_BALANCE",
@@ -75,7 +75,7 @@ public class InsufficientBalanceException : DomainException
 /// <summary>
 /// Exception thrown when trying to modify a signed document
 /// </summary>
-public class SignedDocumentException : DomainException
+public sealed class SignedDocumentException : DomainException
 {
     public SignedDocumentException(string operation, string documentType, string documentNumber)
         : base("SIGNED_DOCUMENT_OPERATION",
