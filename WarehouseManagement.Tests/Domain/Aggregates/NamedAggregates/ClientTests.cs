@@ -11,14 +11,14 @@ public class ClientTests
     {
         // Arrange
         const string name = "ABC Corp";
-        const string address = "123 Main St";
+        var address = new Address("123 Main St");
 
         // Act
         var client = new Client(name, address);
 
         // Assert
         client.Name.Should().Be(name);
-        client.Address.Name.Should().Be(address);
+        client.Address.Should().Be(address);
         client.IsActive.Should().BeTrue();
     }
 
@@ -29,60 +29,54 @@ public class ClientTests
     public void constructor_should_throw_exception_when_invalid_name_provided(string invalidName)
     {
         // Act
-        var action = () => new Client(invalidName, "Valid Address");
+        var action = () => new Client(invalidName, new Address("Valid Address"));
 
         // Assert
         action.Should().Throw<ArgumentException>();
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void constructor_should_throw_exception_when_invalid_address_provided(string invalidAddress)
+    [Fact]
+    public void constructor_should_throw_exception_when_null_address_provided()
     {
         // Act
-        var action = () => new Client("Valid Name", invalidAddress);
+        var action = () => new Client("Valid Name", null!);
 
         // Assert
-        action.Should().Throw<ArgumentException>();
+        action.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void change_address_should_update_address_when_valid_address_provided()
     {
         // Arrange
-        var client = new Client("ABC Corp", "Old Address");
-        const string newAddress = "New Address";
+        var client = new Client("ABC Corp", new Address("Old Address"));
+        var newAddress = new Address("New Address");
 
         // Act
         client.ChangeAddress(newAddress);
 
         // Assert
-        client.Address.Name.Should().Be(newAddress);
+        client.Address.Should().Be(newAddress);
     }
 
-    [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void change_address_should_throw_exception_when_invalid_address_provided(string invalidAddress)
+    [Fact]
+    public void change_address_should_throw_exception_when_null_address_provided()
     {
         // Arrange
-        var client = new Client("ABC Corp", "Valid Address");
+        var client = new Client("ABC Corp", new Address("Valid Address"));
 
         // Act
-        var action = () => client.ChangeAddress(invalidAddress);
+        var action = () => client.ChangeAddress(null!);
 
         // Assert
-        action.Should().Throw<ArgumentException>();
+        action.Should().Throw<ArgumentNullException>();
     }
 
     [Fact]
     public void archive_should_set_is_active_to_false()
     {
         // Arrange
-        var client = new Client("ABC Corp", "123 Main St");
+        var client = new Client("ABC Corp", new Address("123 Main St"));
 
         // Act
         client.Archive();
@@ -95,7 +89,7 @@ public class ClientTests
     public void activate_should_set_is_active_to_true()
     {
         // Arrange
-        var client = new Client("ABC Corp", "123 Main St");
+        var client = new Client("ABC Corp", new Address("123 Main St"));
         client.Archive();
 
         // Act

@@ -90,7 +90,7 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
     protected async Task<Client> CreateTestClientAsync(string name = "Test Client", string addressName = "Test Address")
     {
         var address = new Address(addressName);
-        var client = new Client(name, addressName);
+        var client = new Client(name, address);
         _context.Clients.Add(client);
         await _context.SaveChangesAsync();
         return client;

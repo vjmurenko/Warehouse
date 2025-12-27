@@ -12,13 +12,13 @@ public sealed class Client : NamedEntity
         
     }
     
-    public Client(string name, string address) : base(name)
+    public Client(string name, Address address) : base(name)
     {
         ChangeAddress(address);
     }
     
-    public void ChangeAddress(string addressName)
+    public void ChangeAddress(Address address)
     {
-        Address = new Address(addressName);
+        Address = address ?? throw new ArgumentNullException(nameof(address));
     }
 }

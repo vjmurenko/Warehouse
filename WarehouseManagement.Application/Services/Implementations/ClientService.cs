@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 
@@ -18,7 +19,8 @@ public sealed class ClientService(INamedEntityRepository<Client> repository, IUn
             throw new ArgumentException("Name cannot be empty", nameof(name));
         }
         
-        var client = new Client(name, addressName);
+        var address = new Address(addressName);
+        var client = new Client(name, address);
         var result = await CreateAsync(client, ctx);
         
         logger.LogInformation("Successfully created client with ID: {ClientId}", result);
@@ -37,7 +39,7 @@ public sealed class ClientService(INamedEntityRepository<Client> repository, IUn
         }
 
         client.Rename(name);
-        client.ChangeAddress(addressName);
+        client.ChangeAddress(new Address(addressName));
 
         var result = await UpdateAsync(client, ctx);
         

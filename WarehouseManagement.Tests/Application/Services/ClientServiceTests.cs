@@ -5,6 +5,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Tests.Application.Services;
 
@@ -30,7 +31,7 @@ public class ClientServiceTests
     public async Task create_async_should_throw_exception_when_name_already_exists()
     {
         // Arrange
-        var client = new Client("Existing Client", "Test Address");
+        var client = new Client("Existing Client", new Address("Test Address"));
         _repository.ExistsWithNameAsync(client.Name, null, Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -49,7 +50,7 @@ public class ClientServiceTests
     public async Task update_async_should_throw_exception_when_new_name_already_exists()
     {
         // Arrange
-        var client = new Client("Existing Client", "Test Address") { Id = Guid.NewGuid() };
+        var client = new Client("Existing Client", new Address("Test Address")) { Id = Guid.NewGuid() };
 
         _repository.ExistsWithNameAsync(client.Name, client.Id, Arg.Any<CancellationToken>())
             .Returns(true);
@@ -111,7 +112,7 @@ public class ClientServiceTests
     {
         // Arrange
         var clientId = Guid.NewGuid();
-        var existingClient = new Client("Test Client", "Test Address") { Id = clientId };
+        var existingClient = new Client("Test Client", new Address("Test Address")) { Id = clientId };
 
         _repository.IsUsingInDocuments(clientId, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -137,7 +138,7 @@ public class ClientServiceTests
     public async Task update_async_should_update_client_when_new_name_is_unique()
     {
         // Arrange
-        var client = new Client("Updated Client", "Updated Address") { Id = Guid.NewGuid() };
+        var client = new Client("Updated Client", new Address("Updated Address")) { Id = Guid.NewGuid() };
 
         _repository.ExistsWithNameAsync(client.Name, client.Id, Arg.Any<CancellationToken>())
             .Returns(false);
