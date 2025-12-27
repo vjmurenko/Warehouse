@@ -1,21 +1,24 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Logging;
+using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
 public sealed class ShipmentDocumentChangedResourcesEventHandler(
-    IBalanceValidatorService balanceValidatorService,
-    ILogger<ShipmentDocumentChangedResourcesEventHandler> logger)
+    IShipmentRepository shipmentRepository,
+    IStockService stockService)
     : INotificationHandler<ShipmentDocumentChangedResourcesEvent>
 {
-    public async Task Handle(ShipmentDocumentChangedResourcesEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ShipmentDocumentChangedResourcesEvent notification, CancellationToken ctx)
     {
-        logger.LogInformation("Handling ShipmentDocumentChangedResourcesEvent for document {DocumentId}", notification.DocumentId);
-        
-        await balanceValidatorService.ValidateBalanceAvailability(notification.BalanceDeltas,ctx: cancellationToken);
-        
-        logger.LogInformation("Successfully processed ShipmentDocumentChangedResourcesEvent for document {DocumentId}", notification.DocumentId);
+        var shipment = await shipmentRepository.GetByIdWithResourcesAsync(notification.DocumentId, ctx);
+        if (shipment is null) return;
+
+        var items = shipment.ShipmentResources
+            .Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity))
+            .ToList();
+
+        await stockService.ValidateAvailability(items, ctx);
     }
 }

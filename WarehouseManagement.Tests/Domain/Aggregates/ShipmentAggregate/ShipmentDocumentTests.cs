@@ -77,7 +77,7 @@ public class ShipmentDocumentTests
         var resource = shipmentDocument.ShipmentResources.First();
         resource.ResourceId.Should().Be(resourceId);
         resource.UnitOfMeasureId.Should().Be(unitOfMeasureId);
-        resource.Quantity.Value.Should().Be(quantity);
+        resource.Quantity.Should().Be(quantity);
         resource.ShipmentDocumentId.Should().Be(shipmentDocument.Id);
     }
 

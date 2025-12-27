@@ -26,7 +26,6 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
     
     public async Task InitializeAsync()
     {
-        // Ensure database is created and clean for each test
         await _context.Database.EnsureCreatedAsync();
         await CleanDatabaseAsync();
     }
@@ -62,13 +61,11 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
 
     protected async Task CleanDatabaseAsync()
     {
-        // Use database-level delete operations to avoid loading entities
-        // Order matters due to foreign key constraints
+        await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"StockMovements\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"ShipmentResources\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"ShipmentDocuments\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"ReceiptResources\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"ReceiptDocuments\"");
-        await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"Balances\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"Clients\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"Resources\"");
         await _context.Database.ExecuteSqlRawAsync("DELETE FROM \"UnitsOfMeasure\"");

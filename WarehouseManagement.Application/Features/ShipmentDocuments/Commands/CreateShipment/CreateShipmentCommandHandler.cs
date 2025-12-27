@@ -2,7 +2,6 @@ using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 
@@ -17,19 +16,19 @@ public sealed class CreateShipmentCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         await validationService.ValidateClient(command.ClientId, ctx: cancellationToken);
-        
+
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken);
-        
+
         var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
-        shipmentDocument.SetResources(command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity)));
-        
+        shipmentDocument.SetResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
+
         shipmentDocument.ValidateNotEmpty();
-        
+
         if (command.Sign)
         {
             shipmentDocument.Sign();
         }
-        
+
         shipmentRepository.Create(shipmentDocument);
 
         await unitOfWork.SaveEntitiesAsync(cancellationToken);

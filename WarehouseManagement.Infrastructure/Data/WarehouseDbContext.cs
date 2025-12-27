@@ -26,11 +26,11 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
     public DbSet<Resource> Resources { get; set; }
     public DbSet<UnitOfMeasure> UnitsOfMeasure { get; set; }
     public DbSet<Client> Clients { get; set; }
-    public DbSet<Balance> Balances { get; set; }
     public DbSet<ReceiptDocument> ReceiptDocuments { get; set; }
     public DbSet<ReceiptResource> ReceiptResources { get; set; }
     public DbSet<ShipmentDocument> ShipmentDocuments { get; set; }
     public DbSet<ShipmentResource> ShipmentResources { get; set; }
+    public DbSet<StockMovement> StockMovements { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,11 +39,11 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new ResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UnitOfMeasureEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ClientEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new BalanceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ReceiptDocumentEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ReceiptResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentDocumentEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentResourceEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new StockMovementEntityTypeConfiguration());
     }
 
     public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)

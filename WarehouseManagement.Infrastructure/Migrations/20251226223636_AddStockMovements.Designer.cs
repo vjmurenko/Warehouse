@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WarehouseManagement.Infrastructure.Data;
@@ -11,9 +12,11 @@ using WarehouseManagement.Infrastructure.Data;
 namespace WarehouseManagement.Infrastructure.Migrations
 {
     [DbContext(typeof(WarehouseDbContext))]
-    partial class WarehouseDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251226223636_AddStockMovements")]
+    partial class AddStockMovements
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,6 +24,26 @@ namespace WarehouseManagement.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("WarehouseManagement.Domain.Aggregates.Balance", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ResourceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UnitOfMeasureId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResourceId", "UnitOfMeasureId")
+                        .IsUnique();
+
+                    b.ToTable("Balances");
+                });
 
             modelBuilder.Entity("WarehouseManagement.Domain.Aggregates.NamedAggregates.Client", b =>
                 {
@@ -116,9 +139,6 @@ namespace WarehouseManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,6)");
-
                     b.Property<Guid>("ReceiptDocumentId")
                         .HasColumnType("uuid");
 
@@ -169,9 +189,6 @@ namespace WarehouseManagement.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("Quantity")
-                        .HasColumnType("decimal(18,6)");
-
                     b.Property<Guid>("ResourceId")
                         .HasColumnType("uuid");
 
@@ -221,6 +238,29 @@ namespace WarehouseManagement.Infrastructure.Migrations
                     b.ToTable("StockMovements");
                 });
 
+            modelBuilder.Entity("WarehouseManagement.Domain.Aggregates.Balance", b =>
+                {
+                    b.OwnsOne("WarehouseManagement.Domain.ValueObjects.Quantity", "Quantity", b1 =>
+                        {
+                            b1.Property<Guid>("BalanceId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Value")
+                                .HasColumnType("decimal(18,6)")
+                                .HasColumnName("Quantity");
+
+                            b1.HasKey("BalanceId");
+
+                            b1.ToTable("Balances");
+
+                            b1.WithOwner()
+                                .HasForeignKey("BalanceId");
+                        });
+
+                    b.Navigation("Quantity")
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("WarehouseManagement.Domain.Aggregates.NamedAggregates.Client", b =>
                 {
                     b.OwnsOne("WarehouseManagement.Domain.ValueObjects.Address", "Address", b1 =>
@@ -253,6 +293,26 @@ namespace WarehouseManagement.Infrastructure.Migrations
                         .HasForeignKey("ReceiptDocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.OwnsOne("WarehouseManagement.Domain.ValueObjects.Quantity", "Quantity", b1 =>
+                        {
+                            b1.Property<Guid>("ReceiptResourceId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Value")
+                                .HasColumnType("decimal(18,6)")
+                                .HasColumnName("Quantity");
+
+                            b1.HasKey("ReceiptResourceId");
+
+                            b1.ToTable("ReceiptResources");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReceiptResourceId");
+                        });
+
+                    b.Navigation("Quantity")
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("WarehouseManagement.Domain.Aggregates.ShipmentAggregate.ShipmentResource", b =>
@@ -261,6 +321,26 @@ namespace WarehouseManagement.Infrastructure.Migrations
                         .WithMany("ShipmentResources")
                         .HasForeignKey("ShipmentDocumentId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("WarehouseManagement.Domain.ValueObjects.Quantity", "Quantity", b1 =>
+                        {
+                            b1.Property<Guid>("ShipmentResourceId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Value")
+                                .HasColumnType("decimal(18,6)")
+                                .HasColumnName("Quantity");
+
+                            b1.HasKey("ShipmentResourceId");
+
+                            b1.ToTable("ShipmentResources");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ShipmentResourceId");
+                        });
+
+                    b.Navigation("Quantity")
                         .IsRequired();
                 });
 

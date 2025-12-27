@@ -1,6 +1,5 @@
 ﻿using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.Events;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
@@ -11,14 +10,9 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
     public DateTime Date { get; private set; }
     public IReadOnlyCollection<ReceiptResource> ReceiptResources => _receiptResources.AsReadOnly();
 
-    private ReceiptDocument()
-    {
-    }
-
     public ReceiptDocument(string number, DateTime date)
     {
         Id = Guid.NewGuid();
-        
         ArgumentException.ThrowIfNullOrEmpty(number);
         Number = number;
         Date = date;
@@ -26,8 +20,7 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
 
     public void AddResource(Guid resourceId, Guid unitId, decimal quantity)
     {
-        var resource = new ReceiptResource(Id, resourceId, unitId, new Quantity(quantity));
-        _receiptResources.Add(resource);
+        _receiptResources.Add(new ReceiptResource(Id, resourceId, unitId, quantity));
     }
 
     public void UpdateNumber(string number)
@@ -36,76 +29,32 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
         Number = number;
     }
 
-    public void UpdateDate(DateTime date)
-    {
-        Date = date;
-    }
+    public void UpdateDate(DateTime date) => Date = date;
 
-    public void ClearResources()
-    {
-        _receiptResources.Clear();
-    }
-    
+    public void ClearResources() => _receiptResources.Clear();
+
     public void Delete()
     {
-        var balanceDeltas = _receiptResources
-            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity.Value)))
-            .ToList();
-        AddDomainEvent(new ReceiptDocumentDeletedEvent(Id, balanceDeltas));
+        AddDomainEvent(new ReceiptDocumentDeletedEvent(Id));
     }
-    
-    public void SetResources(IEnumerable<BalanceDelta> resources)
+
+    public void SetResources(IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> resources)
     {
-        if (!resources.Any()) return;
-
-        var balanceDeltas = resources
-            .Where(r => r.Quantity > 0)
-            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .Select(g => new BalanceDelta(g.Key.ResourceId, g.Key.UnitOfMeasureId, g.Sum(r => r.Quantity)))
-            .ToList();
-
         _receiptResources.Clear();
-
-        foreach (var bd in balanceDeltas)
-        {
-            AddResource(bd.ResourceId, bd.UnitOfMeasureId, bd.Quantity);
-        }
         
-        AddDomainEvent(new ReceiptDocumentCreatedEvent(Id, balanceDeltas));
+        foreach (var (resourceId, unitId, qty) in resources.Where(r => r.Quantity > 0))
+            AddResource(resourceId, unitId, qty);
+
+        AddDomainEvent(new ReceiptDocumentCreatedEvent(Id));
     }
 
-    public void UpdateResources(IEnumerable<BalanceDelta> newResources)
+    public void UpdateResources(IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> newResources)
     {
-        // старое состояние
-        var oldQuantities = _receiptResources
-            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .ToDictionary(g => g.Key, g => g.Sum(r => r.Quantity.Value));
-
-        // новое состояние
-        var newQuantities = newResources
-            .Where(r => r.Quantity > 0)
-            .GroupBy(r => new { r.ResourceId, r.UnitOfMeasureId })
-            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
-
-        // все ключи
-        var allKeys = oldQuantities.Keys.Union(newQuantities.Keys);
-
-        var deltas = allKeys
-            .Select(key => new BalanceDelta(
-                key.ResourceId,
-                key.UnitOfMeasureId,
-                newQuantities.GetValueOrDefault(key, 0) - oldQuantities.GetValueOrDefault(key, 0)))
-            .Where(d => d.Quantity != 0)
-            .ToList();
-
-        // применяем новое состояние к документу
+        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id));
+        
         _receiptResources.Clear();
-        foreach (var kv in newQuantities)
-        {
-            AddResource(kv.Key.ResourceId, kv.Key.UnitOfMeasureId, kv.Value);
-        }
-
-        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id, deltas));
+        
+        foreach (var (resourceId, unitId, qty) in newResources.Where(r => r.Quantity > 0))
+            AddResource(resourceId, unitId, qty);
     }
 }

@@ -23,7 +23,7 @@ public sealed class ShipmentValidationService(
         if (currentDocumentForExclude is not null)
         {
             resourcesForExclude.AddRange(currentDocumentForExclude.ShipmentResources
-                .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity.Value)));
+                .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity)));
         }
 
         var resourcesToValidate = updatedShipmentResources

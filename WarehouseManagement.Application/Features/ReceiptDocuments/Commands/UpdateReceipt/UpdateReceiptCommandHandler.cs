@@ -3,7 +3,6 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
@@ -27,11 +26,11 @@ public sealed class UpdateReceiptCommandHandler(
             await validationService.ValidateResourcesAsync(newResources.Select(r => r.ResourceId), ct);
             await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
-        
+
         document.UpdateNumber(command.Number);
         document.UpdateDate(command.Date);
-        document.UpdateResources(command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity)));
-        
+        document.UpdateResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
+
         receiptRepository.Update(document);
         await unitOfWork.SaveEntitiesAsync(ct);
 

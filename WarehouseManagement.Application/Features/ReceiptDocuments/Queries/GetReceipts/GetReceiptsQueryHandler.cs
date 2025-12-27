@@ -45,7 +45,7 @@ public sealed class GetReceiptsQueryHandler(
                         resourceEntity.Name,
                         resource.UnitOfMeasureId,
                         unitEntity.Name,
-                        resource.Quantity.Value
+                        resource.Quantity
                     ));
                 }
             }

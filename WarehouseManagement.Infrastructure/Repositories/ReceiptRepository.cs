@@ -12,6 +12,14 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
     public async Task<ReceiptDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting receipt document with ID {Id} including resources", id);
+        
+        var local = context.ReceiptDocuments.Local.FirstOrDefault(r => r.Id == id);
+        if (local is not null)
+        {
+            logger.LogInformation("Receipt document with ID {Id} found in local cache", id);
+            return local;
+        }
+        
         var result = await context.ReceiptDocuments
             .Include(r => r.ReceiptResources)
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);

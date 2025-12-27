@@ -37,7 +37,7 @@ public sealed class GetShipmentByIdQueryHandler(
                 resourceInfo?.Name ?? "Unknown Resource",
                 resource.UnitOfMeasureId,
                 unitInfo?.Name ?? "Unknown Unit",
-                resource.Quantity.Value));
+                resource.Quantity));
         }
 
         return new ShipmentDocumentDto(

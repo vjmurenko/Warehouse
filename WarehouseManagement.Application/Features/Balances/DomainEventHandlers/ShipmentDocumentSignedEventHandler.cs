@@ -1,21 +1,28 @@
 ﻿using MediatR;
-using Microsoft.Extensions.Logging;
+using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Enums;
 using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
 public sealed class ShipmentDocumentSignedEventHandler(
-    IBalanceService balanceService,
-    ILogger<ShipmentDocumentSignedEventHandler> logger)
+    IShipmentRepository shipmentRepository,
+    IStockService stockService)
     : INotificationHandler<ShipmentDocumentSignedEvent>
 {
-    public async Task Handle(ShipmentDocumentSignedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ShipmentDocumentSignedEvent notification, CancellationToken ctx)
     {
-        logger.LogInformation("Handling ShipmentDocumentSignedEvent for document {DocumentId}", notification.DocumentId);
-        
-        await balanceService.DecreaseBalances(notification.BalanceDeltas, cancellationToken);
-        
-        logger.LogInformation("Successfully processed ShipmentDocumentSignedEvent for document {DocumentId}", notification.DocumentId);
+        var shipment = await shipmentRepository.GetByIdWithResourcesAsync(notification.DocumentId, ctx);
+        if (shipment is null) return;
+
+        var items = shipment.ShipmentResources
+            .Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity))
+            .ToList();
+
+        await stockService.ValidateAvailability(items, ctx);
+
+        var negativeItems = items.Select(i => (i.ResourceId, i.UnitOfMeasureId, -i.Quantity));
+        await stockService.RecordMovements(shipment.Id, MovementType.Shipment, negativeItems, ctx);
     }
 }

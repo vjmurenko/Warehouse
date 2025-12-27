@@ -27,6 +27,14 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
     public async Task<ShipmentDocument?> GetByIdWithResourcesAsync(Guid id, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Getting shipment document with ID {Id} including resources", id);
+        
+        var local = context.ShipmentDocuments.Local.FirstOrDefault(s => s.Id == id);
+        if (local is not null)
+        {
+            logger.LogInformation("Shipment document with ID {Id} found in local cache", id);
+            return local;
+        }
+        
         var result = await context.ShipmentDocuments
             .Include(s => s.ShipmentResources)
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);

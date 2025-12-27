@@ -53,7 +53,7 @@ public class ReceiptDocumentTests
         var resource = receiptDocument.ReceiptResources.First();
         resource.ResourceId.Should().Be(resourceId);
         resource.UnitOfMeasureId.Should().Be(unitId);
-        resource.Quantity.Value.Should().Be(quantity);
+        resource.Quantity.Should().Be(quantity);
     }
 
     [Theory]

@@ -1,17 +1,16 @@
 using WarehouseManagement.Domain.Common;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
 public sealed class ReceiptResource : Entity
 {
-    private ReceiptResource()
+    private ReceiptResource() { }
+
+    public ReceiptResource(Guid receiptDocumentId, Guid resourceId, Guid unitOfMeasureId, decimal quantity)
     {
-        Quantity = new Quantity(0);
-    }
-    
-    public ReceiptResource(Guid receiptDocumentId, Guid resourceId, Guid unitOfMeasureId, Quantity quantity)
-    {
+        if (quantity < 0)
+            throw new ArgumentException("Quantity cannot be negative", nameof(quantity));
+        
         ReceiptDocumentId = receiptDocumentId;
         ResourceId = resourceId;
         UnitOfMeasureId = unitOfMeasureId;
@@ -21,5 +20,5 @@ public sealed class ReceiptResource : Entity
     public Guid ReceiptDocumentId { get; set; }
     public Guid ResourceId { get; set; }
     public Guid UnitOfMeasureId { get; set; }
-    public Quantity Quantity { get; set; }
+    public decimal Quantity { get; set; }
 }

@@ -50,7 +50,7 @@ public sealed class GetShipmentsQueryHandler(
                         resource.Name,
                         unitOfMeasure.Id,
                         unitOfMeasure.Name,
-                        shipmentResource.Quantity.Value));
+                        shipmentResource.Quantity));
                 }
             }
 

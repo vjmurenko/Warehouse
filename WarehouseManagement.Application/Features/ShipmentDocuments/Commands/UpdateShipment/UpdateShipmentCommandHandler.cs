@@ -2,7 +2,6 @@ using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 
@@ -26,11 +25,14 @@ public sealed class UpdateShipmentCommandHandler(
         await validationService.ValidateClient(command.ClientId, document.ClientId, cancellationToken);
 
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken, document);
-        
-        UpdateDocument(document, command);
+
+        document.UpdateNumber(command.Number);
+        document.UpdateClientId(command.ClientId);
+        document.UpdateDate(command.Date);
+        document.SetResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
 
         document.ValidateNotEmpty();
-        
+
         if (command.Sign)
         {
             document.Sign();
@@ -40,13 +42,5 @@ public sealed class UpdateShipmentCommandHandler(
         await unitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return Unit.Value;
-    }
-
-    private void UpdateDocument(ShipmentDocument document, UpdateShipmentCommand command)
-    {
-        document.UpdateNumber(command.Number);
-        document.UpdateClientId(command.ClientId);
-        document.UpdateDate(command.Date);
-        document.SetResources(command.Resources.Select(r => new BalanceDelta(r.ResourceId, r.UnitId, r.Quantity)));
     }
 }

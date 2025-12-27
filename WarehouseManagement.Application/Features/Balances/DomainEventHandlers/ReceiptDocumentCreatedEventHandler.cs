@@ -1,21 +1,24 @@
 using MediatR;
-using Microsoft.Extensions.Logging;
+using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Enums;
 using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
 
 public sealed class ReceiptDocumentCreatedEventHandler(
-    IBalanceService balanceService,
-    ILogger<ReceiptDocumentCreatedEventHandler> logger)
+    IReceiptRepository receiptRepository,
+    IStockService stockService)
     : INotificationHandler<ReceiptDocumentCreatedEvent>
 {
-    public async Task Handle(ReceiptDocumentCreatedEvent notification, CancellationToken cancellationToken)
+    public async Task Handle(ReceiptDocumentCreatedEvent notification, CancellationToken ctx)
     {
-        logger.LogInformation("Handling ReceiptDocumentCreatedEvent for document {DocumentId}", notification.DocumentId);
-        
-        await balanceService.IncreaseBalances(notification.BalanceDeltas, cancellationToken);
-        
-        logger.LogInformation("Successfully processed ReceiptDocumentCreatedEvent for document {DocumentId}", notification.DocumentId);
+        var receipt = await receiptRepository.GetByIdWithResourcesAsync(notification.DocumentId, ctx);
+        if (receipt is null) return;
+
+        var items = receipt.ReceiptResources
+            .Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity));
+
+        await stockService.RecordMovements(receipt.Id, MovementType.Receipt, items, ctx);
     }
 }

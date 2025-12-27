@@ -47,15 +47,14 @@ builder.Services.AddMediatR(cfg =>
 });
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
 builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
+builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
 builder.Services.AddScoped<INamedEntityRepository<Resource>, ResourceRepository>();
 builder.Services.AddScoped<INamedEntityRepository<Client>, ClientRepository>();
 builder.Services.AddScoped<INamedEntityRepository<UnitOfMeasure>, UnitOfMeasureRepository>();
 
-builder.Services.AddScoped<IBalanceService, BalanceService>();
-builder.Services.AddScoped<IBalanceValidatorService, BalanceValidatorService>();
+builder.Services.AddScoped<IStockService, StockService>();
 builder.Services.AddScoped<INamedEntityValidationService, NamedEntityValidationService>();
 builder.Services.AddScoped<IShipmentValidationService, ShipmentValidationService>();
 builder.Services.AddScoped<IResourceService, ResourceService>();

@@ -6,40 +6,36 @@ using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 namespace WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 
 public sealed class GetBalancesQueryHandler(
-    IBalanceRepository balanceRepository,
+    IStockMovementRepository stockMovementRepository,
     INamedEntityRepository<Resource> resourceRepository,
     INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository
     ) : IRequestHandler<GetBalancesQuery, List<BalanceDto>>
 {
     public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken ctx)
     {
-        var balances = await balanceRepository.GetFilteredAsync(
+        var balances = await stockMovementRepository.GetBalancesFilteredAsync(
             query.ResourceIds,
             query.UnitIds,
             ctx);
 
-        var balanceDtos = new List<BalanceDto>();
-        var resources = (await resourceRepository.GetByIdsAsync(balances.Select(c => c.ResourceId), ctx)).ToList();
-        var units = (await unitOfMeasureRepository.GetByIdsAsync(balances.Select(b => b.UnitOfMeasureId), ctx)).ToList();
+        if (balances.Count == 0)
+            return [];
 
-        foreach (var balance in balances)
-        {
-            var resource = resources.FirstOrDefault(r => r.Id == balance.ResourceId);
-            var unit = units.FirstOrDefault(u => u.Id == balance.UnitOfMeasureId);
+        var resourceIds = balances.Select(b => b.ResourceId).Distinct();
+        var unitIds = balances.Select(b => b.UnitId).Distinct();
 
-            if (resource is not null && unit is not null)
-            {
-                balanceDtos.Add(new BalanceDto(
-                    balance.Id,
-                    balance.ResourceId,
-                    resource.Name,
-                    balance.UnitOfMeasureId,
-                    unit.Name,
-                    balance.Quantity.Value
-                ));
-            }
-        }
+        var resources = (await resourceRepository.GetByIdsAsync(resourceIds, ctx)).ToDictionary(r => r.Id);
+        var units = (await unitOfMeasureRepository.GetByIdsAsync(unitIds, ctx)).ToDictionary(u => u.Id);
 
-        return balanceDtos;
+        return balances
+            .Where(b => resources.ContainsKey(b.ResourceId) && units.ContainsKey(b.UnitId))
+            .Select(b => new BalanceDto(
+                Guid.NewGuid(),
+                b.ResourceId,
+                resources[b.ResourceId].Name,
+                b.UnitId,
+                units[b.UnitId].Name,
+                b.Quantity))
+            .ToList();
     }
 }
