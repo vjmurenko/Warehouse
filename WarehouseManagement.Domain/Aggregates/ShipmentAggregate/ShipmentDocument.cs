@@ -15,7 +15,6 @@ public sealed class ShipmentDocument : Entity, IAggregateRoot
 
     public ShipmentDocument(string number, Guid clientId, DateTime date, bool isSigned = false)
     {
-        Id = Guid.NewGuid();
         ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
         Number = number.Trim();
         ClientId = clientId;
@@ -39,13 +38,12 @@ public sealed class ShipmentDocument : Entity, IAggregateRoot
 
     public void UpdateDate(DateTime date) => Date = date;
 
-    public void SetResources(IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> resources)
+    public void SetResources(IEnumerable<ShipmentResource> resources)
     {
         _shipmentResources.Clear();
         
-        foreach (var (resourceId, unitId, qty) in resources.Where(r => r.Quantity > 0))
-            AddResource(resourceId, unitId, qty);
-
+        AddResources(resources.Where(c => c.Quantity >0));
+        
         AddDomainEvent(new ShipmentDocumentChangedResourcesEvent(Id));
     }
 
@@ -57,12 +55,9 @@ public sealed class ShipmentDocument : Entity, IAggregateRoot
             throw new InvalidOperationException("Документ отгрузки не может быть пустым");
     }
 
-    public void AddResource(Guid resourceId, Guid unitOfMeasureId, decimal quantity)
+    public void AddResources(IEnumerable<ShipmentResource> resources)
     {
-        _shipmentResources.Add(new ShipmentResource(resourceId, unitOfMeasureId, quantity)
-        {
-            ShipmentDocumentId = Id
-        });
+        _shipmentResources.AddRange(resources);
     }
 
     public void Sign()

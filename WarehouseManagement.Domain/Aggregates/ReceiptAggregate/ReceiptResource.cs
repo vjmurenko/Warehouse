@@ -10,15 +10,15 @@ public sealed class ReceiptResource : Entity
     {
         if (quantity < 0)
             throw new ArgumentException("Quantity cannot be negative", nameof(quantity));
-        
+
         ReceiptDocumentId = receiptDocumentId;
         ResourceId = resourceId;
         UnitOfMeasureId = unitOfMeasureId;
         Quantity = quantity;
     }
 
-    public Guid ReceiptDocumentId { get; set; }
-    public Guid ResourceId { get; set; }
-    public Guid UnitOfMeasureId { get; set; }
-    public decimal Quantity { get; set; }
+    public Guid ReceiptDocumentId { get; private set; }
+    public Guid ResourceId { get; private set; }
+    public Guid UnitOfMeasureId { get; private set; }
+    public decimal Quantity { get; private set; }
 }

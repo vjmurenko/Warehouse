@@ -66,7 +66,8 @@ public class DeleteShipmentCommandHandlerTests
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
-        existingShipment.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+       
+        existingShipment.AddResources([ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 100)]);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
@@ -110,8 +111,9 @@ public class DeleteShipmentCommandHandlerTests
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
-        existingShipment.AddResource(Guid.NewGuid(), Guid.NewGuid(), 50m);
-        existingShipment.AddResource(Guid.NewGuid(), Guid.NewGuid(), 75m);
+        var shipmentResource1 = ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 50m);
+        var shipmentResource2 = ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 75m);
+        existingShipment.AddResources([shipmentResource1, shipmentResource2]);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);

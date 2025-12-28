@@ -245,7 +245,9 @@ public class UpdateShipmentCommandHandlerTests
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
-        existingShipment.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentResource = ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        
+        existingShipment.AddResources([shipmentResource]);
         
         var command = new UpdateShipmentCommand(
             shipmentId,

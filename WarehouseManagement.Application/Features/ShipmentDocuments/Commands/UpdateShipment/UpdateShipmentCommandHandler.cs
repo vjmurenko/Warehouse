@@ -29,7 +29,8 @@ public sealed class UpdateShipmentCommandHandler(
         document.UpdateNumber(command.Number);
         document.UpdateClientId(command.ClientId);
         document.UpdateDate(command.Date);
-        document.SetResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
+        
+        document.SetResources(command.Resources.Select(c => ShipmentResource.Create(command.Id, c.ResourceId, c.UnitId, c.Quantity)));
 
         document.ValidateNotEmpty();
 

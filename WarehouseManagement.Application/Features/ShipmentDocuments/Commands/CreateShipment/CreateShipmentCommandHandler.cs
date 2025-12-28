@@ -20,7 +20,9 @@ public sealed class CreateShipmentCommandHandler(
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken);
 
         var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
-        shipmentDocument.SetResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
+
+        var resources = command.Resources.Select(r => ShipmentResource.Create(shipmentDocument.Id, r.ResourceId, r.UnitId, r.Quantity));
+        shipmentDocument.SetResources(resources);
 
         shipmentDocument.ValidateNotEmpty();
 

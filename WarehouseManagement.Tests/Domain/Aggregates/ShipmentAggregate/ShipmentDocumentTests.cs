@@ -68,9 +68,10 @@ public class ShipmentDocumentTests
         var resourceId = Guid.NewGuid();
         var unitOfMeasureId = Guid.NewGuid();
         const decimal quantity = 100m;
+        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, resourceId, unitOfMeasureId, quantity);
 
         // Act
-        shipmentDocument.AddResource(resourceId, unitOfMeasureId, quantity);
+        shipmentDocument.AddResources([shipmentResource1]);
 
         // Assert
         shipmentDocument.ShipmentResources.Should().HaveCount(1);
@@ -86,7 +87,9 @@ public class ShipmentDocumentTests
     {
         // Arrange
         var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        shipmentDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
+
+        shipmentDocument.AddResources([shipmentResource1]);
 
         // Act
         shipmentDocument.Sign();
@@ -128,7 +131,9 @@ public class ShipmentDocumentTests
     {
         // Arrange
         var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        shipmentDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
+
+        shipmentDocument.AddResources([shipmentResource1]);
 
         // Act
         var action = () => shipmentDocument.ValidateNotEmpty();
@@ -142,7 +147,9 @@ public class ShipmentDocumentTests
     {
         // Arrange
         var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, true);
-        shipmentDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
+
+        shipmentDocument.AddResources([shipmentResource1]);
 
         // Act
         shipmentDocument.Revoke();
@@ -230,9 +237,11 @@ public class ShipmentDocumentTests
     {
         // Arrange
         var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        shipmentDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 50m);
-        shipmentDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 75m);
+        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 50m);
+        var shipmentResource2 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 75m);
 
+        shipmentDocument.AddResources([shipmentResource1, shipmentResource2]);
+        
         // Act
         shipmentDocument.ClearResources();
 

@@ -71,8 +71,7 @@ public class RevokeShipmentCommandHandlerTests
         var unitId = Guid.NewGuid();
         
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        existingShipment.AddResource(resourceId, unitId, 100m);
-        
+        existingShipment.AddResources([ShipmentResource.Create(shipmentId, resourceId, unitId, 100m)]);
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
@@ -98,8 +97,9 @@ public class RevokeShipmentCommandHandlerTests
         var unitId = Guid.NewGuid();
         
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        existingShipment.AddResource(resourceId1, unitId, 50m);
-        existingShipment.AddResource(resourceId2, unitId, 75m);
+        var resource1 = ShipmentResource.Create(shipmentId, resourceId1, unitId, 50m);
+        var resource2 = ShipmentResource.Create(shipmentId, resourceId2, unitId, 75m);
+        existingShipment.AddResources([resource1, resource2]);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
@@ -126,8 +126,11 @@ public class RevokeShipmentCommandHandlerTests
         var unitId2 = Guid.NewGuid();
         
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        existingShipment.AddResource(resourceId, unitId1, 50m);
-        existingShipment.AddResource(resourceId, unitId2, 75m);
+
+        var shipmentResource1 = ShipmentResource.Create(shipmentId, resourceId, unitId1, 50m);
+        var shipmentResource2 = ShipmentResource.Create(shipmentId, resourceId, unitId2, 75m);
+        
+        existingShipment.AddResources([shipmentResource1, shipmentResource2]);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
@@ -153,8 +156,11 @@ public class RevokeShipmentCommandHandlerTests
         var unitId = Guid.NewGuid();
         
         var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        existingShipment.AddResource(resourceId, unitId, 25m);
-        existingShipment.AddResource(resourceId, unitId, 75m); // Same resource and unit
+        
+        var shipmentResource1 = ShipmentResource.Create(shipmentId, resourceId, unitId, 25m);
+        var shipmentResource2 = ShipmentResource.Create(shipmentId, resourceId, unitId, 75m);
+        
+        existingShipment.AddResources([shipmentResource1, shipmentResource2]);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
