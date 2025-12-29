@@ -63,7 +63,7 @@ public class StockServiceTests
         var documentId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
-        var existingMovement = new StockMovement(resourceId, unitId, 100m, documentId, MovementType.Receipt);
+        var existingMovement = StockMovement.Create(resourceId, unitId, 100m, documentId, MovementType.Receipt);
 
         _movementRepository.GetByDocumentIdAsync(documentId, Arg.Any<CancellationToken>())
             .Returns(new List<StockMovement> { existingMovement });
@@ -103,9 +103,9 @@ public class StockServiceTests
             .Returns(new Dictionary<(Guid, Guid), decimal> { { (resourceId, unitId), 100m } });
 
         _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
-            .Returns(new Resource("Test Resource"));
+            .Returns(Resource.Create("Test Resource"));
         _unitRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
-            .Returns(new UnitOfMeasure("kg"));
+            .Returns(UnitOfMeasure.Create("kg"));
 
         var action = async () => await _stockService.ValidateAvailability(items, CancellationToken.None);
 
@@ -124,9 +124,9 @@ public class StockServiceTests
             .Returns(new Dictionary<(Guid, Guid), decimal>());
 
         _resourceRepository.GetByIdAsync(resourceId, Arg.Any<CancellationToken>())
-            .Returns(new Resource("Test Resource"));
+            .Returns(Resource.Create("Test Resource"));
         _unitRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
-            .Returns(new UnitOfMeasure("kg"));
+            .Returns(UnitOfMeasure.Create("kg"));
 
         var action = async () => await _stockService.ValidateAvailability(items, CancellationToken.None);
 

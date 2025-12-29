@@ -29,7 +29,13 @@ public sealed class UpdateReceiptCommandHandler(
 
         document.UpdateNumber(command.Number);
         document.UpdateDate(command.Date);
-        document.UpdateResources(command.Resources.Select(r => (r.ResourceId, r.UnitId, r.Quantity)));
+
+        var resources = command.Resources
+            .Where(r => r.Quantity > 0)
+            .Select(r => ReceiptResource.Create(document.Id, r.ResourceId, r.UnitId, r.Quantity))
+            .ToList();
+
+        document.UpdateResources(resources);
 
         receiptRepository.Update(document);
         await unitOfWork.SaveEntitiesAsync(ct);

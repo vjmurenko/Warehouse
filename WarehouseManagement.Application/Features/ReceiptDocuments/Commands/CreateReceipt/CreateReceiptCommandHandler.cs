@@ -18,9 +18,14 @@ public sealed class CreateReceiptCommandHandler(
         await validationService.ValidateResourcesAsync(command.Resources.Select(c => c.ResourceId), cancellationToken);
         await validationService.ValidateUnitsAsync(command.Resources.Select(c => c.UnitId), cancellationToken);
 
-        var receiptDocument = new ReceiptDocument(command.Number, command.Date);
+        var documentId = Guid.NewGuid();
+        
+        var resources = command.Resources
+            .Where(r => r.Quantity > 0)
+            .Select(r => ReceiptResource.Create(documentId, r.ResourceId, r.UnitId, r.Quantity))
+            .ToList();
 
-        receiptDocument.SetResources(command.Resources.Select(c => (c.ResourceId, c.UnitId, c.Quantity)));
+        var receiptDocument = ReceiptDocument.Create(command.Number, command.Date, resources);
 
         receiptRepository.Create(receiptDocument);
 

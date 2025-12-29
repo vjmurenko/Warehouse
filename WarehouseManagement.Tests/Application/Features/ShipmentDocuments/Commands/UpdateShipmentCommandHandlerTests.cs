@@ -59,7 +59,9 @@ public class UpdateShipmentCommandHandlerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
+        var resource = ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, [resource]);
+        existingShipment.Sign(); // Sign the document
         
         var command = new UpdateShipmentCommand(
             shipmentId,
@@ -85,7 +87,7 @@ public class UpdateShipmentCommandHandlerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         var command = new UpdateShipmentCommand(
             shipmentId,
@@ -116,7 +118,7 @@ public class UpdateShipmentCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         var command = new UpdateShipmentCommand(
             shipmentId,
@@ -160,7 +162,7 @@ public class UpdateShipmentCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         var command = new UpdateShipmentCommand(
             shipmentId,
@@ -205,7 +207,7 @@ public class UpdateShipmentCommandHandlerTests
         var resourceId2 = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         var command = new UpdateShipmentCommand(
             shipmentId,
@@ -244,10 +246,8 @@ public class UpdateShipmentCommandHandlerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
         var shipmentResource = ShipmentResource.Create(shipmentId, Guid.NewGuid(), Guid.NewGuid(), 100m);
-        
-        existingShipment.AddResources([shipmentResource]);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, [shipmentResource]);
         
         var command = new UpdateShipmentCommand(
             shipmentId,

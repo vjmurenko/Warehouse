@@ -10,7 +10,7 @@ public sealed class UnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> r
 {
     public async Task<Guid> CreateUnitOfMeasureAsync(string name, CancellationToken ctx)
     {
-        var resource = new UnitOfMeasure(name);
+        var resource = UnitOfMeasure.Create(name);
         return await CreateAsync(resource, ctx);
     }
 

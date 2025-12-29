@@ -3,24 +3,38 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
-public sealed class ReceiptDocument : Entity, IAggregateRoot
+public sealed class ReceiptDocument : AggregateRoot<Guid>
 {
-    private readonly List<ReceiptResource> _receiptResources = new();
-    public string Number { get; private set; }
+    private readonly List<ReceiptResource> _receiptResources = [];
+
+    public string Number { get; private set; } = string.Empty;
     public DateTime Date { get; private set; }
     public IReadOnlyCollection<ReceiptResource> ReceiptResources => _receiptResources.AsReadOnly();
 
-    public ReceiptDocument(string number, DateTime date)
+    // EF Core constructor
+    private ReceiptDocument(Guid id, string number, DateTime date) : base(id)
     {
-        Id = Guid.NewGuid();
-        ArgumentException.ThrowIfNullOrEmpty(number);
         Number = number;
         Date = date;
     }
-
-    public void AddResource(Guid resourceId, Guid unitId, decimal quantity)
+    
+    private ReceiptDocument(Guid id, string number, DateTime date, IEnumerable<ReceiptResource> resources) 
+        : this(id, number, date)
     {
-        _receiptResources.Add(new ReceiptResource(Id, resourceId, unitId, quantity));
+        ArgumentException.ThrowIfNullOrEmpty(number);
+        foreach (var resource in resources)
+        {
+            resource.SetReceiptDocumentId(id);
+            _receiptResources.Add(resource);
+        }
+    }
+
+    public static ReceiptDocument Create(string number, DateTime date, IEnumerable<ReceiptResource> resources)
+    {
+        var id = Guid.NewGuid();
+        var document = new ReceiptDocument(id, number, date, resources);
+        document.Raise(new ReceiptDocumentCreatedEvent(id));
+        return document;
     }
 
     public void UpdateNumber(string number)
@@ -31,30 +45,21 @@ public sealed class ReceiptDocument : Entity, IAggregateRoot
 
     public void UpdateDate(DateTime date) => Date = date;
 
-    public void ClearResources() => _receiptResources.Clear();
-
     public void Delete()
     {
-        AddDomainEvent(new ReceiptDocumentDeletedEvent(Id));
+        Raise(new ReceiptDocumentDeletedEvent(Id));
     }
 
-    public void SetResources(IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> resources)
+    public void UpdateResources(IEnumerable<ReceiptResource> newResources)
     {
+        Raise(new ReceiptDocumentUpdatedEvent(Id));
         _receiptResources.Clear();
-        
-        foreach (var (resourceId, unitId, qty) in resources.Where(r => r.Quantity > 0))
-            AddResource(resourceId, unitId, qty);
-
-        AddDomainEvent(new ReceiptDocumentCreatedEvent(Id));
+        foreach (var resource in newResources.Where(r => r.Quantity > 0))
+        {
+            resource.SetReceiptDocumentId(Id);
+            _receiptResources.Add(resource);
+        }
     }
 
-    public void UpdateResources(IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> newResources)
-    {
-        AddDomainEvent(new ReceiptDocumentUpdatedEvent(Id));
-        
-        _receiptResources.Clear();
-        
-        foreach (var (resourceId, unitId, qty) in newResources.Where(r => r.Quantity > 0))
-            AddResource(resourceId, unitId, qty);
-    }
+    public void ClearResources() => _receiptResources.Clear();
 }

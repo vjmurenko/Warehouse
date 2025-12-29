@@ -20,7 +20,7 @@ public sealed class StockService(
     {
         var movements = items
             .Where(i => i.Quantity != 0)
-            .Select(i => new StockMovement(i.ResourceId, i.UnitId, i.Quantity, documentId, type))
+            .Select(i => StockMovement.Create(i.ResourceId, i.UnitId, i.Quantity, documentId, type))
             .ToList();
 
         if (movements.Count > 0)

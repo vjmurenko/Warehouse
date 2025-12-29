@@ -7,22 +7,21 @@ namespace WarehouseManagement.Tests.Domain.Aggregates.ShipmentAggregate;
 public class ShipmentDocumentTests
 {
     [Fact]
-    public void constructor_should_create_shipment_document_when_valid_data_provided()
+    public void create_should_create_shipment_document_when_valid_data_provided()
     {
         // Arrange
         const string number = "SHIP-001";
         var clientId = Guid.NewGuid();
         var date = DateTime.UtcNow;
-        const bool isSigned = false;
 
         // Act
-        var shipmentDocument = new ShipmentDocument(number, clientId, date, isSigned);
+        var shipmentDocument = ShipmentDocument.Create(number, clientId, date, []);
 
         // Assert
         shipmentDocument.Number.Should().Be(number);
         shipmentDocument.ClientId.Should().Be(clientId);
         shipmentDocument.Date.Should().Be(date);
-        shipmentDocument.IsSigned.Should().Be(isSigned);
+        shipmentDocument.IsSigned.Should().BeFalse();
         shipmentDocument.ShipmentResources.Should().BeEmpty();
     }
 
@@ -30,14 +29,14 @@ public class ShipmentDocumentTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void constructor_should_throw_exception_when_invalid_number_provided(string invalidNumber)
+    public void create_should_throw_exception_when_invalid_number_provided(string invalidNumber)
     {
         // Arrange
         var clientId = Guid.NewGuid();
         var date = DateTime.UtcNow;
 
         // Act
-        var action = () => new ShipmentDocument(invalidNumber, clientId, date);
+        var action = () => ShipmentDocument.Create(invalidNumber, clientId, date, []);
 
         // Assert
         action.Should().Throw<ArgumentException>()
@@ -45,7 +44,7 @@ public class ShipmentDocumentTests
     }
 
     [Fact]
-    public void constructor_should_trim_number_whitespace()
+    public void create_should_trim_number_whitespace()
     {
         // Arrange
         const string numberWithWhitespace = "   SHIP-001   ";
@@ -54,24 +53,25 @@ public class ShipmentDocumentTests
         var date = DateTime.UtcNow;
 
         // Act
-        var shipmentDocument = new ShipmentDocument(numberWithWhitespace, clientId, date);
+        var shipmentDocument = ShipmentDocument.Create(numberWithWhitespace, clientId, date, []);
 
         // Assert
         shipmentDocument.Number.Should().Be(expectedNumber);
     }
 
     [Fact]
-    public void add_resource_should_add_resource_when_valid_data_provided()
+    public void create_should_add_resources_when_valid_data_provided()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var clientId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var unitOfMeasureId = Guid.NewGuid();
         const decimal quantity = 100m;
-        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, resourceId, unitOfMeasureId, quantity);
+        var tempDocId = Guid.NewGuid();
+        var shipmentResource1 = ShipmentResource.Create(tempDocId, resourceId, unitOfMeasureId, quantity);
 
         // Act
-        shipmentDocument.AddResources([shipmentResource1]);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, [shipmentResource1]);
 
         // Assert
         shipmentDocument.ShipmentResources.Should().HaveCount(1);
@@ -86,10 +86,9 @@ public class ShipmentDocumentTests
     public void sign_should_set_is_signed_to_true_when_document_has_resources()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
-
-        shipmentDocument.AddResources([shipmentResource1]);
+        var tempDocId = Guid.NewGuid();
+        var shipmentResource1 = ShipmentResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, [shipmentResource1]);
 
         // Act
         shipmentDocument.Sign();
@@ -102,7 +101,7 @@ public class ShipmentDocumentTests
     public void sign_should_throw_exception_when_document_is_empty()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
 
         // Act
         var action = () => shipmentDocument.Sign();
@@ -116,7 +115,7 @@ public class ShipmentDocumentTests
     public void validate_not_empty_should_throw_exception_when_document_is_empty()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
 
         // Act
         var action = () => shipmentDocument.ValidateNotEmpty();
@@ -130,10 +129,9 @@ public class ShipmentDocumentTests
     public void validate_not_empty_should_not_throw_when_document_has_resources()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
-
-        shipmentDocument.AddResources([shipmentResource1]);
+        var tempDocId = Guid.NewGuid();
+        var shipmentResource1 = ShipmentResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, [shipmentResource1]);
 
         // Act
         var action = () => shipmentDocument.ValidateNotEmpty();
@@ -146,10 +144,10 @@ public class ShipmentDocumentTests
     public void revoke_should_set_is_signed_to_false()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, true);
-        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 100m);
-
-        shipmentDocument.AddResources([shipmentResource1]);
+        var tempDocId = Guid.NewGuid();
+        var shipmentResource1 = ShipmentResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, [shipmentResource1]);
+        shipmentDocument.Sign(); // Sign first so we can revoke
 
         // Act
         shipmentDocument.Revoke();
@@ -162,7 +160,7 @@ public class ShipmentDocumentTests
     public void update_number_should_update_number_when_valid_number_provided()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("OLD-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("OLD-001", Guid.NewGuid(), DateTime.UtcNow, []);
         const string newNumber = "NEW-001";
 
         // Act
@@ -179,7 +177,7 @@ public class ShipmentDocumentTests
     public void update_number_should_throw_exception_when_invalid_number_provided(string invalidNumber)
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
 
         // Act
         var action = () => shipmentDocument.UpdateNumber(invalidNumber);
@@ -193,7 +191,7 @@ public class ShipmentDocumentTests
     public void update_number_should_trim_whitespace()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
         const string numberWithWhitespace = "   NEW-001   ";
         const string expectedNumber = "NEW-001";
 
@@ -208,7 +206,7 @@ public class ShipmentDocumentTests
     public void update_client_id_should_update_client_id()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
         var newClientId = Guid.NewGuid();
 
         // Act
@@ -222,7 +220,7 @@ public class ShipmentDocumentTests
     public void update_date_should_update_date()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, []);
         var newDate = DateTime.UtcNow.AddDays(1);
 
         // Act
@@ -236,11 +234,10 @@ public class ShipmentDocumentTests
     public void clear_resources_should_remove_all_resources()
     {
         // Arrange
-        var shipmentDocument = new ShipmentDocument("SHIP-001", Guid.NewGuid(), DateTime.UtcNow);
-        var shipmentResource1 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 50m);
-        var shipmentResource2 = ShipmentResource.Create(shipmentDocument.Id, Guid.NewGuid(), Guid.NewGuid(), 75m);
-
-        shipmentDocument.AddResources([shipmentResource1, shipmentResource2]);
+        var tempDocId = Guid.NewGuid();
+        var shipmentResource1 = ShipmentResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 50m);
+        var shipmentResource2 = ShipmentResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 75m);
+        var shipmentDocument = ShipmentDocument.Create("SHIP-001", Guid.NewGuid(), DateTime.UtcNow, [shipmentResource1, shipmentResource2]);
         
         // Act
         shipmentDocument.ClearResources();

@@ -33,8 +33,8 @@ public class DeleteReceiptCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        existingReceipt.AddResource(resourceId, unitId, 100m);
+        var resource = ReceiptResource.Create(receiptId, resourceId, unitId, 100m);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource]);
         
         _receiptRepository.GetByIdWithResourcesAsync(receiptId, Arg.Any<CancellationToken>())
             .Returns(existingReceipt);
@@ -72,8 +72,8 @@ public class DeleteReceiptCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        existingReceipt.AddResource(resourceId, unitId, 100m);
+        var resource = ReceiptResource.Create(receiptId, resourceId, unitId, 100m);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource]);
         
         _receiptRepository.GetByIdWithResourcesAsync(receiptId, Arg.Any<CancellationToken>())
             .Returns(existingReceipt);
@@ -92,7 +92,7 @@ public class DeleteReceiptCommandHandlerTests
     {
         // Arrange
         var receiptId = Guid.NewGuid();
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
         
         _receiptRepository.GetByIdWithResourcesAsync(receiptId, Arg.Any<CancellationToken>())
             .Returns(existingReceipt);
@@ -116,9 +116,9 @@ public class DeleteReceiptCommandHandlerTests
         var resourceId2 = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        existingReceipt.AddResource(resourceId1, unitId, 50m);
-        existingReceipt.AddResource(resourceId2, unitId, 75m);
+        var resource1 = ReceiptResource.Create(receiptId, resourceId1, unitId, 50m);
+        var resource2 = ReceiptResource.Create(receiptId, resourceId2, unitId, 75m);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource1, resource2]);
         
         _receiptRepository.GetByIdWithResourcesAsync(receiptId, Arg.Any<CancellationToken>())
             .Returns(existingReceipt);
@@ -136,7 +136,7 @@ public class DeleteReceiptCommandHandlerTests
     {
         // Arrange
         var receiptId = Guid.NewGuid();
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
         // No resources added
         
         _receiptRepository.GetByIdWithResourcesAsync(receiptId, Arg.Any<CancellationToken>())

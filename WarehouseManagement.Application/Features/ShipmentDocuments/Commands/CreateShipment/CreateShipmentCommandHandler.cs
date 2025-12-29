@@ -16,13 +16,16 @@ public sealed class CreateShipmentCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         await validationService.ValidateClient(command.ClientId, ctx: cancellationToken);
-
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken);
 
-        var shipmentDocument = new ShipmentDocument(command.Number, command.ClientId, command.Date);
+        var documentId = Guid.NewGuid();
 
-        var resources = command.Resources.Select(r => ShipmentResource.Create(shipmentDocument.Id, r.ResourceId, r.UnitId, r.Quantity));
-        shipmentDocument.SetResources(resources);
+        var resources = command.Resources
+            .Where(r => r.Quantity > 0)
+            .Select(r => ShipmentResource.Create(documentId, r.ResourceId, r.UnitId, r.Quantity))
+            .ToList();
+
+        var shipmentDocument = ShipmentDocument.Create(command.Number, command.ClientId, command.Date, resources);
 
         shipmentDocument.ValidateNotEmpty();
 

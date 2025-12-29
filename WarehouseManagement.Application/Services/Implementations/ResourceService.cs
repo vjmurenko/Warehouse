@@ -10,7 +10,7 @@ public sealed class ResourceService(INamedEntityRepository<Resource> repository,
 {
     public async Task<Guid> CreateResourceAsync(string name, CancellationToken ctx)
     {
-        var resource = new Resource(name);
+        var resource = Resource.Create(name);
         return await CreateAsync(resource, ctx);
     }
 

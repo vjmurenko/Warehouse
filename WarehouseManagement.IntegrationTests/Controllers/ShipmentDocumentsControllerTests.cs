@@ -23,7 +23,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -60,7 +60,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -87,7 +87,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -130,7 +130,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -161,7 +161,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -193,7 +193,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -247,7 +247,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var client = await CreateTestClientAsync();
 
-        var movement = new StockMovement(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 

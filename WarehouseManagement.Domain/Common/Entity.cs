@@ -1,27 +1,58 @@
-﻿using MediatR;
-
+﻿
 namespace WarehouseManagement.Domain.Common;
 
-public abstract class Entity
+/// <summary>
+/// Base entity class
+/// </summary>
+/// <typeparam name="TKey">Type of entity identifier</typeparam>
+public abstract class Entity<TKey> where TKey : struct, IComparable
 {
-    public Guid Id { get; set; }
+    /// <summary>
+    /// Entity id
+    /// </summary>
+    public TKey Id { get; private set; }
 
-    private List<INotification> _domainEvents;
-    public IReadOnlyCollection<INotification> DomainEvents => _domainEvents?.AsReadOnly();
-
-    public void AddDomainEvent(INotification eventItem)
+    /// <summary>
+    /// Create <see cref="Entity{TKey}" />
+    /// </summary>
+    /// <param name="id">Entity id</param>
+    protected Entity(TKey id)
     {
-        _domainEvents ??= new List<INotification>();
-        _domainEvents.Add(eventItem);
+        SetId(id);
     }
 
-    public void RemoveDomainEvent(INotification eventItem)
+    /// <summary>
+    /// Check equal between two object
+    /// </summary>
+    public static bool operator ==(Entity<TKey>? left, Entity<TKey>? right) =>
+        left?.Equals(right) ?? Equals(right, objB: null);
+
+    /// <summary>
+    /// Check not equal between two object
+    /// </summary>
+    public static bool operator !=(Entity<TKey>? left, Entity<TKey>? right) => !(left == right);
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
     {
-        _domainEvents?.Remove(eventItem);
+        if (obj is not Entity<TKey> item)
+            return false;
+
+        if (ReferenceEquals(this, item))
+            return true;
+
+        return item.Id.Equals(Id);
     }
 
-    public void ClearDomainEvents()
+    /// <inheritdoc />
+    public override int GetHashCode() => Id.GetHashCode();
+
+    /// <summary>
+    /// Set entity id
+    /// </summary>
+    private void SetId(TKey id)
     {
-        _domainEvents?.Clear();
+        Exceptions.ArgumentException.ThrowIfDefault(id);
+        Id = id;
     }
 }

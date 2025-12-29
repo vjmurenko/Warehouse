@@ -1,16 +1,21 @@
 ﻿namespace WarehouseManagement.Domain.Common;
 
-public abstract class NamedEntity : Entity, IAggregateRoot
+/// <summary>
+/// Base class for named aggregate roots
+/// </summary>
+public abstract class NamedEntity : AggregateRoot<Guid>
 {
     public string Name { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
-    
-    protected NamedEntity()
+
+    // EF Core constructor - accepts all simple properties
+    protected NamedEntity(Guid id, string name, bool isActive) : base(id)
     {
-        
+        Name = name;
+        IsActive = isActive;
     }
 
-    protected NamedEntity(string name)
+    protected NamedEntity(Guid id, string name) : base(id)
     {
         Rename(name);
         Activate();

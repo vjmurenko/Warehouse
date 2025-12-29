@@ -1,20 +1,17 @@
-﻿using WarehouseManagement.Domain.Common;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.ValueObjects;
 
+[ComplexType]
 public sealed class Address : ValueObject
 {
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; private set; }
     
     public Address(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         Name = name.Trim();
-    }
-    
-    private Address()
-    {
-        Name = string.Empty; 
     }
 
     protected override IEnumerable<object> GetEqualityComponents()

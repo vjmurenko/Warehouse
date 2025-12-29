@@ -1,9 +1,9 @@
-using MediatR;
+using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.Events;
 
-public record ShipmentDocumentSignedEvent(Guid DocumentId) : INotification;
+public record ShipmentDocumentSignedEvent(Guid DocumentId) : Event;
 
-public record ShipmentDocumentRevokedEvent(Guid DocumentId) : INotification;
+public record ShipmentDocumentRevokedEvent(Guid DocumentId) : Event;
 
-public record ShipmentDocumentChangedResourcesEvent(Guid DocumentId) : INotification;
+public record ShipmentDocumentChangedResourcesEvent(Guid DocumentId) : Event;

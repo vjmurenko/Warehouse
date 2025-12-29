@@ -100,4 +100,14 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
         logger.LogInformation("Retrieved {Count} shipment documents", result.Count);
         return result;
     }
+
+    public void RemoveResources(IEnumerable<ShipmentResource> resources)
+    {
+        context.ShipmentResources.RemoveRange(resources);
+    }
+
+    public void AddResources(IEnumerable<ShipmentResource> resources)
+    {
+        context.ShipmentResources.AddRange(resources);
+    }
 }

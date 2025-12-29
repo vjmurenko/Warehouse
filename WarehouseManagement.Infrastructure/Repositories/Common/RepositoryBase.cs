@@ -5,7 +5,7 @@ using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Infrastructure.Repositories.Common;
 
-public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IRepositoryBase<T> where T : Entity
+public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IRepositoryBase<T> where T : Entity<Guid>
 {
     protected WarehouseDbContext DbContext { get; set; } = dbContext;
 
@@ -27,18 +27,18 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IReposit
         DbContext.Add(t);
         return t.Id;
     }
-    
+
     public async Task<T> GetByIdAsync(Guid id, CancellationToken ctx)
     {
         return await DbContext.Set<T>().FirstOrDefaultAsync(c => c.Id == id, ctx);
     }
-    
+
     public async Task<List<T>> GetAllAsync(CancellationToken ctx)
     {
         return await DbContext.Set<T>().ToListAsync(ctx);
     }
 
-    public void  Update(T t)
+    public void Update(T t)
     {
         DbContext.Set<T>().Update(t);
     }

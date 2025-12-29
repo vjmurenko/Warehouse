@@ -1,19 +1,18 @@
 using FluentAssertions;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Tests.Domain.Aggregates.NamedAggregates;
 
 public class ResourceTests
 {
     [Fact]
-    public void constructor_should_create_resource_when_valid_name_provided()
+    public void create_should_create_resource_when_valid_name_provided()
     {
         // Arrange
         const string name = "Steel";
 
         // Act
-        var resource = new Resource(name);
+        var resource = Resource.Create(name);
 
         // Assert
         resource.Name.Should().Be(name);
@@ -24,10 +23,10 @@ public class ResourceTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void constructor_should_throw_exception_when_invalid_name_provided(string invalidName)
+    public void create_should_throw_exception_when_invalid_name_provided(string invalidName)
     {
         // Act
-        var action = () => new Resource(invalidName);
+        var action = () => Resource.Create(invalidName);
 
         // Assert
         action.Should().Throw<ArgumentException>();
@@ -37,7 +36,7 @@ public class ResourceTests
     public void rename_should_update_name_when_valid_name_provided()
     {
         // Arrange
-        var resource = new Resource("Old Name");
+        var resource = Resource.Create("Old Name");
         const string newName = "New Name";
 
         // Act
@@ -54,7 +53,7 @@ public class ResourceTests
     public void rename_should_throw_exception_when_invalid_name_provided(string invalidName)
     {
         // Arrange
-        var resource = new Resource("Valid Name");
+        var resource = Resource.Create("Valid Name");
 
         // Act
         var action = () => resource.Rename(invalidName);
@@ -67,7 +66,7 @@ public class ResourceTests
     public void archive_should_set_is_active_to_false()
     {
         // Arrange
-        var resource = new Resource("Test Resource");
+        var resource = Resource.Create("Test Resource");
 
         // Act
         resource.Archive();
@@ -80,7 +79,7 @@ public class ResourceTests
     public void activate_should_set_is_active_to_true()
     {
         // Arrange
-        var resource = new Resource("Test Resource");
+        var resource = Resource.Create("Test Resource");
         resource.Archive();
 
         // Act

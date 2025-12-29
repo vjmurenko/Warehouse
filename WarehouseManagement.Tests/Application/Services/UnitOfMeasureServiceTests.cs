@@ -30,7 +30,7 @@ public class UnitOfMeasureServiceTests
     public async Task create_async_should_throw_exception_when_name_already_exists()
     {
         // Arrange
-        var unit = new UnitOfMeasure("Existing Unit");
+        var unit = UnitOfMeasure.Create("Existing Unit");
         _repository.ExistsWithNameAsync(unit.Name, null, Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -49,7 +49,7 @@ public class UnitOfMeasureServiceTests
     public async Task update_async_should_throw_exception_when_new_name_already_exists()
     {
         // Arrange
-        var unit = new UnitOfMeasure("Existing Unit") { Id = Guid.NewGuid() };
+        var unit = UnitOfMeasure.Create("Existing Unit");
 
         _repository.ExistsWithNameAsync(unit.Name, unit.Id, Arg.Any<CancellationToken>())
             .Returns(true);
@@ -111,7 +111,7 @@ public class UnitOfMeasureServiceTests
     {
         // Arrange
         var unitId = Guid.NewGuid();
-        var existingUnit = new UnitOfMeasure("Test Unit") { Id = unitId };
+        var existingUnit = UnitOfMeasure.Create("Test Unit");
 
         _repository.IsUsingInDocuments(unitId, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -137,7 +137,7 @@ public class UnitOfMeasureServiceTests
     public async Task update_async_should_update_unit_when_new_name_is_unique()
     {
         // Arrange
-        var unit = new UnitOfMeasure("Updated Unit") { Id = Guid.NewGuid() };
+        var unit = UnitOfMeasure.Create("Updated Unit");
 
         _repository.ExistsWithNameAsync(unit.Name, unit.Id, Arg.Any<CancellationToken>())
             .Returns(false);

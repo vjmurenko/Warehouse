@@ -13,9 +13,10 @@ public sealed class ClientEntityTypeConfiguration : IEntityTypeConfiguration<Cli
         builder.Property(e => e.IsActive).IsRequired();
         builder.HasIndex(e => e.Name).IsUnique();
         
-        builder.OwnsOne(e => e.Address, a => 
+        // Complex Type configuration (EF Core 8+)
+        builder.ComplexProperty(e => e.Address, a => 
         {
-            a.Property(p => p.Name).HasColumnName("Address").HasMaxLength(500);
+            a.Property(p => p.Name).HasColumnName("Address").HasMaxLength(500).IsRequired();
         });
     }
 }

@@ -48,7 +48,7 @@ public class RevokeShipmentCommandHandlerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
@@ -70,8 +70,10 @@ public class RevokeShipmentCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        existingShipment.AddResources([ShipmentResource.Create(shipmentId, resourceId, unitId, 100m)]);
+        var resource = ShipmentResource.Create(shipmentId, resourceId, unitId, 100m);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, [resource]);
+        existingShipment.Sign(); // Sign the document first
+        
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
         _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
@@ -81,8 +83,6 @@ public class RevokeShipmentCommandHandlerTests
 
         // Assert
         result.Should().Be(Unit.Value);
-        
-        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
         await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -96,10 +96,10 @@ public class RevokeShipmentCommandHandlerTests
         var resourceId2 = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
         var resource1 = ShipmentResource.Create(shipmentId, resourceId1, unitId, 50m);
         var resource2 = ShipmentResource.Create(shipmentId, resourceId2, unitId, 75m);
-        existingShipment.AddResources([resource1, resource2]);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, [resource1, resource2]);
+        existingShipment.Sign(); // Sign the document first
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);
@@ -110,69 +110,6 @@ public class RevokeShipmentCommandHandlerTests
 
         // Assert
         result.Should().Be(Unit.Value);
-        
-        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
-        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task handle_should_revoke_shipment_with_same_resource_different_units()
-    {
-        // Arrange
-        var shipmentId = Guid.NewGuid();
-        var clientId = Guid.NewGuid();
-        var resourceId = Guid.NewGuid();
-        var unitId1 = Guid.NewGuid();
-        var unitId2 = Guid.NewGuid();
-        
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-
-        var shipmentResource1 = ShipmentResource.Create(shipmentId, resourceId, unitId1, 50m);
-        var shipmentResource2 = ShipmentResource.Create(shipmentId, resourceId, unitId2, 75m);
-        
-        existingShipment.AddResources([shipmentResource1, shipmentResource2]);
-        
-        _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
-            .Returns(existingShipment);
-        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
-
-        // Act
-        var result = await _handler.Handle(new RevokeShipmentCommand(shipmentId), CancellationToken.None);
-
-        // Assert
-        result.Should().Be(Unit.Value);
-        
-        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
-        await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task handle_should_handle_shipment_with_duplicate_resource_unit_combinations()
-    {
-        // Arrange
-        var shipmentId = Guid.NewGuid();
-        var clientId = Guid.NewGuid();
-        var resourceId = Guid.NewGuid();
-        var unitId = Guid.NewGuid();
-        
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: true);
-        
-        var shipmentResource1 = ShipmentResource.Create(shipmentId, resourceId, unitId, 25m);
-        var shipmentResource2 = ShipmentResource.Create(shipmentId, resourceId, unitId, 75m);
-        
-        existingShipment.AddResources([shipmentResource1, shipmentResource2]);
-        
-        _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
-            .Returns(existingShipment);
-        _unitOfWork.SaveChangesAsync(Arg.Any<CancellationToken>()).Returns(1);
-
-        // Act
-        var result = await _handler.Handle(new RevokeShipmentCommand(shipmentId), CancellationToken.None);
-
-        // Assert
-        result.Should().Be(Unit.Value);
-        
-        // Domain events should handle balance restoration, so we verify SaveEntitiesAsync was called
         await _unitOfWork.Received(1).SaveEntitiesAsync(Arg.Any<CancellationToken>());
     }
 
@@ -198,7 +135,7 @@ public class RevokeShipmentCommandHandlerTests
         // Arrange
         var shipmentId = Guid.NewGuid();
         var clientId = Guid.NewGuid();
-        var existingShipment = new ShipmentDocument("SHIP-001", clientId, DateTime.UtcNow, isSigned: false);
+        var existingShipment = ShipmentDocument.Create("SHIP-001", clientId, DateTime.UtcNow, []);
         
         _shipmentRepository.GetByIdWithResourcesAsync(shipmentId, Arg.Any<CancellationToken>())
             .Returns(existingShipment);

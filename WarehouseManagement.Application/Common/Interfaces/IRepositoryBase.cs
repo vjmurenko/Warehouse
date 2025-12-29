@@ -2,7 +2,7 @@
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 
-public interface IRepositoryBase<T> where T : Entity
+public interface IRepositoryBase<T> where T : Entity<Guid>
 {
     void Delete(T entity);
     Task<T> GetByIdAsync(Guid id, CancellationToken ctx);

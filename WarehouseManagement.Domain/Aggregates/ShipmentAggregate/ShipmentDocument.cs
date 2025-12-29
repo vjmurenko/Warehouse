@@ -3,28 +3,46 @@ using WarehouseManagement.Domain.Events;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
-public sealed class ShipmentDocument : Entity, IAggregateRoot
+public sealed class ShipmentDocument : AggregateRoot<Guid>
 {
-    private readonly List<ShipmentResource> _shipmentResources = new();
-    public string Number { get; private set; }
+    private readonly List<ShipmentResource> _shipmentResources = [];
+
+    public string Number { get; private set; } = string.Empty;
     public Guid ClientId { get; private set; }
     public DateTime Date { get; private set; }
     public bool IsSigned { get; private set; }
 
     public IReadOnlyCollection<ShipmentResource> ShipmentResources => _shipmentResources.AsReadOnly();
 
-    public ShipmentDocument(string number, Guid clientId, DateTime date, bool isSigned = false)
+    // EF Core constructor
+    private ShipmentDocument(Guid id, string number, Guid clientId, DateTime date, bool isSigned) : base(id)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
-        Number = number.Trim();
+        Number = number;
         ClientId = clientId;
         Date = date;
         IsSigned = isSigned;
     }
+    
+    private ShipmentDocument(Guid id, string number, Guid clientId, DateTime date, IEnumerable<ShipmentResource> resources, bool isSigned = false) 
+        : this(id, number, clientId, date, isSigned)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
+        Number = number.Trim();
+        foreach (var resource in resources)
+        {
+            resource.SetShipmentDocumentId(id);
+            _shipmentResources.Add(resource);
+        }
+    }
+
+    public static ShipmentDocument Create(string number, Guid clientId, DateTime date, IEnumerable<ShipmentResource> resources)
+    {
+        return new ShipmentDocument(Guid.NewGuid(), number, clientId, date, resources);
+    }
 
     public void Revoke()
     {
-        AddDomainEvent(new ShipmentDocumentRevokedEvent(Id));
+        Raise(new ShipmentDocumentRevokedEvent(Id));
         IsSigned = false;
     }
 
@@ -41,10 +59,12 @@ public sealed class ShipmentDocument : Entity, IAggregateRoot
     public void SetResources(IEnumerable<ShipmentResource> resources)
     {
         _shipmentResources.Clear();
-        
-        AddResources(resources.Where(c => c.Quantity >0));
-        
-        AddDomainEvent(new ShipmentDocumentChangedResourcesEvent(Id));
+        foreach (var resource in resources.Where(c => c.Quantity > 0))
+        {
+            resource.SetShipmentDocumentId(Id);
+            _shipmentResources.Add(resource);
+        }
+        Raise(new ShipmentDocumentChangedResourcesEvent(Id));
     }
 
     public void ClearResources() => _shipmentResources.Clear();
@@ -55,20 +75,10 @@ public sealed class ShipmentDocument : Entity, IAggregateRoot
             throw new InvalidOperationException("Документ отгрузки не может быть пустым");
     }
 
-    public void AddResources(IEnumerable<ShipmentResource> resources)
-    {
-        _shipmentResources.AddRange(resources);
-    }
-
     public void Sign()
     {
         ValidateNotEmpty();
-        AddDomainEvent(new ShipmentDocumentSignedEvent(Id));
+        Raise(new ShipmentDocumentSignedEvent(Id));
         IsSigned = true;
-    }
-
-    public IEnumerable<(Guid ResourceId, Guid UnitId, decimal Quantity)> GetResourceItems()
-    {
-        return _shipmentResources.Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity));
     }
 }

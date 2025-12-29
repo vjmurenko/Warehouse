@@ -31,7 +31,7 @@ public class ClientServiceTests
     public async Task create_async_should_throw_exception_when_name_already_exists()
     {
         // Arrange
-        var client = new Client("Existing Client", new Address("Test Address"));
+        var client = Client.Create("Existing Client", new Address("Test Address"));
         _repository.ExistsWithNameAsync(client.Name, null, Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -50,7 +50,7 @@ public class ClientServiceTests
     public async Task update_async_should_throw_exception_when_new_name_already_exists()
     {
         // Arrange
-        var client = new Client("Existing Client", new Address("Test Address")) { Id = Guid.NewGuid() };
+        var client = Client.Create("Existing Client", new Address("Test Address"));
 
         _repository.ExistsWithNameAsync(client.Name, client.Id, Arg.Any<CancellationToken>())
             .Returns(true);
@@ -112,7 +112,7 @@ public class ClientServiceTests
     {
         // Arrange
         var clientId = Guid.NewGuid();
-        var existingClient = new Client("Test Client", new Address("Test Address")) { Id = clientId };
+        var existingClient = Client.Create("Test Client", new Address("Test Address"));
 
         _repository.IsUsingInDocuments(clientId, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -138,7 +138,7 @@ public class ClientServiceTests
     public async Task update_async_should_update_client_when_new_name_is_unique()
     {
         // Arrange
-        var client = new Client("Updated Client", new Address("Updated Address")) { Id = Guid.NewGuid() };
+        var client = Client.Create("Updated Client", new Address("Updated Address"));
 
         _repository.ExistsWithNameAsync(client.Name, client.Id, Arg.Any<CancellationToken>())
             .Returns(false);

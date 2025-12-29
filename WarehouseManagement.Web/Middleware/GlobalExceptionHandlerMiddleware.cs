@@ -71,11 +71,11 @@ public sealed class GlobalExceptionHandlerMiddleware
                 ex.Message,
                 parameters: CreateParametersDictionary(ex.Parameters)),
 
-            ArgumentException ex when ex is not ArgumentNullException => new ErrorResponse(
+            System.ArgumentException ex when ex is not ArgumentNullException => new ErrorResponse(
                 "INVALID_ARGUMENT",
                 ex.Message),
 
-            ArgumentNullException ex => new ErrorResponse(
+            System.ArgumentNullException ex => new ErrorResponse(
                 "INVALID_ARGUMENT",
                 $"Required parameter '{ex.ParamName}' is missing or null"),
 
@@ -114,8 +114,8 @@ public sealed class GlobalExceptionHandlerMiddleware
         BusinessRuleValidationException => (int)HttpStatusCode.BadRequest,
         InsufficientBalanceException => (int)HttpStatusCode.BadRequest,
         SignedDocumentException => (int)HttpStatusCode.BadRequest,
-        ArgumentNullException => (int)HttpStatusCode.BadRequest,
-        ArgumentException => (int)HttpStatusCode.BadRequest,
+        System.ArgumentNullException => (int)HttpStatusCode.BadRequest,
+        System.ArgumentException => (int)HttpStatusCode.BadRequest,
         InvalidOperationException => (int)HttpStatusCode.BadRequest,
         _ => (int)HttpStatusCode.InternalServerError
     };

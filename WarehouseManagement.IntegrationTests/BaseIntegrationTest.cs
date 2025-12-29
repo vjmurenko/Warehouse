@@ -73,7 +73,7 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
 
     protected async Task<Resource> CreateTestResourceAsync(string name = "Test Resource")
     {
-        var resource = new Resource(name);
+        var resource = Resource.Create(name);
         _context.Resources.Add(resource);
         await _context.SaveChangesAsync();
         return resource;
@@ -81,7 +81,7 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
 
     protected async Task<UnitOfMeasure> CreateTestUnitOfMeasureAsync(string name = "Test Unit")
     {
-        var unit = new UnitOfMeasure(name);
+        var unit = UnitOfMeasure.Create(name);
         _context.UnitsOfMeasure.Add(unit);
         await _context.SaveChangesAsync();
         return unit;
@@ -90,7 +90,7 @@ public abstract class BaseIntegrationTest : IClassFixture<TestcontainersWebAppli
     protected async Task<Client> CreateTestClientAsync(string name = "Test Client", string addressName = "Test Address")
     {
         var address = new Address(addressName);
-        var client = new Client(name, address);
+        var client = Client.Create(name, address);
         _context.Clients.Add(client);
         await _context.SaveChangesAsync();
         return client;

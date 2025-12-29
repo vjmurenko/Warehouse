@@ -5,6 +5,7 @@ using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
+using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data.Configurations;
 using WarehouseManagement.Infrastructure.Extensions;
 
@@ -35,6 +36,9 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        // Ignore domain event types - they are not persisted
+        modelBuilder.Ignore<Event>();
         
         modelBuilder.ApplyConfiguration(new ResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new UnitOfMeasureEntityTypeConfiguration());

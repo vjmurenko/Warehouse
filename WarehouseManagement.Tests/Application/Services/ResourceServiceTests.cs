@@ -29,7 +29,7 @@ public class ResourceServiceTests
     public async Task create_async_should_throw_exception_when_name_already_exists()
     {
         // Arrange
-        var resource = new Resource("Existing Resource");
+        var resource = Resource.Create("Existing Resource");
         _repository.ExistsWithNameAsync(resource.Name, null, Arg.Any<CancellationToken>())
             .Returns(true);
 
@@ -48,7 +48,7 @@ public class ResourceServiceTests
     public async Task update_async_should_update_entity_when_new_name_is_unique()
     {
         // Arrange
-        var resource = new Resource("Updated Resource") { Id = Guid.NewGuid() };
+        var resource = Resource.Create("Updated Resource");
 
         _repository.ExistsWithNameAsync(resource.Name, resource.Id, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -68,7 +68,7 @@ public class ResourceServiceTests
     public async Task update_async_should_throw_exception_when_new_name_already_exists()
     {
         // Arrange
-        var resource = new Resource("Existing Resource") { Id = Guid.NewGuid() };
+        var resource = Resource.Create("Existing Resource");
 
         _repository.ExistsWithNameAsync(resource.Name, resource.Id, Arg.Any<CancellationToken>())
             .Returns(true);
@@ -89,7 +89,7 @@ public class ResourceServiceTests
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var existingEntity = new Resource("Test Resource") { Id = entityId };
+        var existingEntity = Resource.Create("Test Resource");
 
         _repository.IsUsingInDocuments(entityId, Arg.Any<CancellationToken>())
             .Returns(false);

@@ -1,9 +1,9 @@
-using MediatR;
+using WarehouseManagement.Domain.Common;
 
 namespace WarehouseManagement.Domain.Events;
 
-public record ReceiptDocumentCreatedEvent(Guid DocumentId) : INotification;
+public record ReceiptDocumentCreatedEvent(Guid DocumentId) : Event;
 
-public record ReceiptDocumentUpdatedEvent(Guid DocumentId) : INotification;
+public record ReceiptDocumentUpdatedEvent(Guid DocumentId) : Event;
 
-public record ReceiptDocumentDeletedEvent(Guid DocumentId) : INotification;
+public record ReceiptDocumentDeletedEvent(Guid DocumentId) : Event;

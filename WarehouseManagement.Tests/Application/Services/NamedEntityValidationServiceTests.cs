@@ -31,15 +31,10 @@ public class NamedEntityValidationServiceTests
     public async Task validate_resources_should_not_throw_when_all_resources_exist_and_active()
     {
         // Arrange
-        var resourceId1 = Guid.NewGuid();
-        var resourceId2 = Guid.NewGuid();
-        var resourceIds = new[] { resourceId1, resourceId2 };
-
-        var resources = new List<Resource>
-        {
-            new Resource("Resource 1") { Id = resourceId1 },
-            new Resource("Resource 2") { Id = resourceId2 }
-        };
+        var resource1 = Resource.Create("Resource 1");
+        var resource2 = Resource.Create("Resource 2");
+        var resourceIds = new[] { resource1.Id, resource2.Id };
+        var resources = new List<Resource> { resource1, resource2 };
 
         _resourceRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(resources);
@@ -55,14 +50,10 @@ public class NamedEntityValidationServiceTests
     public async Task validate_resources_should_throw_exception_when_resource_not_found()
     {
         // Arrange
-        var resourceId1 = Guid.NewGuid();
-        var resourceId2 = Guid.NewGuid();
-        var resourceIds = new[] { resourceId1, resourceId2 };
-
-        var resources = new List<Resource>
-        {
-            new Resource("Resource 1") { Id = resourceId1 }
-        };
+        var resource1 = Resource.Create("Resource 1");
+        var missingResourceId = Guid.NewGuid();
+        var resourceIds = new[] { resource1.Id, missingResourceId };
+        var resources = new List<Resource> { resource1 };
 
         _resourceRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(resources);
@@ -72,19 +63,16 @@ public class NamedEntityValidationServiceTests
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage($"Не найдены ресурсы с ID: {resourceId2}");
+            .WithMessage($"Не найдены ресурсы с ID: {missingResourceId}");
     }
 
     [Fact]
     public async Task validate_resources_should_throw_exception_when_resource_is_archived()
     {
         // Arrange
-        var resourceId = Guid.NewGuid();
-        var resourceIds = new[] { resourceId };
-
-        var archivedResource = new Resource("Archived Resource") { Id = resourceId };
+        var archivedResource = Resource.Create("Archived Resource");
         archivedResource.Archive();
-
+        var resourceIds = new[] { archivedResource.Id };
         var resources = new List<Resource> { archivedResource };
 
         _resourceRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
@@ -116,14 +104,11 @@ public class NamedEntityValidationServiceTests
     public async Task validate_resources_should_handle_duplicate_resource_ids()
     {
         // Arrange
-        var resourceId = Guid.NewGuid();
-        var resourceIds = new[] { resourceId, resourceId, resourceId };
-
-        var resource = new Resource("Test Resource") { Id = resourceId };
-
+        var resource = Resource.Create("Test Resource");
+        var resourceIds = new[] { resource.Id, resource.Id, resource.Id };
         var resources = new List<Resource> { resource };
 
-        _resourceRepository.GetByIdsAsync(Arg.Is<IEnumerable<Guid>>(ids => ids.Count() == 1 && ids.First() == resourceId), Arg.Any<CancellationToken>())
+        _resourceRepository.GetByIdsAsync(Arg.Is<IEnumerable<Guid>>(ids => ids.Count() == 1 && ids.First() == resource.Id), Arg.Any<CancellationToken>())
             .Returns(resources);
 
         // Act
@@ -137,15 +122,10 @@ public class NamedEntityValidationServiceTests
     public async Task validate_units_should_not_throw_when_all_units_exist_and_active()
     {
         // Arrange
-        var unitId1 = Guid.NewGuid();
-        var unitId2 = Guid.NewGuid();
-        var unitIds = new[] { unitId1, unitId2 };
-
-        var units = new List<UnitOfMeasure>
-        {
-            new UnitOfMeasure("Kilogram") { Id = unitId1 },
-            new UnitOfMeasure("Piece") { Id = unitId2 }
-        };
+        var unit1 = UnitOfMeasure.Create("Kilogram");
+        var unit2 = UnitOfMeasure.Create("Piece");
+        var unitIds = new[] { unit1.Id, unit2.Id };
+        var units = new List<UnitOfMeasure> { unit1, unit2 };
 
         _unitRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(units);
@@ -161,14 +141,10 @@ public class NamedEntityValidationServiceTests
     public async Task validate_units_should_throw_exception_when_unit_not_found()
     {
         // Arrange
-        var unitId1 = Guid.NewGuid();
-        var unitId2 = Guid.NewGuid();
-        var unitIds = new[] { unitId1, unitId2 };
-
-        var units = new List<UnitOfMeasure>
-        {
-            new UnitOfMeasure("Kilogram") { Id = unitId1 }
-        };
+        var unit1 = UnitOfMeasure.Create("Kilogram");
+        var missingUnitId = Guid.NewGuid();
+        var unitIds = new[] { unit1.Id, missingUnitId };
+        var units = new List<UnitOfMeasure> { unit1 };
 
         _unitRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(units);
@@ -178,19 +154,16 @@ public class NamedEntityValidationServiceTests
 
         // Assert
         await action.Should().ThrowAsync<ArgumentException>()
-            .WithMessage($"Не найдены единицы измерения с ID: {unitId2}");
+            .WithMessage($"Не найдены единицы измерения с ID: {missingUnitId}");
     }
 
     [Fact]
     public async Task validate_units_should_throw_exception_when_unit_is_archived()
     {
         // Arrange
-        var unitId = Guid.NewGuid();
-        var unitIds = new[] { unitId };
-
-        var archivedUnit = new UnitOfMeasure("Archived Unit") { Id = unitId };
+        var archivedUnit = UnitOfMeasure.Create("Archived Unit");
         archivedUnit.Archive();
-
+        var unitIds = new[] { archivedUnit.Id };
         var units = new List<UnitOfMeasure> { archivedUnit };
 
         _unitRepository.GetByIdsAsync(Arg.Any<IEnumerable<Guid>>(), Arg.Any<CancellationToken>())

@@ -6,15 +6,20 @@ namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 public sealed class Client : NamedEntity
 {
     public Address Address { get; private set; } = null!;
-    
-    private Client() : base()
+
+    // EF Core uses this constructor + ComplexProperty for Address
+    private Client(Guid id, string name, bool isActive) : base(id, name, isActive)
     {
-        
     }
-    
-    public Client(string name, Address address) : base(name)
+
+    public static Client Create(string name, Address address)
     {
-        ChangeAddress(address);
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(address);
+        
+        var client = new Client(Guid.NewGuid(), name, true);
+        client.Address = address;
+        return client;
     }
     
     public void ChangeAddress(Address address)

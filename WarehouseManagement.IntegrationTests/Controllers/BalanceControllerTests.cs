@@ -29,7 +29,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         var resource = await CreateTestResourceAsync();
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         
-        var movement = new StockMovement(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
 
@@ -48,8 +48,8 @@ public class BalanceControllerTests : BaseIntegrationTest
         var resource2 = await CreateTestResourceAsync("Resource 2");
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         
-        var movement1 = new StockMovement(resource1.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
-        var movement2 = new StockMovement(resource2.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement1 = StockMovement.Create(resource1.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
+        var movement2 = StockMovement.Create(resource2.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2);
         await _context.SaveChangesAsync();
 
@@ -68,8 +68,8 @@ public class BalanceControllerTests : BaseIntegrationTest
         var unit1 = await CreateTestUnitOfMeasureAsync("kg");
         var unit2 = await CreateTestUnitOfMeasureAsync("pcs");
         
-        var movement1 = new StockMovement(resource.Id, unit1.Id, 100, Guid.NewGuid(), MovementType.Receipt);
-        var movement2 = new StockMovement(resource.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
+        var movement1 = StockMovement.Create(resource.Id, unit1.Id, 100, Guid.NewGuid(), MovementType.Receipt);
+        var movement2 = StockMovement.Create(resource.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2);
         await _context.SaveChangesAsync();
 
@@ -89,9 +89,9 @@ public class BalanceControllerTests : BaseIntegrationTest
         var unit1 = await CreateTestUnitOfMeasureAsync("kg");
         var unit2 = await CreateTestUnitOfMeasureAsync("pcs");
         
-        var movement1 = new StockMovement(resource1.Id, unit1.Id, 100, Guid.NewGuid(), MovementType.Receipt);
-        var movement2 = new StockMovement(resource1.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
-        var movement3 = new StockMovement(resource2.Id, unit1.Id, 200, Guid.NewGuid(), MovementType.Receipt);
+        var movement1 = StockMovement.Create(resource1.Id, unit1.Id, 100, Guid.NewGuid(), MovementType.Receipt);
+        var movement2 = StockMovement.Create(resource1.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
+        var movement3 = StockMovement.Create(resource2.Id, unit1.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2, movement3);
         await _context.SaveChangesAsync();
 
@@ -109,7 +109,7 @@ public class BalanceControllerTests : BaseIntegrationTest
     {
         var resource = await CreateTestResourceAsync();
         var unit = await CreateTestUnitOfMeasureAsync("kg");
-        var movement = new StockMovement(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
+        var movement = StockMovement.Create(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
         await _context.SaveChangesAsync();
         

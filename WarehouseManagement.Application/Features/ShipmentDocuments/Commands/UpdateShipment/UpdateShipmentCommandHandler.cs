@@ -30,7 +30,23 @@ public sealed class UpdateShipmentCommandHandler(
         document.UpdateClientId(command.ClientId);
         document.UpdateDate(command.Date);
         
-        document.SetResources(command.Resources.Select(c => ShipmentResource.Create(command.Id, c.ResourceId, c.UnitId, c.Quantity)));
+        // Capture old resources before clearing
+        var oldResources = document.ShipmentResources.ToList();
+        
+        // Remove old resources from tracking
+        shipmentRepository.RemoveResources(oldResources);
+        
+        // Clear the document's internal collection
+        document.ClearResources();
+        
+        // Create new resources
+        var newResources = command.Resources.Select(c => ShipmentResource.Create(command.Id, c.ResourceId, c.UnitId, c.Quantity)).ToList();
+        
+        // Add new resources to DbContext tracking
+        shipmentRepository.AddResources(newResources);
+        
+        // Set resources on the document (this will update the internal collection)
+        document.SetResources(newResources);
 
         document.ValidateNotEmpty();
 

@@ -36,8 +36,8 @@ public class UpdateReceiptCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        existingReceipt.AddResource(resourceId, unitId, 100m); // Original quantity
+        var resource = ReceiptResource.Create(receiptId, resourceId, unitId, 100m);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource]); // Original quantity
         
         var command = new UpdateReceiptCommand(
             receiptId,
@@ -85,7 +85,7 @@ public class UpdateReceiptCommandHandlerTests
     {
         // Arrange
         var receiptId = Guid.NewGuid();
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
         
         var command = new UpdateReceiptCommand(
             receiptId,
@@ -114,7 +114,7 @@ public class UpdateReceiptCommandHandlerTests
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
         var command = new UpdateReceiptCommand(
             receiptId,
             "REC-001",
@@ -145,8 +145,8 @@ public class UpdateReceiptCommandHandlerTests
     {
         // Arrange
         var receiptId = Guid.NewGuid();
-        var existingReceipt = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        existingReceipt.AddResource(Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var resource = ReceiptResource.Create(receiptId, Guid.NewGuid(), Guid.NewGuid(), 100m);
+        var existingReceipt = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource]);
         
         var command = new UpdateReceiptCommand(
             receiptId,

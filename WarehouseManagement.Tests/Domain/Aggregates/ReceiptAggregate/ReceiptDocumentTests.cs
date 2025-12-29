@@ -7,14 +7,14 @@ namespace WarehouseManagement.Tests.Domain.Aggregates.ReceiptAggregate;
 public class ReceiptDocumentTests
 {
     [Fact]
-    public void constructor_should_create_receipt_document_when_valid_data_provided()
+    public void create_should_create_receipt_document_when_valid_data_provided()
     {
         // Arrange
         const string number = "REC-001";
         var date = DateTime.UtcNow;
 
         // Act
-        var receiptDocument = new ReceiptDocument(number, date);
+        var receiptDocument = ReceiptDocument.Create(number, date, []);
 
         // Assert
         receiptDocument.Number.Should().Be(number);
@@ -23,13 +23,13 @@ public class ReceiptDocumentTests
     }
 
     [Fact]
-    public void constructor_should_throw_exception_when_number_is_null()
+    public void create_should_throw_exception_when_number_is_null()
     {
         // Arrange
         var date = DateTime.UtcNow;
 
         // Act
-        var action = () => new ReceiptDocument(null, date);
+        var action = () => ReceiptDocument.Create(null!, date, []);
 
         // Assert
         action.Should().Throw<ArgumentNullException>()
@@ -37,38 +37,39 @@ public class ReceiptDocumentTests
     }
 
     [Fact]
-    public void add_resource_should_add_resource_when_valid_data_provided()
+    public void create_should_add_resource_when_valid_data_provided()
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var tempDocId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
         const decimal quantity = 100m;
+        var resource = ReceiptResource.Create(tempDocId, resourceId, unitId, quantity);
 
         // Act
-        receiptDocument.AddResource(resourceId, unitId, quantity);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource]);
 
         // Assert
         receiptDocument.ReceiptResources.Should().HaveCount(1);
-        var resource = receiptDocument.ReceiptResources.First();
-        resource.ResourceId.Should().Be(resourceId);
-        resource.UnitOfMeasureId.Should().Be(unitId);
-        resource.Quantity.Should().Be(quantity);
+        var addedResource = receiptDocument.ReceiptResources.First();
+        addedResource.ResourceId.Should().Be(resourceId);
+        addedResource.UnitOfMeasureId.Should().Be(unitId);
+        addedResource.Quantity.Should().Be(quantity);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     [InlineData(-10.5)]
-    public void add_resource_should_throw_exception_when_quantity_is_zero_or_negative(decimal invalidQuantity)
+    public void create_with_resource_should_throw_exception_when_quantity_is_zero_or_negative(decimal invalidQuantity)
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var tempDocId = Guid.NewGuid();
         var resourceId = Guid.NewGuid();
         var unitId = Guid.NewGuid();
 
         // Act
-        var action = () => receiptDocument.AddResource(resourceId, unitId, invalidQuantity);
+        var action = () => ReceiptResource.Create(tempDocId, resourceId, unitId, invalidQuantity);
 
         // Assert
         if (invalidQuantity < 0)
@@ -88,17 +89,18 @@ public class ReceiptDocumentTests
     }
 
     [Fact]
-    public void add_resource_should_allow_multiple_resources()
+    public void create_should_allow_multiple_resources()
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var tempDocId = Guid.NewGuid();
         var resourceId1 = Guid.NewGuid();
         var resourceId2 = Guid.NewGuid();
         var unitId = Guid.NewGuid();
+        var resource1 = ReceiptResource.Create(tempDocId, resourceId1, unitId, 50m);
+        var resource2 = ReceiptResource.Create(tempDocId, resourceId2, unitId, 75m);
 
         // Act
-        receiptDocument.AddResource(resourceId1, unitId, 50m);
-        receiptDocument.AddResource(resourceId2, unitId, 75m);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource1, resource2]);
 
         // Assert
         receiptDocument.ReceiptResources.Should().HaveCount(2);
@@ -108,7 +110,7 @@ public class ReceiptDocumentTests
     public void update_number_should_update_number_when_valid_number_provided()
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("OLD-001", DateTime.UtcNow);
+        var receiptDocument = ReceiptDocument.Create("OLD-001", DateTime.UtcNow, []);
         const string newNumber = "NEW-001";
 
         // Act
@@ -125,7 +127,7 @@ public class ReceiptDocumentTests
     public void update_number_should_throw_exception_when_invalid_number_provided(string invalidNumber)
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
 
         // Act
         var action = () => receiptDocument.UpdateNumber(invalidNumber);
@@ -139,7 +141,7 @@ public class ReceiptDocumentTests
     public void update_date_should_update_date()
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
         var newDate = DateTime.UtcNow.AddDays(1);
 
         // Act
@@ -153,9 +155,10 @@ public class ReceiptDocumentTests
     public void clear_resources_should_remove_all_resources()
     {
         // Arrange
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
-        receiptDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 50m);
-        receiptDocument.AddResource(Guid.NewGuid(), Guid.NewGuid(), 75m);
+        var tempDocId = Guid.NewGuid();
+        var resource1 = ReceiptResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 50m);
+        var resource2 = ReceiptResource.Create(tempDocId, Guid.NewGuid(), Guid.NewGuid(), 75m);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, [resource1, resource2]);
 
         // Act
         receiptDocument.ClearResources();
@@ -168,7 +171,7 @@ public class ReceiptDocumentTests
     public void receipt_document_can_be_empty()
     {
         // Arrange & Act
-        var receiptDocument = new ReceiptDocument("REC-001", DateTime.UtcNow);
+        var receiptDocument = ReceiptDocument.Create("REC-001", DateTime.UtcNow, []);
 
         // Assert
         receiptDocument.ReceiptResources.Should().BeEmpty();

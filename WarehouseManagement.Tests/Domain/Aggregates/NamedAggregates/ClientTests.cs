@@ -7,14 +7,14 @@ namespace WarehouseManagement.Tests.Domain.Aggregates.NamedAggregates;
 public class ClientTests
 {
     [Fact]
-    public void constructor_should_create_client_when_valid_data_provided()
+    public void create_should_create_client_when_valid_data_provided()
     {
         // Arrange
         const string name = "ABC Corp";
         var address = new Address("123 Main St");
 
         // Act
-        var client = new Client(name, address);
+        var client = Client.Create(name, address);
 
         // Assert
         client.Name.Should().Be(name);
@@ -26,20 +26,20 @@ public class ClientTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void constructor_should_throw_exception_when_invalid_name_provided(string invalidName)
+    public void create_should_throw_exception_when_invalid_name_provided(string invalidName)
     {
         // Act
-        var action = () => new Client(invalidName, new Address("Valid Address"));
+        var action = () => Client.Create(invalidName, new Address("Valid Address"));
 
         // Assert
         action.Should().Throw<ArgumentException>();
     }
 
     [Fact]
-    public void constructor_should_throw_exception_when_null_address_provided()
+    public void create_should_throw_exception_when_null_address_provided()
     {
         // Act
-        var action = () => new Client("Valid Name", null!);
+        var action = () => Client.Create("Valid Name", null!);
 
         // Assert
         action.Should().Throw<ArgumentNullException>();
@@ -49,7 +49,7 @@ public class ClientTests
     public void change_address_should_update_address_when_valid_address_provided()
     {
         // Arrange
-        var client = new Client("ABC Corp", new Address("Old Address"));
+        var client = Client.Create("ABC Corp", new Address("Old Address"));
         var newAddress = new Address("New Address");
 
         // Act
@@ -63,7 +63,7 @@ public class ClientTests
     public void change_address_should_throw_exception_when_null_address_provided()
     {
         // Arrange
-        var client = new Client("ABC Corp", new Address("Valid Address"));
+        var client = Client.Create("ABC Corp", new Address("Valid Address"));
 
         // Act
         var action = () => client.ChangeAddress(null!);
@@ -76,7 +76,7 @@ public class ClientTests
     public void archive_should_set_is_active_to_false()
     {
         // Arrange
-        var client = new Client("ABC Corp", new Address("123 Main St"));
+        var client = Client.Create("ABC Corp", new Address("123 Main St"));
 
         // Act
         client.Archive();
@@ -89,7 +89,7 @@ public class ClientTests
     public void activate_should_set_is_active_to_true()
     {
         // Arrange
-        var client = new Client("ABC Corp", new Address("123 Main St"));
+        var client = Client.Create("ABC Corp", new Address("123 Main St"));
         client.Archive();
 
         // Act

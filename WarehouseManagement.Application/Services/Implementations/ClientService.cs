@@ -20,7 +20,7 @@ public sealed class ClientService(INamedEntityRepository<Client> repository, IUn
         }
         
         var address = new Address(addressName);
-        var client = new Client(name, address);
+        var client = Client.Create(name, address);
         var result = await CreateAsync(client, ctx);
         
         logger.LogInformation("Successfully created client with ID: {ClientId}", result);
