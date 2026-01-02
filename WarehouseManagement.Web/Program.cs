@@ -1,12 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using WarehouseManagement.Application.Behaviors;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Infrastructure.Behaviors;
 using WarehouseManagement.Infrastructure.Data;
+using WarehouseManagement.Infrastructure.Extensions;
 using WarehouseManagement.Infrastructure.Repositories;
 using WarehouseManagement.Infrastructure.Repositories.Common;
 using WarehouseManagement.Web.Middleware;
@@ -46,20 +47,7 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IReceiptRepository, ReceiptRepository>();
-builder.Services.AddScoped<IShipmentRepository, ShipmentRepository>();
-builder.Services.AddScoped<IStockMovementRepository, StockMovementRepository>();
-builder.Services.AddScoped<INamedEntityRepository<Resource>, ResourceRepository>();
-builder.Services.AddScoped<INamedEntityRepository<Client>, ClientRepository>();
-builder.Services.AddScoped<INamedEntityRepository<UnitOfMeasure>, UnitOfMeasureRepository>();
-
-builder.Services.AddScoped<IStockService, StockService>();
-builder.Services.AddScoped<INamedEntityValidationService, NamedEntityValidationService>();
-builder.Services.AddScoped<IShipmentValidationService, ShipmentValidationService>();
-builder.Services.AddScoped<IResourceService, ResourceService>();
-builder.Services.AddScoped<IClientService, ClientService>();
-builder.Services.AddScoped<IUnitOfMeasureService, UnitOfMeasureService>();
+builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
