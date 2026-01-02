@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace WarehouseManagement.Domain.Common;
+namespace WarehouseManagement.SharedKernel;
 
 /// <summary>
 /// Base class for domain events

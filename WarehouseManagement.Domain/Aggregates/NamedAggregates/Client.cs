@@ -17,8 +17,10 @@ public sealed class Client : NamedEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(address);
         
-        var client = new Client(Guid.NewGuid(), name, true);
-        client.Address = address;
+        var client = new Client(Guid.NewGuid(), name, true)
+        {
+            Address = address
+        };
         return client;
     }
     

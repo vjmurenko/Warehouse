@@ -1,5 +1,5 @@
 ﻿
-namespace WarehouseManagement.Domain.Common;
+namespace WarehouseManagement.SharedKernel;
 
 /// <summary>
 /// Base entity class

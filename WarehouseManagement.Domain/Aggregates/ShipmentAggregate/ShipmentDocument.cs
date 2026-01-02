@@ -1,5 +1,6 @@
 ﻿using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.Events;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 

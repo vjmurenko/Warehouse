@@ -1,4 +1,6 @@
-﻿namespace WarehouseManagement.Domain.Common;
+﻿using WarehouseManagement.SharedKernel;
+
+namespace WarehouseManagement.Domain.Common;
 
 /// <summary>
 /// Base class for named aggregate roots

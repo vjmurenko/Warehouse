@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using WarehouseManagement.Application.Common.Models;
-using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Web.Middleware;
 

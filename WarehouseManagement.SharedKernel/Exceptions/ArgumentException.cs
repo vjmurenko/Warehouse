@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace WarehouseManagement.Domain.Exceptions;
+namespace WarehouseManagement.SharedKernel.Exceptions;
 
 public static class ArgumentException
 {

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using WarehouseManagement.Domain.Common;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.ValueObjects;
 

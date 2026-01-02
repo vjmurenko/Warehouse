@@ -1,6 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
 

@@ -3,8 +3,8 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
-using WarehouseManagement.Domain.Exceptions;
 using MediatR;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Commands;
 
