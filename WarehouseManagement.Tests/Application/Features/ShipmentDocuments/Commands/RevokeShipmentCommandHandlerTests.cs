@@ -4,7 +4,6 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.RevokeShipment;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
-using WarehouseManagement.Domain.Exceptions;
 using MediatR;
 
 namespace WarehouseManagement.Tests.Application.Features.ShipmentDocuments.Commands;

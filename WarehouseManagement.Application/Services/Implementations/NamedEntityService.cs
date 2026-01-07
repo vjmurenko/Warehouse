@@ -2,7 +2,7 @@ using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Common;
-using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 

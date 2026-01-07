@@ -4,7 +4,7 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
-using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 
 namespace WarehouseManagement.Tests.Application.Services;

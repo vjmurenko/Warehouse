@@ -1,4 +1,4 @@
-namespace WarehouseManagement.Domain.Common;
+namespace WarehouseManagement.SharedKernel;
 
 /// <summary>
 /// Base class for aggregate roots with domain events support

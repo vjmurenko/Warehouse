@@ -3,7 +3,7 @@ using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Enums;
-using WarehouseManagement.Domain.Exceptions;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Application.Services.Implementations;
 

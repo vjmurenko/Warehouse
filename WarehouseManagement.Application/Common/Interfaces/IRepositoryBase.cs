@@ -1,4 +1,5 @@
 ﻿using WarehouseManagement.Domain.Common;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 

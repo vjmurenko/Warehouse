@@ -4,8 +4,8 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.DeleteReceipt;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
-using WarehouseManagement.Domain.Exceptions;
 using MediatR;
+using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Commands;
 

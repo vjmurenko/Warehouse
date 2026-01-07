@@ -8,6 +8,7 @@ using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data.Configurations;
 using WarehouseManagement.Infrastructure.Extensions;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Infrastructure.Data;
 

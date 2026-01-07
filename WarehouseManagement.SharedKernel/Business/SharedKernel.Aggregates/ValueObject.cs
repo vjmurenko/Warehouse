@@ -1,4 +1,4 @@
-﻿namespace WarehouseManagement.Domain.Common;
+﻿namespace WarehouseManagement.SharedKernel;
 
 public abstract class ValueObject
 {

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Domain.Common;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Infrastructure.Extensions;
 

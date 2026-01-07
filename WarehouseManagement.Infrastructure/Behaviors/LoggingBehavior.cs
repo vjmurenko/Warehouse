@@ -2,7 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Extensions;
 
-namespace WarehouseManagement.Application.Behaviors;
+namespace WarehouseManagement.Infrastructure.Behaviors;
 
 public sealed class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : IRequest<TResponse>

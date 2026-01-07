@@ -1,4 +1,4 @@
-namespace WarehouseManagement.Domain.Exceptions;
+namespace WarehouseManagement.SharedKernel.Exceptions;
 
 /// <summary>
 /// Base domain exception class

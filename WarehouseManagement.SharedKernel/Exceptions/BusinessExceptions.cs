@@ -1,4 +1,4 @@
-namespace WarehouseManagement.Domain.Exceptions;
+namespace WarehouseManagement.SharedKernel.Exceptions;
 
 /// <summary>
 /// Exception thrown when attempting to delete an entity that is referenced by other entities
