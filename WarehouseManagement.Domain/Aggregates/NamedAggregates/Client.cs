@@ -7,8 +7,8 @@ public sealed class Client : NamedEntity
 {
     public Address Address { get; private set; } = null!;
 
-    // EF Core uses this constructor + ComplexProperty for Address
-    private Client(Guid id, string name, bool isActive) : base(id, name, isActive)
+    // EF Core constructor
+    private Client(Guid id, string name) : base(id, name)
     {
     }
 
@@ -17,7 +17,7 @@ public sealed class Client : NamedEntity
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(address);
         
-        var client = new Client(Guid.NewGuid(), name, true)
+        var client = new Client(Guid.NewGuid(), name)
         {
             Address = address
         };

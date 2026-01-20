@@ -12,18 +12,6 @@ public sealed class StockMovement : Entity<Guid>
     public Guid DocumentId { get; private set; }
     public MovementType Type { get; private set; }
     public DateTime CreatedAt { get; private set; }
-
-    // EF Core constructor - parameter names must match property names
-    private StockMovement(Guid id, Guid resourceId, Guid unitOfMeasureId, decimal quantity, Guid documentId, MovementType type, DateTime createdAt)
-        : base(id)
-    {
-        ResourceId = resourceId;
-        UnitOfMeasureId = unitOfMeasureId;
-        Quantity = quantity;
-        DocumentId = documentId;
-        Type = type;
-        CreatedAt = createdAt;
-    }
     
     private StockMovement(Guid id, Guid resourceId, Guid unitOfMeasureId, decimal quantity, Guid documentId, MovementType type)
         : base(id)
