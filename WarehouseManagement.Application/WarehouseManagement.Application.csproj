@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Behaviors\" />
       <Folder Include="Features\ReceiptDocuments\Commands\" />
     </ItemGroup>
 

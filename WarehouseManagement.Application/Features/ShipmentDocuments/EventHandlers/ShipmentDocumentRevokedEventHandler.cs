@@ -2,7 +2,7 @@
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Events;
 
-namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
+namespace WarehouseManagement.Application.Features.ShipmentDocuments.EventHandlers;
 
 public sealed class ShipmentDocumentRevokedEventHandler(IStockService stockService)
     : INotificationHandler<ShipmentDocumentRevokedEvent>

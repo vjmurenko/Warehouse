@@ -1,20 +1,18 @@
-﻿using MediatR;
+using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Enums;
 using WarehouseManagement.Domain.Events;
 
-namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
+namespace WarehouseManagement.Application.Features.ReceiptDocuments.EventHandlers;
 
-public sealed class ReceiptDocumentUpdatedEventHandler(
+public sealed class ReceiptDocumentCreatedEventHandler(
     IReceiptRepository receiptRepository,
     IStockService stockService)
-    : INotificationHandler<ReceiptDocumentUpdatedEvent>
+    : INotificationHandler<ReceiptDocumentCreatedEvent>
 {
-    public async Task Handle(ReceiptDocumentUpdatedEvent notification, CancellationToken ctx)
+    public async Task Handle(ReceiptDocumentCreatedEvent notification, CancellationToken ctx)
     {
-        await stockService.ReverseMovements(notification.DocumentId, ctx);
-
         var receipt = await receiptRepository.GetByIdWithResourcesAsync(notification.DocumentId, ctx);
         if (receipt is null) return;
 

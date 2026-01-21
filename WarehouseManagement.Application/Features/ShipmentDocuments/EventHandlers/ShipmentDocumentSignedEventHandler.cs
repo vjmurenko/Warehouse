@@ -1,16 +1,17 @@
 ﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Enums;
 using WarehouseManagement.Domain.Events;
 
-namespace WarehouseManagement.Application.Features.Balances.DomainEventHandlers;
+namespace WarehouseManagement.Application.Features.ShipmentDocuments.EventHandlers;
 
-public sealed class ShipmentDocumentChangedResourcesEventHandler(
+public sealed class ShipmentDocumentSignedEventHandler(
     IShipmentRepository shipmentRepository,
     IStockService stockService)
-    : INotificationHandler<ShipmentDocumentChangedResourcesEvent>
+    : INotificationHandler<ShipmentDocumentSignedEvent>
 {
-    public async Task Handle(ShipmentDocumentChangedResourcesEvent notification, CancellationToken ctx)
+    public async Task Handle(ShipmentDocumentSignedEvent notification, CancellationToken ctx)
     {
         var shipment = await shipmentRepository.GetByIdWithResourcesAsync(notification.DocumentId, ctx);
         if (shipment is null) return;
@@ -20,5 +21,8 @@ public sealed class ShipmentDocumentChangedResourcesEventHandler(
             .ToList();
 
         await stockService.ValidateAvailability(items, ctx);
+
+        var negativeItems = items.Select(i => (i.ResourceId, i.UnitOfMeasureId, -i.Quantity));
+        await stockService.RecordMovements(shipment.Id, MovementType.Shipment, negativeItems, ctx);
     }
 }

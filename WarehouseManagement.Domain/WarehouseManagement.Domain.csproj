@@ -7,11 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Exceptions\" />
+      <ProjectReference Include="..\WarehouseManagement.SharedKernel\WarehouseManagement.SharedKernel.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\WarehouseManagement.SharedKernel\WarehouseManagement.SharedKernel.csproj" />
+      <Folder Include="Services\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Services\IResourceUnitValidationService.cs" />
     </ItemGroup>
 
 </Project>
