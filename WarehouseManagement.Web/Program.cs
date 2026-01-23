@@ -10,7 +10,7 @@ using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.Infrastructure.Extensions;
 using WarehouseManagement.Infrastructure.Repositories;
 using WarehouseManagement.Infrastructure.Repositories.Common;
-using WarehouseManagement.Web.Middleware;
+using WarehouseManagement.Web.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +20,16 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 builder.Services.AddControllers();
+
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Instance = context.HttpContext.Request.Path;
+        context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+    };
+});
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 builder.Services.AddHealthChecks();
 
@@ -51,7 +61,7 @@ builder.Services.AddApplicationServices();
 
 var app = builder.Build();
 
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Container"))
 {

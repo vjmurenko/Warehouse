@@ -72,7 +72,7 @@ export function getErrorDetails(error: unknown): {
     return {
       message: getErrorMessage(error),
       code: error.code,
-      details: error.details,
+      details: error.detail,
       traceId: error.traceId
     };
   }

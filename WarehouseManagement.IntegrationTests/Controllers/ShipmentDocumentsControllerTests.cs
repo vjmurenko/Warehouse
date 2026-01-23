@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
@@ -266,10 +268,12 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         Assert.Equal(HttpStatusCode.BadRequest, createResponse.StatusCode);
         
-        var errorResponse = await createResponse.Content.ReadFromJsonAsync<WarehouseManagement.Application.Common.Models.ErrorResponse>();
-        Assert.NotNull(errorResponse);
-        Assert.Equal("INSUFFICIENT_BALANCE", errorResponse.Code);
-        Assert.Contains("Insufficient balance", errorResponse.Message);
+        var problemDetails = await createResponse.Content.ReadFromJsonAsync<ProblemDetails>();
+        Assert.NotNull(problemDetails);
+        
+        var code = problemDetails.Extensions["code"]?.ToString();
+        Assert.Equal("INSUFFICIENT_BALANCE", code);
+        Assert.Contains("Insufficient balance", problemDetails.Detail);
 
         var balances = await GetAsync<List<WarehouseManagement.Application.Features.Balances.DTOs.BalanceDto>>("/api/Balance");
         Assert.NotNull(balances);

@@ -1,3 +1,12 @@
+export interface ProblemDetails {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  [key: string]: any;
+}
+
 export interface ErrorResponse {
   code: string;
   message: string;
@@ -14,25 +23,29 @@ export interface ValidationErrorResponse extends ErrorResponse {
 export class ApiError extends Error {
   public readonly code: string;
   public readonly statusCode: number;
-  public readonly details?: string;
+  public readonly detail?: string;
   public readonly parameters?: Record<string, any>;
   public readonly traceId?: string;
+  public readonly title?: string;
+  public readonly type?: string;
+  public readonly instance?: string;
 
   constructor(
     statusCode: number,
-    errorResponse: ErrorResponse,
-    originalMessage?: string
+    problemDetails: ProblemDetails
   ) {
-    super(errorResponse.message || originalMessage || 'An error occurred');
+    super(problemDetails.detail || problemDetails.title || 'An error occurred');
     this.name = 'ApiError';
-    this.code = errorResponse.code;
     this.statusCode = statusCode;
-    this.details = errorResponse.details;
-    this.parameters = errorResponse.parameters;
-    this.traceId = errorResponse.traceId;
+    this.code = problemDetails.code || 'UNKNOWN_ERROR';
+    this.title = problemDetails.title;
+    this.detail = problemDetails.detail;
+    this.type = problemDetails.type;
+    this.instance = problemDetails.instance;
+    this.traceId = problemDetails.traceId;
+    this.parameters = problemDetails.parameters;
   }
 
-  // Helper methods for common error types
   isEntityNotFound(): boolean {
     return this.code === 'ENTITY_NOT_FOUND';
   }

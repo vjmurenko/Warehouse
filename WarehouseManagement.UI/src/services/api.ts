@@ -10,7 +10,7 @@ import {
   ClientDto,
   CreateClientDto,
   UpdateClientDto,
-  ErrorResponse,
+  ProblemDetails,
   ApiError
 } from '../types/api';
 
@@ -34,24 +34,23 @@ class ApiService {
     const response = await fetch(url, config);
 
     if (!response.ok) {
-      let errorResponse: ErrorResponse;
+      let problemDetails: ProblemDetails;
       
       try {
-        errorResponse = await response.json() as ErrorResponse;
+        problemDetails = await response.json() as ProblemDetails;
       } catch {
-        // Fallback for non-JSON error responses
         const errorText = await response.text().catch(() => 'Unknown error');
-        errorResponse = {
-          code: 'UNKNOWN_ERROR',
-          message: errorText || `HTTP ${response.status} error`,
-          timestamp: new Date().toISOString()
+        problemDetails = {
+          status: response.status,
+          title: `HTTP ${response.status} error`,
+          detail: errorText || 'An unexpected error occurred',
+          code: 'UNKNOWN_ERROR'
         };
       }
       
-      throw new ApiError(response.status, errorResponse);
+      throw new ApiError(response.status, problemDetails);
     }
 
-    // Если 204 No Content → возвращаем "пустое значение"
     if (response.status === 204) {
       return null as unknown as T;
     }
