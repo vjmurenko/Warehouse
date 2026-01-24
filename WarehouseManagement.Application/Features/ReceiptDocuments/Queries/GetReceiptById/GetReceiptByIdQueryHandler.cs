@@ -27,8 +27,8 @@ public sealed class GetReceiptByIdQueryHandler(
         
         foreach (var resource in document.ReceiptResources)
         {
-            var resourceEntity = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
-            var unitEntity = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
+            var resourceEntity = resources.SingleOrDefault(r => r.Id == resource.ResourceId);
+            var unitEntity = units.SingleOrDefault(u => u.Id == resource.UnitOfMeasureId);
             
             if (resourceEntity is not null && unitEntity is not null)
             {

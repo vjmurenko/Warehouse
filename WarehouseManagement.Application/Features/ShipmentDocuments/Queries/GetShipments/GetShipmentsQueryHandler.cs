@@ -34,14 +34,14 @@ public sealed class GetShipmentsQueryHandler(
 
         foreach (var document in documents)
         {
-            var client = clients.FirstOrDefault(c => c.Id == document.ClientId);
+            var client = clients.SingleOrDefault(c => c.Id == document.ClientId);
             var clientName = client?.Name ?? "Unknown Client";
             var shipmentResourceDetailDtos = new List<ShipmentResourceDetailDto>();
 
             foreach (var shipmentResource in document.ShipmentResources)
             {
-                var unitOfMeasure = units.FirstOrDefault(u => u.Id == shipmentResource.UnitOfMeasureId);
-                var resource = resources.FirstOrDefault(r => r.Id == shipmentResource.ResourceId);
+                var unitOfMeasure = units.SingleOrDefault(u => u.Id == shipmentResource.UnitOfMeasureId);
+                var resource = resources.SingleOrDefault(r => r.Id == shipmentResource.ResourceId);
                 
                 if (resource is not null && unitOfMeasure is not null)
                 {

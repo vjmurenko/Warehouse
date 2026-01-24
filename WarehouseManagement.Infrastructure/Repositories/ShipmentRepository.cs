@@ -28,7 +28,7 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
     {
         logger.LogInformation("Getting shipment document with ID {Id} including resources", id);
         
-        var local = context.ShipmentDocuments.Local.FirstOrDefault(s => s.Id == id);
+        var local = context.ShipmentDocuments.Local.SingleOrDefault(s => s.Id == id);
         if (local is not null)
         {
             logger.LogInformation("Shipment document with ID {Id} found in local cache", id);
@@ -37,7 +37,7 @@ public sealed class ShipmentRepository(WarehouseDbContext context, ILogger<Shipm
         
         var result = await context.ShipmentDocuments
             .Include(s => s.ShipmentResources)
-            .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(s => s.Id == id, cancellationToken);
         logger.LogInformation("Shipment document with ID {Id} found: {Found}", id, result is not null);
         return result;
     }

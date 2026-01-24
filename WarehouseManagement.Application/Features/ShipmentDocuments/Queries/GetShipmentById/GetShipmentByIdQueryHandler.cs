@@ -28,8 +28,8 @@ public sealed class GetShipmentByIdQueryHandler(
         var resourceDetails = new List<ShipmentResourceDetailDto>();
         foreach (var resource in document.ShipmentResources)
         {
-            var resourceInfo = resources.FirstOrDefault(r => r.Id == resource.ResourceId);
-            var unitInfo = units.FirstOrDefault(u => u.Id == resource.UnitOfMeasureId);
+            var resourceInfo = resources.SingleOrDefault(r => r.Id == resource.ResourceId);
+            var unitInfo = units.SingleOrDefault(u => u.Id == resource.UnitOfMeasureId);
 
             resourceDetails.Add(new ShipmentResourceDetailDto(
                 resource.Id,

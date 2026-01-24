@@ -13,7 +13,7 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
     {
         logger.LogInformation("Getting receipt document with ID {Id} including resources", id);
         
-        var local = context.ReceiptDocuments.Local.FirstOrDefault(r => r.Id == id);
+        var local = context.ReceiptDocuments.Local.SingleOrDefault(r => r.Id == id);
         if (local is not null)
         {
             logger.LogInformation("Receipt document with ID {Id} found in local cache", id);
@@ -22,7 +22,7 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
         
         var result = await context.ReceiptDocuments
             .Include(r => r.ReceiptResources)
-            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+            .SingleOrDefaultAsync(r => r.Id == id, cancellationToken);
         logger.LogInformation("Receipt document with ID {Id} found: {Found}", id, result is not null);
         return result;
     }

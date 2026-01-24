@@ -31,7 +31,7 @@ public abstract class RepositoryBase<T>(WarehouseDbContext dbContext) : IReposit
 
     public async Task<T> GetByIdAsync(Guid id, CancellationToken ctx)
     {
-        return await DbContext.Set<T>().FirstOrDefaultAsync(c => c.Id == id, ctx);
+        return await DbContext.Set<T>().SingleAsync(c => c.Id == id, ctx);
     }
 
     public async Task<List<T>> GetAllAsync(CancellationToken ctx)

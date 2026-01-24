@@ -40,7 +40,7 @@ public sealed class ShipmentValidationService(
     {
         logger.LogInformation("Validating client with ID: {ClientId}", clientId);
         var clients = await clientRepository.GetArchivedAsync(ctx);
-        var archivedClient = clients.Where(c => c.Id != excludeCurrentClient).FirstOrDefault(c => c.Id == clientId);
+        var archivedClient = clients.Where(c => c.Id != excludeCurrentClient).SingleOrDefault(c => c.Id == clientId);
 
         if (archivedClient is not null)
         {
