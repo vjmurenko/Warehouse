@@ -9,6 +9,7 @@ public sealed class ReceiptResourceEntityTypeConfiguration : IEntityTypeConfigur
     public void Configure(EntityTypeBuilder<ReceiptResource> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedNever();
         builder.Property(e => e.ReceiptDocumentId).IsRequired();
         builder.Property(e => e.ResourceId).IsRequired();
         builder.Property(e => e.UnitOfMeasureId).IsRequired();

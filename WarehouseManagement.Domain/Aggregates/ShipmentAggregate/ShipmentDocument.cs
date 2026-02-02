@@ -29,11 +29,7 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(number, nameof(number));
         Number = number.Trim();
-        foreach (var resource in resources)
-        {
-            resource.SetShipmentDocumentId(id);
-            _shipmentResources.Add(resource);
-        }
+        SetResources(resources);
     }
 
     public static ShipmentDocument Create(string number, Guid clientId, DateTime date, IEnumerable<ShipmentResource> resources)
@@ -46,40 +42,38 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
         Raise(new ShipmentDocumentRevokedEvent(Id));
         IsSigned = false;
     }
-
-    public void UpdateNumber(string number)
+    
+    public void Update(string number,Guid clientId, DateTime date, IEnumerable<ShipmentResource> resources)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(number);
-        Number = number.Trim();
+        Date = date;
+        ClientId = clientId;
+        UpdateNumber(number);
+        SetResources(resources);
+        
+        Raise(new ShipmentDocumentChangedResourcesEvent(Id));
     }
-
-    public void UpdateClientId(Guid clientId) => ClientId = clientId;
-
-    public void UpdateDate(DateTime date) => Date = date;
-
-    public void SetResources(IEnumerable<ShipmentResource> resources)
+    
+    public void Sign()
+    {
+        Raise(new ShipmentDocumentSignedEvent(Id));
+        IsSigned = true;
+    }
+    
+    private void SetResources(IEnumerable<ShipmentResource> resources)
     {
         _shipmentResources.Clear();
         foreach (var resource in resources.Where(c => c.Quantity > 0))
         {
-            resource.SetShipmentDocumentId(Id);
             _shipmentResources.Add(resource);
         }
-        Raise(new ShipmentDocumentChangedResourcesEvent(Id));
-    }
-
-    public void ClearResources() => _shipmentResources.Clear();
-
-    public void ValidateNotEmpty()
-    {
+        
         if (_shipmentResources.Count == 0)
             throw new InvalidOperationException("Документ отгрузки не может быть пустым");
     }
-
-    public void Sign()
+    
+    private void UpdateNumber(string number)
     {
-        ValidateNotEmpty();
-        Raise(new ShipmentDocumentSignedEvent(Id));
-        IsSigned = true;
+        ArgumentException.ThrowIfNullOrWhiteSpace(number);
+        Number = number.Trim();
     }
 }

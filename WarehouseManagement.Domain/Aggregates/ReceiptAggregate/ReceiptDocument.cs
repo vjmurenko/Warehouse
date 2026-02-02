@@ -1,4 +1,3 @@
-﻿using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Domain.Events;
 using WarehouseManagement.SharedKernel;
 
@@ -32,35 +31,34 @@ public sealed class ReceiptDocument : AggregateRoot<Guid>
 
     public static ReceiptDocument Create(string number, DateTime date, IEnumerable<ReceiptResource> resources)
     {
-        var id = Guid.NewGuid();
-        var document = new ReceiptDocument(id, number, date, resources);
-        document.Raise(new ReceiptDocumentCreatedEvent(id));
+        var document = new ReceiptDocument(Guid.NewGuid(), number, date, resources);
+        document.Raise(new ReceiptDocumentCreatedEvent(document.Id));
+        
         return document;
     }
-
-    public void UpdateNumber(string number)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(number);
-        Number = number;
-    }
-
-    public void UpdateDate(DateTime date) => Date = date;
-
+    
     public void Delete()
     {
         Raise(new ReceiptDocumentDeletedEvent(Id));
     }
 
-    public void UpdateResources(IEnumerable<ReceiptResource> newResources)
+    public void Update(string number, DateTime date, IEnumerable<ReceiptResource> newResources)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(number);
+        
+        Number = number;
+        Date = date;
+        UpdateResources(newResources);
+        
         Raise(new ReceiptDocumentUpdatedEvent(Id));
+    }
+
+    private void UpdateResources(IEnumerable<ReceiptResource> newResources)
+    {
         _receiptResources.Clear();
         foreach (var resource in newResources.Where(r => r.Quantity > 0))
         {
-            resource.SetReceiptDocumentId(Id);
             _receiptResources.Add(resource);
         }
     }
-
-    public void ClearResources() => _receiptResources.Clear();
 }

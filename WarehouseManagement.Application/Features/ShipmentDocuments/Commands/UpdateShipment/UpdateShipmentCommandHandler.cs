@@ -26,36 +26,15 @@ public sealed class UpdateShipmentCommandHandler(
 
         await validationService.ValidateShipmentResourcesForUpdate(command.Resources, cancellationToken, document);
 
-        document.UpdateNumber(command.Number);
-        document.UpdateClientId(command.ClientId);
-        document.UpdateDate(command.Date);
-        
-        // Capture old resources before clearing
-        var oldResources = document.ShipmentResources.ToList();
-        
-        // Remove old resources from tracking
-        shipmentRepository.RemoveResources(oldResources);
-        
-        // Clear the document's internal collection
-        document.ClearResources();
-        
-        // Create new resources
         var newResources = command.Resources.Select(c => ShipmentResource.Create(command.Id, c.ResourceId, c.UnitId, c.Quantity)).ToList();
         
-        // Add new resources to DbContext tracking
-        shipmentRepository.AddResources(newResources);
+        document.Update(command.Number, command.ClientId, command.Date, newResources);
         
-        // Set resources on the document (this will update the internal collection)
-        document.SetResources(newResources);
-
-        document.ValidateNotEmpty();
-
         if (command.Sign)
         {
             document.Sign();
         }
-
-        shipmentRepository.Update(document);
+        
         await unitOfWork.SaveEntitiesAsync(cancellationToken);
 
         return Unit.Value;

@@ -26,9 +26,7 @@ public sealed class CreateShipmentCommandHandler(
             .ToList();
 
         var shipmentDocument = ShipmentDocument.Create(command.Number, command.ClientId, command.Date, resources);
-
-        shipmentDocument.ValidateNotEmpty();
-
+        
         if (command.Sign)
         {
             shipmentDocument.Sign();

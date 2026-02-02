@@ -17,9 +17,7 @@ public sealed class RevokeShipmentCommandHandler(
             throw new InvalidOperationException("Документ не подписан и не может быть отозван");
 
         document.Revoke();
-
-        shipmentRepository.Update(document);
-
+        
         await unitOfWork.SaveEntitiesAsync(cancellationToken);
         return Unit.Value;
     }

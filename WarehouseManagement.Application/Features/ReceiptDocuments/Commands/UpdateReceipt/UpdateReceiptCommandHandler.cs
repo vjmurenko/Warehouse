@@ -27,17 +27,13 @@ public sealed class UpdateReceiptCommandHandler(
             await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
 
-        document.UpdateNumber(command.Number);
-        document.UpdateDate(command.Date);
-
         var resources = command.Resources
-            .Where(r => r.Quantity > 0)
-            .Select(r => ReceiptResource.Create(document.Id, r.ResourceId, r.UnitId, r.Quantity))
+            .GroupBy(r => new {r.ResourceId, r.UnitId})
+            .Select(r => ReceiptResource.Create(document.Id, r.Key.ResourceId, r.Key.UnitId, r.Sum(c => c.Quantity)))
             .ToList();
 
-        document.UpdateResources(resources);
-
-        receiptRepository.Update(document);
+        document.Update(command.Number, command.Date, resources);
+        
         await unitOfWork.SaveEntitiesAsync(ct);
 
         return Unit.Value;

@@ -22,7 +22,8 @@ public sealed class CreateReceiptCommandHandler(
         
         var resources = command.Resources
             .Where(r => r.Quantity > 0)
-            .Select(r => ReceiptResource.Create(documentId, r.ResourceId, r.UnitId, r.Quantity))
+            .GroupBy(r => new {r.ResourceId, r.UnitId})
+            .Select(r => ReceiptResource.Create(documentId, r.Key.ResourceId, r.Key.UnitId, r.Sum(c => c.Quantity)))
             .ToList();
 
         var receiptDocument = ReceiptDocument.Create(command.Number, command.Date, resources);

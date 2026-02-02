@@ -9,6 +9,7 @@ public sealed class ShipmentResourceEntityTypeConfiguration : IEntityTypeConfigu
     public void Configure(EntityTypeBuilder<ShipmentResource> builder)
     {
         builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedNever();
         builder.Property(e => e.ShipmentDocumentId).IsRequired();
         builder.Property(e => e.ResourceId).IsRequired();
         builder.Property(e => e.UnitOfMeasureId).IsRequired();
