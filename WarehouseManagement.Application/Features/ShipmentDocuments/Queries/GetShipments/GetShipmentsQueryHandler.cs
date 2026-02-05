@@ -7,9 +7,9 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.Get
 
 public sealed class GetShipmentsQueryHandler(
     IShipmentRepository shipmentRepository,
-    INamedEntityRepository<Client> clientRepository,
-    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,
-    INamedEntityRepository<Resource> resourceRepository) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentDto>>
+    IReferenceRepository<Client> clientRepository,
+    IReferenceRepository<UnitOfMeasure> unitOfMeasureRepository,
+    IReferenceRepository<Resource> resourceRepository) : IRequestHandler<GetShipmentsQuery, List<ShipmentDocumentDto>>
 {
     public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken ctx)
     {

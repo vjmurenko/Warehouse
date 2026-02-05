@@ -3,7 +3,7 @@ using WarehouseManagement.Domain.ValueObjects;
 
 namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
-public sealed class Client : NamedEntity
+public sealed class Client : Reference
 {
     public Address Address { get; private set; } = null!;
 

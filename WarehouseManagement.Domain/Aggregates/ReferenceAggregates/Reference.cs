@@ -5,12 +5,12 @@ namespace WarehouseManagement.Domain.Common;
 /// <summary>
 /// Base class for named aggregate roots
 /// </summary>
-public abstract class NamedEntity : AggregateRoot<Guid>
+public abstract class Reference : AggregateRoot<Guid>
 {
     public string Name { get; private set; } = string.Empty;
     public bool IsActive { get; private set; } = true;
     
-    protected NamedEntity(Guid id, string name) : base(id)
+    protected Reference(Guid id, string name) : base(id)
     {
         Rename(name);
         Activate();

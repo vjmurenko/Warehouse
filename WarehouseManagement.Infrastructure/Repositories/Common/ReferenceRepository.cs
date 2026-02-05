@@ -5,8 +5,8 @@ using WarehouseManagement.Infrastructure.Data;
 
 namespace WarehouseManagement.Infrastructure.Repositories.Common;
 
-public abstract class NamedEntityRepository<T>(WarehouseDbContext dbContext) : RepositoryBase<T>(dbContext), INamedEntityRepository<T>
-    where T : NamedEntity
+public abstract class ReferenceRepository<T>(WarehouseDbContext dbContext) : RepositoryBase<T>(dbContext), IReferenceRepository<T>
+    where T : Reference
 {
     public async Task<bool> ExistsWithNameAsync(string name, Guid? excludeId = null, CancellationToken ctx = default)
     {
@@ -29,22 +29,6 @@ public abstract class NamedEntityRepository<T>(WarehouseDbContext dbContext) : R
             .Where(x => !x.IsActive)
             .ToListAsync(ctx);
     }
-
-    public async Task ArchiveAsync(Guid id, CancellationToken ctx)
-    {
-        var entity = await GetByIdAsync(id, ctx);
-
-        entity.Archive();
-        Update(entity);
-    }
-
-    public async Task ActivateAsync(Guid id, CancellationToken ctx)
-    {
-        var entity = await GetByIdAsync(id, ctx);
-
-        entity.Activate();
-        Update(entity);
-    }
-
+    
     public abstract Task<bool> IsUsingInDocuments(Guid id, CancellationToken ctx);
 }

@@ -8,9 +8,9 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.Get
 
 public sealed class GetShipmentByIdQueryHandler(
     IShipmentRepository shipmentRepository,
-    INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository,
-    IClientService clientService) : IRequestHandler<GetShipmentByIdQuery, ShipmentDocumentDto?>
+    IReferenceRepository<Resource> resourceRepository,
+    IReferenceRepository<UnitOfMeasure> unitOfMeasureRepository,
+    IReferenceRepository<Client> clientRepository) : IRequestHandler<GetShipmentByIdQuery, ShipmentDocumentDto?>
 {
     public async Task<ShipmentDocumentDto?> Handle(GetShipmentByIdQuery request, CancellationToken ctx)
     {
@@ -18,7 +18,7 @@ public sealed class GetShipmentByIdQueryHandler(
         if (document is null)
             return null;
 
-        var client = await clientService.GetByIdAsync(document.ClientId, ctx);
+        var client = await clientRepository.GetByIdAsync(document.ClientId, ctx);
         var resourceIds = document.ShipmentResources.Select(r => r.ResourceId).Distinct();
         var unitIds = document.ShipmentResources.Select(r => r.UnitOfMeasureId).Distinct();
         

@@ -1,4 +1,5 @@
 ﻿using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
+using WarehouseManagement.SharedKernel.Business.SharedKernel.Aggregates;
 
 namespace WarehouseManagement.Application.Common.Interfaces;
 

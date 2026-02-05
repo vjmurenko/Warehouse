@@ -9,8 +9,8 @@ namespace WarehouseManagement.Application.Services.Implementations;
 
 public sealed class StockService(
     IStockMovementRepository movementRepository,
-    INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitRepository) : IStockService
+    IReferenceRepository<Resource> resourceRepository,
+    IReferenceRepository<UnitOfMeasure> unitRepository) : IStockService
 {
     public async Task RecordMovements(
         Guid documentId,

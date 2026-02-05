@@ -3,6 +3,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.SharedKernel;
+using WarehouseManagement.SharedKernel.Business.SharedKernel.Aggregates;
 
 namespace WarehouseManagement.Infrastructure.Repositories.Common;
 

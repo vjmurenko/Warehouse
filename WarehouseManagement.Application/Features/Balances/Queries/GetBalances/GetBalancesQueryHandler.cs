@@ -7,8 +7,8 @@ namespace WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 
 public sealed class GetBalancesQueryHandler(
     IStockMovementRepository stockMovementRepository,
-    INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository
+    IReferenceRepository<Resource> resourceRepository,
+    IReferenceRepository<UnitOfMeasure> unitOfMeasureRepository
     ) : IRequestHandler<GetBalancesQuery, List<BalanceDto>>
 {
     public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken ctx)

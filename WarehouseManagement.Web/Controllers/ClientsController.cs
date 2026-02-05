@@ -1,12 +1,17 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.Client;
-using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Application.Features.References.Commands;
+using WarehouseManagement.Application.Features.References.Commands.Create.CreateClient;
+using WarehouseManagement.Application.Features.References.Commands.Update.UpdateClient;
+using WarehouseManagement.Application.Features.References.Queries;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Web.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public sealed class ClientsController(IClientService clientService, ILogger<ClientsController> logger) : ControllerBase
+public sealed class ClientsController(IMediator mediator, ILogger<ClientsController> logger) : ControllerBase
 {
     /// <summary>
     /// Get all clients
@@ -17,14 +22,14 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     public async Task<ActionResult<List<ClientDto>>> GetClients(CancellationToken ctx)
     {
         logger.LogInformation("Getting all clients");
-        var clients = await clientService.GetAllAsync(ctx);
+        var clients = await mediator.Send(new GetAllReferencesQuery<Client>(), ctx);
         var clientDtos = clients.Select(c => new ClientDto(
             c.Id,
             c.Name,
             c.Address.Name,
             c.IsActive
         )).ToList();
-        
+
         logger.LogInformation("Successfully retrieved {Count} clients", clientDtos.Count);
         return Ok(clientDtos);
     }
@@ -37,14 +42,14 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     [HttpGet("active")]
     public async Task<ActionResult<List<ClientDto>>> GetActiveClients(CancellationToken ctx)
     {
-        var clients = await clientService.GetActiveAsync(ctx);
+        var clients = await mediator.Send(new GetActiveReferencesQuery<Client>(), ctx);
         var clientDtos = clients.Select(c => new ClientDto(
             c.Id,
             c.Name,
             c.Address.Name,
             c.IsActive
         )).ToList();
-        
+
         return Ok(clientDtos);
     }
 
@@ -57,20 +62,20 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     [HttpGet("{id}")]
     public async Task<ActionResult<ClientDto>> GetClientById(Guid id, CancellationToken ctx)
     {
-        var client = await clientService.GetByIdAsync(id, ctx);
-        
+        var client = await mediator.Send(new GetReferenceByIdQuery<Client>(id), ctx);
+
         if (client is null)
         {
             return NotFound();
         }
-        
+
         var clientDto = new ClientDto(
             client.Id,
             client.Name,
             client.Address.Name,
             client.IsActive
         );
-        
+
         return Ok(clientDto);
     }
 
@@ -84,9 +89,11 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     public async Task<ActionResult<Guid>> CreateClient([FromBody] CreateClientRequest request, CancellationToken ctx)
     {
         logger.LogInformation("Creating new client with name: {ClientName}", request.Name);
-        var clientId = await clientService.CreateClientAsync(request.Name, request.Address, ctx);
+        
+        var clientId = await mediator.Send(new CreateClientCommand(request.Name, request.Address), ctx);
+        
         logger.LogInformation("Successfully created client with ID: {ClientId}", clientId);
-        return CreatedAtAction(nameof(GetClientById), new { id = clientId }, clientId);
+        return CreatedAtAction(nameof(GetClientById), new {id = clientId}, clientId);
     }
 
     /// <summary>
@@ -99,13 +106,8 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateClient(Guid id, [FromBody] UpdateClientRequest request, CancellationToken ctx)
     {
-        var success = await clientService.UpdateClientAsync(id, request.Name, request.Address, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
-        
+        await mediator.Send(new UpdateClientCommand(id, request.Name, request.Address), ctx);
+
         return NoContent();
     }
 
@@ -119,14 +121,9 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     public async Task<ActionResult> DeleteClient(Guid id, CancellationToken ctx)
     {
         logger.LogInformation("Deleting client with ID: {ClientId}", id);
-        var success = await clientService.DeleteAsync(id, ctx);
-        
-        if (!success)
-        {
-            logger.LogWarning("Client with ID: {ClientId} not found for deletion", id);
-            return NotFound();
-        }
-        
+
+        await mediator.Send(new DeleteReferenceCommand<Client>(id), ctx);
+
         logger.LogInformation("Successfully deleted client with ID: {ClientId}", id);
         return NoContent();
     }
@@ -140,13 +137,8 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     [HttpPost("{id}/archive")]
     public async Task<ActionResult> ArchiveClient(Guid id, CancellationToken ctx)
     {
-        var success = await clientService.ArchiveAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
-        
+        await mediator.Send(new ArchiveReferenceCommand<Client>(id), ctx);
+
         return NoContent();
     }
 
@@ -159,12 +151,7 @@ public sealed class ClientsController(IClientService clientService, ILogger<Clie
     [HttpPost("{id}/activate")]
     public async Task<ActionResult> ActivateClient(Guid id, CancellationToken ctx)
     {
-        var success = await clientService.ActivateAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await mediator.Send(new ActivateReferenceCommand<Client>(id), ctx);
         
         return NoContent();
     }

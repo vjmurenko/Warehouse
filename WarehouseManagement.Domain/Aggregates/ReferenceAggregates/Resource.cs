@@ -2,7 +2,7 @@
 
 namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
-public sealed class Resource : NamedEntity
+public sealed class Resource : Reference
 {
     private Resource(Guid id, string name) : base(id, name)
     {

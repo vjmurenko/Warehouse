@@ -1,7 +1,4 @@
-﻿using WarehouseManagement.Domain.Common;
-using WarehouseManagement.SharedKernel;
-
-namespace WarehouseManagement.Application.Common.Interfaces;
+﻿namespace WarehouseManagement.SharedKernel.Business.SharedKernel.Aggregates;
 
 public interface IRepositoryBase<T> where T : Entity<Guid>
 {

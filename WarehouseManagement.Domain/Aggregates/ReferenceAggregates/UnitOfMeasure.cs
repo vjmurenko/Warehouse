@@ -2,7 +2,7 @@
 
 namespace WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
-public sealed class UnitOfMeasure : NamedEntity
+public sealed class UnitOfMeasure : Reference
 {
     private UnitOfMeasure(Guid id, string name) : base(id, name)
     {

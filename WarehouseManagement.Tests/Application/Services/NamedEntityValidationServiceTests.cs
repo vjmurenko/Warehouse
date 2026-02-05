@@ -10,15 +10,15 @@ namespace WarehouseManagement.Tests.Application.Services;
 
 public class NamedEntityValidationServiceTests
 {
-    private readonly INamedEntityRepository<Resource> _resourceRepository;
-    private readonly INamedEntityRepository<UnitOfMeasure> _unitRepository;
+    private readonly IReferenceRepository<Resource> _resourceRepository;
+    private readonly IReferenceRepository<UnitOfMeasure> _unitRepository;
     private readonly ILogger<NamedEntityValidationService> _logger;
     private readonly NamedEntityValidationService _validationService;
 
     public NamedEntityValidationServiceTests()
     {
-        _resourceRepository = Substitute.For<INamedEntityRepository<Resource>>();
-        _unitRepository = Substitute.For<INamedEntityRepository<UnitOfMeasure>>();
+        _resourceRepository = Substitute.For<IReferenceRepository<Resource>>();
+        _unitRepository = Substitute.For<IReferenceRepository<UnitOfMeasure>>();
         _logger = Substitute.For<ILogger<NamedEntityValidationService>>();
         
         _validationService = new NamedEntityValidationService(

@@ -11,14 +11,14 @@ namespace WarehouseManagement.Tests.Application.Services;
 
 public class ResourceServiceTests
 {
-    private readonly INamedEntityRepository<Resource> _repository;
+    private readonly IReferenceRepository<Resource> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<NamedEntityService<Resource>> _logger;
     private readonly TestableResourceService _service;
 
     public ResourceServiceTests()
     {
-        _repository = Substitute.For<INamedEntityRepository<Resource>>();
+        _repository = Substitute.For<IReferenceRepository<Resource>>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _logger = Substitute.For<ILogger<NamedEntityService<Resource>>>();
         
@@ -187,7 +187,7 @@ public class ResourceServiceTests
 // Test-specific implementation to make the abstract class testable
 public class TestableResourceService : NamedEntityService<Resource>
 {
-    public TestableResourceService(INamedEntityRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Resource>> logger)
+    public TestableResourceService(IReferenceRepository<Resource> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Resource>> logger)
         : base(repository, unitOfWork, logger)
     {
     }

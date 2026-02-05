@@ -1,18 +1,30 @@
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
+using WarehouseManagement.Application.Features.References.Queries;
 using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Infrastructure.Behaviors;
 using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.Infrastructure.Extensions;
+using WarehouseManagement.Infrastructure.Queries.References;
 using WarehouseManagement.Infrastructure.Repositories;
 using WarehouseManagement.Infrastructure.Repositories.Common;
 using WarehouseManagement.Web.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настройка Autofac
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    containerBuilder.RegisterModule<ReferenceHandlersModule>();
+});
 
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)

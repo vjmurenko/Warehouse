@@ -1,6 +1,11 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.Resource;
-using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Application.Features.References.Commands;
+using WarehouseManagement.Application.Features.References.Commands.Create;
+using WarehouseManagement.Application.Features.References.Commands.Update;
+using WarehouseManagement.Application.Features.References.Queries;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Web.Controllers;
 
@@ -8,12 +13,12 @@ namespace WarehouseManagement.Web.Controllers;
 [Route("api/[controller]")]
 public sealed class ResourcesController : ControllerBase
 {
-    private readonly IResourceService _resourceService;
+    private readonly IMediator _mediator;
     private readonly ILogger<ResourcesController> _logger;
 
-    public ResourcesController(IResourceService resourceService, ILogger<ResourcesController> logger)
+    public ResourcesController(IMediator mediator, ILogger<ResourcesController> logger)
     {
-        _resourceService = resourceService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -26,7 +31,7 @@ public sealed class ResourcesController : ControllerBase
     public async Task<ActionResult<List<ResourceDto>>> GetResources(CancellationToken ctx)
     {
         _logger.LogInformation("Getting all resources");
-        var resources = await _resourceService.GetAllAsync(ctx);
+        var resources = await _mediator.Send(new GetAllReferencesQuery<Resource>(), ctx);
         var resourceDtos = resources.Select(r => new ResourceDto(
             r.Id,
             r.Name,
@@ -45,7 +50,7 @@ public sealed class ResourcesController : ControllerBase
     [HttpGet("active")]
     public async Task<ActionResult<List<ResourceDto>>> GetActiveResources(CancellationToken ctx)
     {
-        var resources = await _resourceService.GetActiveAsync(ctx);
+        var resources = await _mediator.Send(new GetActiveReferencesQuery<Resource>(), ctx);
         var resourceDtos = resources.Select(r => new ResourceDto(
             r.Id,
             r.Name,
@@ -64,7 +69,7 @@ public sealed class ResourcesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ResourceDto>> GetResourceById(Guid id, CancellationToken ctx)
     {
-        var resource = await _resourceService.GetByIdAsync(id, ctx);
+        var resource = await _mediator.Send(new GetReferenceByIdQuery<Resource>(id), ctx);
         
         if (resource is null)
         {
@@ -90,7 +95,7 @@ public sealed class ResourcesController : ControllerBase
     public async Task<ActionResult<Guid>> CreateResource([FromBody] CreateResourceRequest request, CancellationToken ctx)
     {
         _logger.LogInformation("Creating new resource with name: {ResourceName}", request.Name);
-        var resourceId = await _resourceService.CreateResourceAsync(request.Name, ctx);
+        var resourceId = await _mediator.Send(new CreateReferenceCommand<Resource>(request.Name), ctx);
         _logger.LogInformation("Successfully created resource with ID: {ResourceId}", resourceId);
         return CreatedAtAction(nameof(GetResourceById), new { id = resourceId }, resourceId);
     }
@@ -105,12 +110,7 @@ public sealed class ResourcesController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateResource(Guid id, [FromBody] UpdateResourceRequest request, CancellationToken ctx)
     {
-        var success = await _resourceService.UpdateResourceAsync(id, request.Name, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new UpdateReferenceCommand<Resource>(id, request.Name), ctx);
         
         return NoContent();
     }
@@ -125,7 +125,7 @@ public sealed class ResourcesController : ControllerBase
     public async Task<ActionResult> DeleteResource(Guid id, CancellationToken ctx)
     {
         _logger.LogInformation("Deleting resource with ID: {ResourceId}", id);
-        await _resourceService.DeleteAsync(id, ctx);
+        await _mediator.Send(new DeleteReferenceCommand<Resource>(id), ctx);
         _logger.LogInformation("Successfully deleted resource with ID: {ResourceId}", id);
         return NoContent();
     }
@@ -139,12 +139,7 @@ public sealed class ResourcesController : ControllerBase
     [HttpPost("{id}/archive")]
     public async Task<ActionResult> ArchiveResource(Guid id, CancellationToken ctx)
     {
-        var success = await _resourceService.ArchiveAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new ArchiveReferenceCommand<Resource>(id), ctx);
         
         return NoContent();
     }
@@ -158,12 +153,7 @@ public sealed class ResourcesController : ControllerBase
     [HttpPost("{id}/activate")]
     public async Task<ActionResult> ActivateResource(Guid id, CancellationToken ctx)
     {
-        var success = await _resourceService.ActivateAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new ActivateReferenceCommand<Resource>(id), ctx);
         
         return NoContent();
     }

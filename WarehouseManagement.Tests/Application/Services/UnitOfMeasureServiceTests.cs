@@ -10,14 +10,14 @@ namespace WarehouseManagement.Tests.Application.Services;
 
 public class UnitOfMeasureServiceTests
 {
-    private readonly INamedEntityRepository<UnitOfMeasure> _repository;
+    private readonly IReferenceRepository<UnitOfMeasure> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<NamedEntityService<UnitOfMeasure>> _logger;
     private readonly TestableUnitOfMeasureService _service;
 
     public UnitOfMeasureServiceTests()
     {
-        _repository = Substitute.For<INamedEntityRepository<UnitOfMeasure>>();
+        _repository = Substitute.For<IReferenceRepository<UnitOfMeasure>>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _logger = Substitute.For<ILogger<NamedEntityService<UnitOfMeasure>>>();
         
@@ -198,7 +198,7 @@ public class UnitOfMeasureServiceTests
 // Test-specific implementation to make the abstract class testable
 public class TestableUnitOfMeasureService : NamedEntityService<UnitOfMeasure>
 {
-    public TestableUnitOfMeasureService(INamedEntityRepository<UnitOfMeasure> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<UnitOfMeasure>> logger)
+    public TestableUnitOfMeasureService(IReferenceRepository<UnitOfMeasure> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<UnitOfMeasure>> logger)
         : base(repository, unitOfWork, logger)
     {
     }

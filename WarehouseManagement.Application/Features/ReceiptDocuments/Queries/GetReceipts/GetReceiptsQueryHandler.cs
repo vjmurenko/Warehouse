@@ -7,8 +7,8 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Queries.GetR
 
 public sealed class GetReceiptsQueryHandler(
     IReceiptRepository receiptRepository,
-    INamedEntityRepository<Resource> resourceRepository,
-    INamedEntityRepository<UnitOfMeasure> unitOfMeasureRepository) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>
+    IReferenceRepository<Resource> resourceRepository,
+    IReferenceRepository<UnitOfMeasure> unitOfMeasureRepository) : IRequestHandler<GetReceiptsQuery, List<ReceiptDocumentDto>>
 {
     public async Task<List<ReceiptDocumentDto>> Handle(GetReceiptsQuery query, CancellationToken ctx)
     {

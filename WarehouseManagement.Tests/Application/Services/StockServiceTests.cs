@@ -12,15 +12,15 @@ namespace WarehouseManagement.Tests.Application.Services;
 public class StockServiceTests
 {
     private readonly IStockMovementRepository _movementRepository;
-    private readonly INamedEntityRepository<Resource> _resourceRepository;
-    private readonly INamedEntityRepository<UnitOfMeasure> _unitRepository;
+    private readonly IReferenceRepository<Resource> _resourceRepository;
+    private readonly IReferenceRepository<UnitOfMeasure> _unitRepository;
     private readonly StockService _stockService;
 
     public StockServiceTests()
     {
         _movementRepository = Substitute.For<IStockMovementRepository>();
-        _resourceRepository = Substitute.For<INamedEntityRepository<Resource>>();
-        _unitRepository = Substitute.For<INamedEntityRepository<UnitOfMeasure>>();
+        _resourceRepository = Substitute.For<IReferenceRepository<Resource>>();
+        _unitRepository = Substitute.For<IReferenceRepository<UnitOfMeasure>>();
         _stockService = new StockService(_movementRepository, _resourceRepository, _unitRepository);
     }
 

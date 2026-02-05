@@ -8,7 +8,7 @@ using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 namespace WarehouseManagement.Application.Services.Implementations;
 
 public sealed class ShipmentValidationService(
-    INamedEntityRepository<Client> clientRepository,
+    IReferenceRepository<Client> clientRepository,
     INamedEntityValidationService namedEntityValidationService,
     ILogger<ShipmentValidationService> logger) : IShipmentValidationService
 {

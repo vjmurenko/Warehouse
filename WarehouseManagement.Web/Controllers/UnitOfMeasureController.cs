@@ -1,6 +1,12 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.UntOfMeasure;
+using WarehouseManagement.Application.Features.References.Commands;
+using WarehouseManagement.Application.Features.References.Commands.Create;
+using WarehouseManagement.Application.Features.References.Commands.Update;
+using WarehouseManagement.Application.Features.References.Queries;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Web.Controllers;
 
@@ -8,12 +14,12 @@ namespace WarehouseManagement.Web.Controllers;
 [Route("api/[controller]")]
 public sealed class UnitOfMeasureController : ControllerBase
 {
-    private readonly IUnitOfMeasureService _unitOfMeasureService;
+    private readonly IMediator _mediator;
     private readonly ILogger<UnitOfMeasureController> _logger;
 
-    public UnitOfMeasureController(IUnitOfMeasureService unitOfMeasureService, ILogger<UnitOfMeasureController> logger)
+    public UnitOfMeasureController(IMediator mediator, ILogger<UnitOfMeasureController> logger)
     {
-        _unitOfMeasureService = unitOfMeasureService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -26,7 +32,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     public async Task<ActionResult<List<UnitOfMeasureDto>>> GetUnitsOfMeasure(CancellationToken ctx)
     {
         _logger.LogInformation("Getting all units of measure");
-        var units = await _unitOfMeasureService.GetAllAsync(ctx);
+        var units = await _mediator.Send(new GetAllReferencesQuery<UnitOfMeasure>(), ctx);
         var unitDtos = units.Select(u => new UnitOfMeasureDto(
             u.Id,
             u.Name,
@@ -45,7 +51,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     [HttpGet("active")]
     public async Task<ActionResult<List<UnitOfMeasureDto>>> GetActiveUnitsOfMeasure(CancellationToken ctx)
     {
-        var units = await _unitOfMeasureService.GetActiveAsync(ctx);
+        var units = await _mediator.Send(new GetActiveReferencesQuery<UnitOfMeasure>(), ctx);
         var unitDtos = units.Select(u => new UnitOfMeasureDto(
             u.Id,
             u.Name,
@@ -64,7 +70,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<UnitOfMeasureDto>> GetUnitOfMeasureById(Guid id, CancellationToken ctx)
     {
-        var unit = await _unitOfMeasureService.GetByIdAsync(id, ctx);
+        var unit = await _mediator.Send(new GetReferenceByIdQuery<UnitOfMeasure>(id), ctx);
         
         if (unit is null)
         {
@@ -90,7 +96,8 @@ public sealed class UnitOfMeasureController : ControllerBase
     public async Task<ActionResult<Guid>> CreateUnitOfMeasure([FromBody] CreateUnitOfMeasureRequest request, CancellationToken ctx)
     {
         _logger.LogInformation("Creating new unit of measure with name: {UnitName}", request.Name);
-        var unitId = await _unitOfMeasureService.CreateUnitOfMeasureAsync(request.Name, ctx);
+        var unitId = await _mediator.Send(new CreateReferenceCommand<UnitOfMeasure>(request.Name), ctx);
+        
         _logger.LogInformation("Successfully created unit of measure with ID: {UnitId}", unitId);
         return CreatedAtAction(nameof(GetUnitOfMeasureById), new { id = unitId }, unitId);
     }
@@ -105,12 +112,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateUnitOfMeasure(Guid id, [FromBody] UpdateUnitOfMeasureRequest request, CancellationToken ctx)
     {
-        var success = await _unitOfMeasureService.UpdateUnitOfMeasureAsync(id, request.Name, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new UpdateReferenceCommand<UnitOfMeasure>(id, request.Name), ctx);
         
         return NoContent();
     }
@@ -125,7 +127,8 @@ public sealed class UnitOfMeasureController : ControllerBase
     public async Task<ActionResult> DeleteUnitOfMeasure(Guid id, CancellationToken ctx)
     {
         _logger.LogInformation("Deleting unit of measure with ID: {UnitId}", id);
-        await _unitOfMeasureService.DeleteAsync(id, ctx);
+        await _mediator.Send(new DeleteReferenceCommand<UnitOfMeasure>(id), ctx);
+        
         _logger.LogInformation("Successfully deleted unit of measure with ID: {UnitId}", id);
         return NoContent();
     }
@@ -139,12 +142,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     [HttpPost("{id}/archive")]
     public async Task<ActionResult> ArchiveUnitOfMeasure(Guid id, CancellationToken ctx)
     {
-        var success = await _unitOfMeasureService.ArchiveAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new ArchiveReferenceCommand<UnitOfMeasure>(id), ctx);
         
         return NoContent();
     }
@@ -158,12 +156,7 @@ public sealed class UnitOfMeasureController : ControllerBase
     [HttpPost("{id}/activate")]
     public async Task<ActionResult> ActivateUnitOfMeasure(Guid id, CancellationToken ctx)
     {
-        var success = await _unitOfMeasureService.ActivateAsync(id, ctx);
-        
-        if (!success)
-        {
-            return NotFound();
-        }
+        await _mediator.Send(new ActivateReferenceCommand<UnitOfMeasure>(id), ctx);
         
         return NoContent();
     }

@@ -11,14 +11,14 @@ namespace WarehouseManagement.Tests.Application.Services;
 
 public class ClientServiceTests
 {
-    private readonly INamedEntityRepository<Client> _repository;
+    private readonly IReferenceRepository<Client> _repository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<NamedEntityService<Client>> _logger;
     private readonly TestableClientService _service;
 
     public ClientServiceTests()
     {
-        _repository = Substitute.For<INamedEntityRepository<Client>>();
+        _repository = Substitute.For<IReferenceRepository<Client>>();
         _unitOfWork = Substitute.For<IUnitOfWork>();
         _logger = Substitute.For<ILogger<NamedEntityService<Client>>>();
         
@@ -199,7 +199,7 @@ public class ClientServiceTests
 // Test-specific implementation to make the abstract class testable
 public class TestableClientService : NamedEntityService<Client>
 {
-    public TestableClientService(INamedEntityRepository<Client> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Client>> logger)
+    public TestableClientService(IReferenceRepository<Client> repository, IUnitOfWork unitOfWork, ILogger<NamedEntityService<Client>> logger)
         : base(repository, unitOfWork, logger)
     {
     }
