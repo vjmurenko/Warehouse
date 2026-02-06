@@ -15,6 +15,4 @@ public interface IShipmentRepository : IRepositoryBase<ShipmentDocument>
         List<Guid>? unitIds = null,
         List<Guid>? clientIds = null,
         CancellationToken cancellationToken = default);
-    void RemoveResources(IEnumerable<ShipmentResource> resources);
-    void AddResources(IEnumerable<ShipmentResource> resources);
 }
