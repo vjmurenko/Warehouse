@@ -1,15 +1,15 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 
-namespace WarehouseManagement.Application.Services.Implementations;
+namespace WarehouseManagement.Infrastructure.Services;
 
-public sealed class NamedEntityValidationService(
+public class ReferenceValidationService(
     IReferenceRepository<Resource> resourceRepository,
     IReferenceRepository<UnitOfMeasure> unitRepository,
-    ILogger<NamedEntityValidationService> logger)
-    : INamedEntityValidationService
+    ILogger<ReferenceValidationService> logger) : IReferenceValidationService
+    
 {
     public async Task ValidateResourcesAsync(IEnumerable<Guid> resourceIds, CancellationToken cancellationToken)
     {

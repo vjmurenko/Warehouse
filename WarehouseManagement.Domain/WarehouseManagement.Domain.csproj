@@ -11,10 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Services\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Compile Remove="Services\IResourceUnitValidationService.cs" />
     </ItemGroup>
 

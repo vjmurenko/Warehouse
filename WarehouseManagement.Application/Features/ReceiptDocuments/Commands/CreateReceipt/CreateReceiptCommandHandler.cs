@@ -1,22 +1,20 @@
 ﻿using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 
 public sealed class CreateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    INamedEntityValidationService validationService,
+    IReferenceValidationService referenceValidationService,
     IUnitOfWork unitOfWork) : IRequestHandler<CreateReceiptCommand, Guid>
 {
     public async Task<Guid> Handle(CreateReceiptCommand command, CancellationToken cancellationToken)
     {
-        if (await receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: cancellationToken))
-            throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
-
-        await validationService.ValidateResourcesAsync(command.Resources.Select(c => c.ResourceId), cancellationToken);
-        await validationService.ValidateUnitsAsync(command.Resources.Select(c => c.UnitId), cancellationToken);
+        await receiptRepository.ExistsByNumberAsync(command.Number, cancellationToken: cancellationToken);
+        await referenceValidationService.ValidateResourcesAsync(command.Resources.Select(c => c.ResourceId), cancellationToken);
+        await referenceValidationService.ValidateUnitsAsync(command.Resources.Select(c => c.UnitId), cancellationToken);
 
         var documentId = Guid.NewGuid();
         

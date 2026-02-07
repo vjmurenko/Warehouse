@@ -1,14 +1,14 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 
 namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.UpdateReceipt;
 
 public sealed class UpdateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
-    INamedEntityValidationService validationService,
+    IReferenceValidationService referenceValidationService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken ct)
@@ -17,14 +17,13 @@ public sealed class UpdateReceiptCommandHandler(
         if (document is null)
             throw new InvalidOperationException($"Документ с ID {command.Id} не найден");
 
-        if (await receiptRepository.ExistsByNumberAsync(command.Number, command.Id, ct))
-            throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
-
+        await receiptRepository.ExistsByNumberAsync(command.Number, command.Id, ct);
+        
         var newResources = GetNewResources(document, command.Resources);
         if (newResources.Any())
         {
-            await validationService.ValidateResourcesAsync(newResources.Select(r => r.ResourceId), ct);
-            await validationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
+            await referenceValidationService.ValidateResourcesAsync(newResources.Select(r => r.ResourceId), ct);
+            await referenceValidationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
 
         var resources = command.Resources

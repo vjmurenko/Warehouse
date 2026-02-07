@@ -1,6 +1,6 @@
-namespace WarehouseManagement.Application.Services.Interfaces;
+﻿namespace WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 
-public interface INamedEntityValidationService
+public interface IReferenceValidationService
 {
     Task ValidateResourcesAsync(IEnumerable<Guid> resourceIds, CancellationToken cancellationToken);
     Task ValidateUnitsAsync(IEnumerable<Guid> unitIds, CancellationToken cancellationToken);

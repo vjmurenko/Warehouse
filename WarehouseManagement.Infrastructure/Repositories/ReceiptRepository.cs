@@ -38,8 +38,13 @@ public sealed class ReceiptRepository(WarehouseDbContext context, ILogger<Receip
         }
 
         var result = await query.AnyAsync(cancellationToken);
-        logger.LogInformation("Receipt document with number {Number} exists: {Exists}", number, result);
-        return result;
+        if (result)
+        {
+            logger.LogInformation("Receipt document with number {Number} exists: {Exists}", number, result);
+            throw new InvalidOperationException($"Документ с номером {number} уже существует");
+        }
+
+        return false;
     }
 
     public async Task<List<ReceiptDocument>> GetFilteredAsync(
