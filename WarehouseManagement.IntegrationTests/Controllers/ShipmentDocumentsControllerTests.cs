@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.CreateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.Commands.UpdateShipment;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
@@ -27,7 +28,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-001",
@@ -64,7 +65,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-002",
@@ -91,7 +92,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-003",
@@ -134,7 +135,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-004",
@@ -165,7 +166,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-005",
@@ -197,7 +198,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-006",
@@ -251,7 +252,7 @@ public class ShipmentDocumentsControllerTests : BaseIntegrationTest
 
         var movement = StockMovement.Create(resource.Id, unit.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var command = new CreateShipmentCommand(
             Number: "SHIP-007",

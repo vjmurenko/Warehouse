@@ -30,9 +30,8 @@ public class UpdateClientCommandHandler : IRequestHandler<UpdateClientCommand>
 
         var client = await _repository.GetByIdAsync(request.ClientId, ctx);
 
-        client.Rename(request.Name);
-        client.ChangeAddress(new Address(request.Address));
-
-        await _unitOfWork.SaveEntitiesAsync(ctx);
+        client.Update(request.Name, new Address(request.Address));
+        
+        await _unitOfWork.SaveChangesAsync(ctx);
     }
 }

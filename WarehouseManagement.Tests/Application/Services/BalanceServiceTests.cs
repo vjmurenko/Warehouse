@@ -1,27 +1,27 @@
 using FluentAssertions;
 using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Enums;
+using WarehouseManagement.Infrastructure.Services;
 using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Services;
 
-public class StockServiceTests
+public class BalanceServiceTests
 {
     private readonly IStockMovementRepository _movementRepository;
     private readonly IReferenceRepository<Resource> _resourceRepository;
     private readonly IReferenceRepository<UnitOfMeasure> _unitRepository;
-    private readonly StockService _stockService;
+    private readonly BalanceService _balanceService;
 
-    public StockServiceTests()
+    public BalanceServiceTests()
     {
         _movementRepository = Substitute.For<IStockMovementRepository>();
         _resourceRepository = Substitute.For<IReferenceRepository<Resource>>();
         _unitRepository = Substitute.For<IReferenceRepository<UnitOfMeasure>>();
-        _stockService = new StockService(_movementRepository, _resourceRepository, _unitRepository);
+        _balanceService = new BalanceService(_movementRepository, _resourceRepository, _unitRepository);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public class StockServiceTests
         var unitId = Guid.NewGuid();
         var items = new List<(Guid, Guid, decimal)> { (resourceId, unitId, 100m) };
 
-        await _stockService.RecordMovements(documentId, MovementType.Receipt, items, CancellationToken.None);
+        await _balanceService.RecordMovements(documentId, MovementType.Receipt, items, CancellationToken.None);
 
         await _movementRepository.Received(1).AddRangeAsync(
             Arg.Is<IEnumerable<StockMovement>>(m => 
@@ -50,7 +50,7 @@ public class StockServiceTests
         var documentId = Guid.NewGuid();
         var items = new List<(Guid, Guid, decimal)> { (Guid.NewGuid(), Guid.NewGuid(), 0m) };
 
-        await _stockService.RecordMovements(documentId, MovementType.Receipt, items, CancellationToken.None);
+        await _balanceService.RecordMovements(documentId, MovementType.Receipt, items, CancellationToken.None);
 
         await _movementRepository.DidNotReceive().AddRangeAsync(
             Arg.Any<IEnumerable<StockMovement>>(),
@@ -68,7 +68,7 @@ public class StockServiceTests
         _movementRepository.GetByDocumentIdAsync(documentId, Arg.Any<CancellationToken>())
             .Returns(new List<StockMovement> { existingMovement });
 
-        await _stockService.ReverseMovements(documentId, CancellationToken.None);
+        await _balanceService.ReverseMovements(documentId, CancellationToken.None);
 
         await _movementRepository.Received(1).AddRangeAsync(
             Arg.Is<IEnumerable<StockMovement>>(m => 
@@ -87,7 +87,7 @@ public class StockServiceTests
         _movementRepository.GetBalancesAsync(Arg.Any<IEnumerable<(Guid, Guid)>>(), Arg.Any<CancellationToken>())
             .Returns(new Dictionary<(Guid, Guid), decimal> { { (resourceId, unitId), 100m } });
 
-        var action = async () => await _stockService.ValidateAvailability(items, CancellationToken.None);
+        var action = async () => await _balanceService.ValidateAvailability(items, CancellationToken.None);
 
         await action.Should().NotThrowAsync();
     }
@@ -107,7 +107,7 @@ public class StockServiceTests
         _unitRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
             .Returns(UnitOfMeasure.Create("kg"));
 
-        var action = async () => await _stockService.ValidateAvailability(items, CancellationToken.None);
+        var action = async () => await _balanceService.ValidateAvailability(items, CancellationToken.None);
 
         await action.Should().ThrowAsync<InsufficientBalanceException>()
             .WithMessage("*Test Resource*kg*150*100*");
@@ -128,7 +128,7 @@ public class StockServiceTests
         _unitRepository.GetByIdAsync(unitId, Arg.Any<CancellationToken>())
             .Returns(UnitOfMeasure.Create("kg"));
 
-        var action = async () => await _stockService.ValidateAvailability(items, CancellationToken.None);
+        var action = async () => await _balanceService.ValidateAvailability(items, CancellationToken.None);
 
         await action.Should().ThrowAsync<InsufficientBalanceException>();
     }
@@ -138,7 +138,7 @@ public class StockServiceTests
     {
         var items = new List<(Guid, Guid, decimal)> { (Guid.NewGuid(), Guid.NewGuid(), 0m) };
 
-        await _stockService.ValidateAvailability(items, CancellationToken.None);
+        await _balanceService.ValidateAvailability(items, CancellationToken.None);
 
         await _movementRepository.DidNotReceive().GetBalancesAsync(
             Arg.Any<IEnumerable<(Guid, Guid)>>(),

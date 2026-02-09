@@ -37,6 +37,6 @@ public class DeleteReferenceCommandHandler<T> : IRequestHandler<DeleteReferenceC
         _repository.Delete(reference);
         _logger.LogInformation("Entity of type {EntityType} with ID: {EntityId} marked for deletion", typeof(T).Name, request.Id);
 
-        await _unitOfWork.SaveEntitiesAsync(ctx);
+        await _unitOfWork.SaveChangesAsync(ctx);
     }
 }

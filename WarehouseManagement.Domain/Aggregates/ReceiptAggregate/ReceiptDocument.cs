@@ -1,4 +1,3 @@
-using WarehouseManagement.Domain.Events;
 using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
@@ -11,7 +10,6 @@ public sealed class ReceiptDocument : AggregateRoot<Guid>
     public DateTime Date { get; private set; }
     public IReadOnlyCollection<ReceiptResource> ReceiptResources => _receiptResources.AsReadOnly();
 
-    // EF Core constructor
     private ReceiptDocument(Guid id, string number, DateTime date) : base(id)
     {
         Number = number;
@@ -31,15 +29,7 @@ public sealed class ReceiptDocument : AggregateRoot<Guid>
 
     public static ReceiptDocument Create(string number, DateTime date, IEnumerable<ReceiptResource> resources)
     {
-        var document = new ReceiptDocument(Guid.NewGuid(), number, date, resources);
-        document.Raise(new ReceiptDocumentCreatedEvent(document.Id));
-        
-        return document;
-    }
-    
-    public void Delete()
-    {
-        Raise(new ReceiptDocumentDeletedEvent(Id));
+        return new ReceiptDocument(Guid.NewGuid(), number, date, resources);
     }
 
     public void Update(string number, DateTime date, IEnumerable<ReceiptResource> newResources)
@@ -49,8 +39,6 @@ public sealed class ReceiptDocument : AggregateRoot<Guid>
         Number = number;
         Date = date;
         UpdateResources(newResources);
-        
-        Raise(new ReceiptDocumentUpdatedEvent(Id));
     }
 
     private void UpdateResources(IEnumerable<ReceiptResource> newResources)

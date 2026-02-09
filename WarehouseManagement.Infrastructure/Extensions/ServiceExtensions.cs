@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Services.Implementations;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.BalanceAggregate;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Infrastructure.Repositories;
@@ -17,11 +17,11 @@ public static class ServiceExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<IReceiptRepository, ReceiptRepository>();
         services.AddScoped<IShipmentRepository, ShipmentRepository>();
-        services.AddScoped<IStockMovementRepository, StockMovementRepository>();
+        services.AddScoped<IBalanceRepository, BalanceRepository>();
         services.AddScoped<IReferenceRepository<Resource>, ResourceRepository>();
         services.AddScoped<IReferenceRepository<Client>, ClientRepository>();
         services.AddScoped<IReferenceRepository<UnitOfMeasure>, UnitOfMeasureRepository>();
-        services.AddScoped<IStockService, StockService>();
+        services.AddScoped<IBalanceService, BalanceService>();
         services.AddScoped<IReferenceValidationService, ReferenceValidationService>();
         
         return services;

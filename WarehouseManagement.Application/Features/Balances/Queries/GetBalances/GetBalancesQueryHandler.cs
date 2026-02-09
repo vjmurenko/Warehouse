@@ -1,19 +1,20 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.DTOs;
+using WarehouseManagement.Domain.Aggregates.BalanceAggregate;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
 namespace WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
 
 public sealed class GetBalancesQueryHandler(
-    IStockMovementRepository stockMovementRepository,
+    IBalanceRepository balanceRepository,
     IReferenceRepository<Resource> resourceRepository,
     IReferenceRepository<UnitOfMeasure> unitOfMeasureRepository
     ) : IRequestHandler<GetBalancesQuery, List<BalanceDto>>
 {
     public async Task<List<BalanceDto>> Handle(GetBalancesQuery query, CancellationToken ctx)
     {
-        var balances = await stockMovementRepository.GetBalancesFilteredAsync(
+        var balances = await balanceRepository.GetFilteredAsync(
             query.ResourceIds,
             query.UnitIds,
             ctx);
@@ -22,19 +23,19 @@ public sealed class GetBalancesQueryHandler(
             return [];
 
         var resourceIds = balances.Select(b => b.ResourceId).Distinct();
-        var unitIds = balances.Select(b => b.UnitId).Distinct();
+        var unitIds = balances.Select(b => b.UnitOfMeasureId).Distinct();
 
         var resources = (await resourceRepository.GetByIdsAsync(resourceIds, ctx)).ToDictionary(r => r.Id);
         var units = (await unitOfMeasureRepository.GetByIdsAsync(unitIds, ctx)).ToDictionary(u => u.Id);
 
         return balances
-            .Where(b => resources.ContainsKey(b.ResourceId) && units.ContainsKey(b.UnitId))
+            .Where(b => resources.ContainsKey(b.ResourceId) && units.ContainsKey(b.UnitOfMeasureId))
             .Select(b => new BalanceDto(
-                Guid.NewGuid(),
+                b.Id,
                 b.ResourceId,
                 resources[b.ResourceId].Name,
-                b.UnitId,
-                units[b.UnitId].Name,
+                b.UnitOfMeasureId,
+                units[b.UnitOfMeasureId].Name,
                 b.Quantity))
             .ToList();
     }

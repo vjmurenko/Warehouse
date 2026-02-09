@@ -1,7 +1,7 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
@@ -12,6 +12,7 @@ public sealed class UpdateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
     IReferenceValidationService referenceValidationService,
     IReferenceRepository<Client> clientRepository,
+    IBalanceService balanceService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateShipmentCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateShipmentCommand command, CancellationToken ctx)
@@ -35,10 +36,16 @@ public sealed class UpdateShipmentCommandHandler(
         
         if (command.Sign)
         {
+            var items = newResources.Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity)).ToList();
+            await balanceService.ValidateAvailability(items, ctx);
+            
+            var negativeItems = items.Select(i => (i.ResourceId, i.UnitOfMeasureId, -i.Quantity));
+            await balanceService.UpdateBalances(negativeItems, ctx);
+            
             document.Sign();
         }
         
-        await unitOfWork.SaveEntitiesAsync(ctx);
+        await unitOfWork.SaveChangesAsync(ctx);
 
         return Unit.Value;
     }

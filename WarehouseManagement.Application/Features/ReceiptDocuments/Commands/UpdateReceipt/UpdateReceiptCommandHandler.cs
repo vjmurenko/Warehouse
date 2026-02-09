@@ -1,5 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
@@ -9,6 +10,7 @@ namespace WarehouseManagement.Application.Features.ReceiptDocuments.Commands.Upd
 public sealed class UpdateReceiptCommandHandler(
     IReceiptRepository receiptRepository,
     IReferenceValidationService referenceValidationService,
+    IBalanceService balanceService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateReceiptCommand, Unit>
 {
     public async Task<Unit> Handle(UpdateReceiptCommand command, CancellationToken ct)
@@ -26,14 +28,21 @@ public sealed class UpdateReceiptCommandHandler(
             await referenceValidationService.ValidateUnitsAsync(newResources.Select(r => r.UnitId), ct);
         }
 
+        var oldItems = document.ReceiptResources
+            .Select(r => (r.ResourceId, r.UnitOfMeasureId, -r.Quantity));
+        await balanceService.UpdateBalances(oldItems, ct);
+
         var resources = command.Resources
             .GroupBy(r => new {r.ResourceId, r.UnitId})
             .Select(r => ReceiptResource.Create(document.Id, r.Key.ResourceId, r.Key.UnitId, r.Sum(c => c.Quantity)))
             .ToList();
 
         document.Update(command.Number, command.Date, resources);
+
+        var newItems = resources.Select(r => (r.ResourceId, r.UnitOfMeasureId, r.Quantity));
+        await balanceService.UpdateBalances(newItems, ct);
         
-        await unitOfWork.SaveEntitiesAsync(ct);
+        await unitOfWork.SaveChangesAsync(ct);
 
         return Unit.Value;
     }

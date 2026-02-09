@@ -24,8 +24,14 @@ public sealed class Client : Reference
         return client;
     }
     
-    public void ChangeAddress(Address address)
+    private void ChangeAddress(Address address)
     {
         Address = address ?? throw new ArgumentNullException(nameof(address));
+    }
+
+    public void Update(string name, Address address)
+    {
+        Rename(name);
+        ChangeAddress(address);
     }
 }

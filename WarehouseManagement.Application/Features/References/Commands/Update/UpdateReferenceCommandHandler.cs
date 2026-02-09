@@ -37,6 +37,6 @@ public class UpdateReferenceCommandHandler<T> : IRequestHandler<UpdateReferenceC
         
         reference.Rename(request.Name);
         
-        await _unitOfWork.SaveEntitiesAsync(ctx);
+        await _unitOfWork.SaveChangesAsync(ctx);
     }
 }

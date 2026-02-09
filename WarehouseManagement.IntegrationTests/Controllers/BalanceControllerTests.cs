@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Features.Balances.DTOs;
 using WarehouseManagement.IntegrationTests.Infrastructure;
 using WarehouseManagement.Domain.Aggregates;
@@ -31,7 +32,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         
         var movement = StockMovement.Create(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var balances = await GetAsync<List<BalanceDto>>("/api/Balance");
 
@@ -51,7 +52,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         var movement1 = StockMovement.Create(resource1.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         var movement2 = StockMovement.Create(resource2.Id, unit.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var balances = await GetAsync<List<BalanceDto>>($"/api/Balance?resourceIds={resource1.Id}");
 
@@ -71,7 +72,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         var movement1 = StockMovement.Create(resource.Id, unit1.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         var movement2 = StockMovement.Create(resource.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var balances = await GetAsync<List<BalanceDto>>($"/api/Balance?unitIds={unit1.Id}");
 
@@ -93,7 +94,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         var movement2 = StockMovement.Create(resource1.Id, unit2.Id, 50, Guid.NewGuid(), MovementType.Receipt);
         var movement3 = StockMovement.Create(resource2.Id, unit1.Id, 200, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.AddRange(movement1, movement2, movement3);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
 
         var response = await _client.GetAsync($"/api/Balance?resourceIds={resource1.Id}&resourceIds={resource2.Id}&unitIds={unit1.Id}");
         var balances = await response.Content.ReadFromJsonAsync<List<BalanceDto>>();
@@ -111,7 +112,7 @@ public class BalanceControllerTests : BaseIntegrationTest
         var unit = await CreateTestUnitOfMeasureAsync("kg");
         var movement = StockMovement.Create(resource.Id, unit.Id, 100, Guid.NewGuid(), MovementType.Receipt);
         _context.StockMovements.Add(movement);
-        await _context.SaveChangesAsync();
+        await ((DbContext) _context).SaveChangesAsync();
         
         var nonExistentResourceId = Guid.NewGuid();
 

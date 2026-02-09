@@ -18,6 +18,8 @@
 
     <ItemGroup>
       <Folder Include="Features\ReceiptDocuments\Commands\" />
+      <Folder Include="Services\Implementations\" />
+      <Folder Include="Services\Interfaces\" />
     </ItemGroup>
 
 </Project>

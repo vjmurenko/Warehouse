@@ -1,6 +1,4 @@
-﻿using WarehouseManagement.Domain.Common;
-using WarehouseManagement.Domain.Events;
-using WarehouseManagement.SharedKernel;
+﻿using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
@@ -15,7 +13,6 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
 
     public IReadOnlyCollection<ShipmentResource> ShipmentResources => _shipmentResources.AsReadOnly();
 
-    // EF Core constructor
     private ShipmentDocument(Guid id, string number, Guid clientId, DateTime date, bool isSigned) : base(id)
     {
         Number = number;
@@ -39,7 +36,6 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
 
     public void Revoke()
     {
-        Raise(new ShipmentDocumentRevokedEvent(Id));
         IsSigned = false;
     }
     
@@ -49,13 +45,10 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
         ClientId = clientId;
         UpdateNumber(number);
         SetResources(resources);
-        
-        Raise(new ShipmentDocumentChangedResourcesEvent(Id));
     }
     
     public void Sign()
     {
-        Raise(new ShipmentDocumentSignedEvent(Id));
         IsSigned = true;
     }
     

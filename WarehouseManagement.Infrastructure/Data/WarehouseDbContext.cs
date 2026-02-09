@@ -1,7 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common.Interfaces;
-using WarehouseManagement.Domain.Aggregates;
+using WarehouseManagement.Domain.Aggregates.BalanceAggregate;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
@@ -32,7 +32,7 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
     public DbSet<ReceiptResource> ReceiptResources { get; set; }
     public DbSet<ShipmentDocument> ShipmentDocuments { get; set; }
     public DbSet<ShipmentResource> ShipmentResources { get; set; }
-    public DbSet<StockMovement> StockMovements { get; set; }
+    public DbSet<Balance> Balances { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,26 +48,9 @@ public sealed class WarehouseDbContext : DbContext, IUnitOfWork
         modelBuilder.ApplyConfiguration(new ReceiptResourceEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentDocumentEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ShipmentResourceEntityTypeConfiguration());
-        modelBuilder.ApplyConfiguration(new StockMovementEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new BalanceEntityTypeConfiguration());
     }
-
-    public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
-    {
-        // Dispatch Domain Events collection. 
-        // Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
-        // side effects from the domain event handlers which are using the same DbContext with "scoped" lifetime
-        if (_mediator is not null)
-        {
-            await _mediator.DispatchDomainEventsAsync(this);
-        }
-
-        // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
-        // performed through the DbContext will be committed
-        _ = await base.SaveChangesAsync(cancellationToken);
-
-        return true;
-    }
-
+    
     public new async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return await base.SaveChangesAsync(cancellationToken);
