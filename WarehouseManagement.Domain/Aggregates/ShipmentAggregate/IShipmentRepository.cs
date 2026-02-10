@@ -1,7 +1,6 @@
-using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.SharedKernel.Business.SharedKernel.Aggregates;
 
-namespace WarehouseManagement.Application.Common.Interfaces;
+namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
 public interface IShipmentRepository : IRepositoryBase<ShipmentDocument>
 {

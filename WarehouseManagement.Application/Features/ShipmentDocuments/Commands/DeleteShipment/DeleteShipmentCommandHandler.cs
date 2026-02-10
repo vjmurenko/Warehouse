@@ -1,5 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.DeleteShipment;

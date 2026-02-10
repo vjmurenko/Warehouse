@@ -14,8 +14,4 @@
       <Compile Remove="Services\IResourceUnitValidationService.cs" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Aggregates\InventoryAggregate\" />
-    </ItemGroup>
-
 </Project>

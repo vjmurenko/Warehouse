@@ -11,7 +11,8 @@ public sealed class GetShipmentsQueryHandler(WarehouseDbContext context) : IRequ
     public async Task<List<ShipmentDocumentDto>> Handle(GetShipmentsQuery request, CancellationToken ctx)
     {
         var query = context.ShipmentDocuments
-            .Include(s => s.ShipmentResources)
+            .AsNoTracking()
+            .AsSplitQuery()
             .AsQueryable();
 
         if (request.FromDate.HasValue)

@@ -1,7 +1,7 @@
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.SharedKernel.Business.SharedKernel.Aggregates;
 
-namespace WarehouseManagement.Application.Common.Interfaces;
+namespace WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 
 public interface IReferenceRepository<T> : IRepositoryBase<T> where T : Reference
 {

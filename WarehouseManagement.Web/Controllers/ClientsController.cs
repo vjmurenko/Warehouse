@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using WarehouseManagement.Application.Dtos.Client;
 using WarehouseManagement.Application.Features.References.Commands;
 using WarehouseManagement.Application.Features.References.Commands.Create.CreateClient;
+using WarehouseManagement.Application.Features.References.Commands.Delete;
 using WarehouseManagement.Application.Features.References.Commands.Update.UpdateClient;
 using WarehouseManagement.Application.Features.References.Queries;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;

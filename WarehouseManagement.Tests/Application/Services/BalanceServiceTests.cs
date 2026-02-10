@@ -3,6 +3,7 @@ using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Domain.Enums;
 using WarehouseManagement.Infrastructure.Services;
 using WarehouseManagement.SharedKernel.Exceptions;

@@ -2,6 +2,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
 using WarehouseManagement.Domain.Aggregates.BalanceAggregate;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Infrastructure.Services;

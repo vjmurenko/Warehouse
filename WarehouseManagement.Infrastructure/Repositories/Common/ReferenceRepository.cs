@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Common.Interfaces;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.Infrastructure.Data;
 

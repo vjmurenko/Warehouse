@@ -2,38 +2,25 @@
 using Microsoft.Extensions.Logging;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Application.Features.References.Commands.Create;
 
-public class CreateReferenceCommandHandler<T> : IRequestHandler<CreateReferenceCommand<T>, Guid> where T : Reference
+public class CreateReferenceCommandHandler<T>(IReferenceRepository<T> repository, IUnitOfWork unitOfWork) : IRequestHandler<CreateReferenceCommand<T>, Guid> where T : Reference
 {
-    private readonly IReferenceRepository<T> _repository;
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<CreateReferenceCommandHandler<T>> _logger;
-
-    public CreateReferenceCommandHandler(IReferenceRepository<T> repository, IUnitOfWork unitOfWork, ILogger<CreateReferenceCommandHandler<T>> logger)
-    {
-        _repository = repository;
-        _unitOfWork = unitOfWork;
-        _logger = logger;
-    }
-
     public async Task<Guid> Handle(CreateReferenceCommand<T> request, CancellationToken ctx)
     { ;
-        if (await _repository.ExistsWithNameAsync(request.Name, ctx: ctx))
+        if (await repository.ExistsWithNameAsync(request.Name, ctx: ctx))
         {
-            _logger.LogWarning("Duplicate entity detected for type {EntityType} with name: {EntityName}", typeof(T).Name, request.Name);
             throw new DuplicateEntityException(typeof(T).Name, request.Name);
         }
         
         var reference = CreateInstance<T>(request.Name);
-        var id = _repository.Create(reference);
-        _logger.LogInformation("Entity created with temporary ID: {EntityId}", id);
+        var id = repository.Create(reference);
 
-        await _unitOfWork.SaveChangesAsync(ctx);
-        _logger.LogInformation("Entity of type {EntityType} successfully saved with ID: {EntityId}", typeof(T).Name, id);
+        await unitOfWork.SaveChangesAsync(ctx);
         
         return id;
     }

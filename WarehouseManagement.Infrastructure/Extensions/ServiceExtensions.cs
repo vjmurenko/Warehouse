@@ -5,6 +5,7 @@ using WarehouseManagement.Domain.Aggregates.BalanceAggregate;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
+using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 using WarehouseManagement.Infrastructure.Repositories;
 using WarehouseManagement.Infrastructure.Repositories.Common;
 using WarehouseManagement.Infrastructure.Services;

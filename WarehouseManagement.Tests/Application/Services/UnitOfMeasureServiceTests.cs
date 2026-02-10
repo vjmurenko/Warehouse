@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.SharedKernel.Exceptions;
 
 namespace WarehouseManagement.Tests.Application.Services;
