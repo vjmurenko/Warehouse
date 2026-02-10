@@ -4,6 +4,7 @@ using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.ReceiptDocuments.Commands.CreateReceipt;
 using WarehouseManagement.Application.Features.ReceiptDocuments.DTOs;
 using WarehouseManagement.Application.Services.Interfaces;
+using WarehouseManagement.Domain.Aggregates.ReceiptAggregate;
 
 namespace WarehouseManagement.Tests.Application.Features.ReceiptDocuments.Commands;
 

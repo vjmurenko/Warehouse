@@ -1,3 +1,4 @@
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.Aggregates.BalanceAggregate;
@@ -7,6 +8,8 @@ public sealed class Balance : AggregateRoot<Guid>
     public Guid ResourceId { get; private set; }
     public Guid UnitOfMeasureId { get; private set; }
     public decimal Quantity { get; private set; }
+    public Resource Resource { get; private set; }
+    public UnitOfMeasure UnitOfMeasure { get; private set; }
 
     private Balance(Guid id, Guid resourceId, Guid unitOfMeasureId, decimal quantity) : base(id)
     {

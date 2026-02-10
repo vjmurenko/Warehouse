@@ -14,5 +14,8 @@ public sealed class ShipmentResourceEntityTypeConfiguration : IEntityTypeConfigu
         builder.Property(e => e.ResourceId).IsRequired();
         builder.Property(e => e.UnitOfMeasureId).IsRequired();
         builder.Property(e => e.Quantity).HasColumnType("decimal(18,6)");
+
+        builder.HasOne(e => e.UnitOfMeasure).WithMany().HasForeignKey(c => c.UnitOfMeasureId);
+        builder.HasOne(e => e.Resource).WithMany().HasForeignKey(c => c.ResourceId);
     }
 }

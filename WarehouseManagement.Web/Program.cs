@@ -1,19 +1,12 @@
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
-using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Features.Balances.Queries.GetBalances;
-using WarehouseManagement.Application.Features.References.Queries;
-using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Infrastructure.Behaviors;
 using WarehouseManagement.Infrastructure.Data;
 using WarehouseManagement.Infrastructure.Extensions;
-using WarehouseManagement.Infrastructure.Queries.References;
-using WarehouseManagement.Infrastructure.Repositories;
-using WarehouseManagement.Infrastructure.Repositories.Common;
+using WarehouseManagement.Infrastructure.Queries.Balances;
 using WarehouseManagement.Web.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -65,6 +58,7 @@ builder.Services.AddDbContext<WarehouseDbContext>((serviceProvider, options) =>
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(typeof(GetBalancesQuery).Assembly);
+    cfg.RegisterServicesFromAssembly(typeof(GetBalancesQueryHandler).Assembly);
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 

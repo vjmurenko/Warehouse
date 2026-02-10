@@ -1,4 +1,5 @@
-﻿using WarehouseManagement.SharedKernel;
+﻿using WarehouseManagement.Domain.Aggregates.NamedAggregates;
+using WarehouseManagement.SharedKernel;
 
 namespace WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
 
@@ -10,6 +11,8 @@ public sealed class ShipmentDocument : AggregateRoot<Guid>
     public Guid ClientId { get; private set; }
     public DateTime Date { get; private set; }
     public bool IsSigned { get; private set; }
+
+    public Client Client { get; private set; }
 
     public IReadOnlyCollection<ShipmentResource> ShipmentResources => _shipmentResources.AsReadOnly();
 

@@ -13,6 +13,9 @@ public sealed class BalanceEntityTypeConfiguration : IEntityTypeConfiguration<Ba
         builder.Property(e => e.ResourceId).IsRequired();
         builder.Property(e => e.UnitOfMeasureId).IsRequired();
         builder.Property(e => e.Quantity).HasColumnType("decimal(18,6)").IsRequired();
+        
+        builder.HasOne(c => c.Resource).WithMany().HasForeignKey(c => c.ResourceId);
+        builder.HasOne(e => e.UnitOfMeasure).WithMany().HasForeignKey(e => e.UnitOfMeasureId);
 
         builder.HasIndex(e => new { e.ResourceId, e.UnitOfMeasureId }).IsUnique();
     }

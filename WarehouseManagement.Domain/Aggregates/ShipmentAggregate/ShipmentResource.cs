@@ -1,3 +1,4 @@
+using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Common;
 using WarehouseManagement.SharedKernel;
 
@@ -9,6 +10,9 @@ public sealed class ShipmentResource : Entity<Guid>
     public Guid ResourceId { get; private set; }
     public Guid UnitOfMeasureId { get; private set; }
     public decimal Quantity { get; private set; }
+
+    public Resource Resource { get; private set; }
+    public UnitOfMeasure UnitOfMeasure { get; private set; }
     
     private ShipmentResource(Guid id, Guid shipmentDocumentId, Guid resourceId, Guid unitOfMeasureId, decimal quantity)
         : base(id)

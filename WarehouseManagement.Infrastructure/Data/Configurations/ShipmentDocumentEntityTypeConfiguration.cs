@@ -14,6 +14,8 @@ public sealed class ShipmentDocumentEntityTypeConfiguration : IEntityTypeConfigu
         builder.Property(e => e.Date).IsRequired();
         builder.Property(e => e.IsSigned).IsRequired();
         builder.HasIndex(e => e.Number).IsUnique();
+
+        builder.HasOne(e => e.Client).WithMany().HasForeignKey(e => e.ClientId);
         
         builder.HasMany(e => e.ShipmentResources)
             .WithOne()
