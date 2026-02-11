@@ -15,6 +15,22 @@ const EditUnitOfMeasurePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+
+    const loadUnit = async (unitId: string) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const data = await apiService.getUnitOfMeasureById(unitId);
+        setUnit(data);
+        setName(data.name);
+      } catch (err) {
+        setError('Не удалось загрузить данные единицы измерения');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (id) {
       loadUnit(id);
     } else {
@@ -22,22 +38,6 @@ const EditUnitOfMeasurePage: React.FC = () => {
       setError('Unit ID is required');
     }
   }, [id]);
-
-  const loadUnit = async (unitId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const data = await apiService.getUnitOfMeasureById(unitId);
-      setUnit(data);
-      setName(data.name);
-    } catch (err) {
-      setError('Не удалось загрузить данные единицы измерения');
-      console.error('Error loading unit:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +62,6 @@ const EditUnitOfMeasurePage: React.FC = () => {
       navigate('/units');
     } catch (err: any) {
       setError(err.message || 'Не удалось обновить единицу измерения');
-      console.error('Error updating unit of measure:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -72,7 +71,6 @@ const EditUnitOfMeasurePage: React.FC = () => {
     if (!id || !unit) {
       return;
     }
-    
     try {
       setIsSubmitting(true);
       setError(null);
@@ -82,11 +80,9 @@ const EditUnitOfMeasurePage: React.FC = () => {
       } else {
         await apiService.activateUnitOfMeasure(id);
       }
-      
       navigate('/units');
     } catch (err: any) {
       setError(err.message || `Не удалось ${unit.isActive ? 'архивировать' : 'активировать'} единицу измерения`);
-      console.error(`Error ${unit.isActive ? 'archiving' : 'activating'} unit:`, err);
     } finally {
       setIsSubmitting(false);
     }
@@ -108,8 +104,6 @@ const EditUnitOfMeasurePage: React.FC = () => {
       navigate('/units')
     }
     catch (err){
-      console.error('Error deleting unit of measure:', err);
-      
       if (isEntityInUseError(err)) {
         setError('Невозможно удалить эту единицу измерения, поскольку она используется в документах.');
       } else {

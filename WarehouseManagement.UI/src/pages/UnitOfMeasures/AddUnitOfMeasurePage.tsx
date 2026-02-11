@@ -11,8 +11,9 @@ const AddUnitOfMeasurePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!name.trim()) {
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       setError('Name is required');
       return;
     }
@@ -22,7 +23,7 @@ const AddUnitOfMeasurePage: React.FC = () => {
       setError(null);
       
       await apiService.createUnitOfMeasure({
-        name: name.trim()
+        name: trimmedName
       });
       
       navigate('/units');

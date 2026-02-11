@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import React, {useEffect, useMemo, useState} from 'react';
+import {Alert, Button, Col, Container, Row, Spinner, Table} from 'react-bootstrap';
+import {useNavigate} from 'react-router-dom';
 import apiService from '../../services/api';
-import { ResourceDto } from '../../types/api';
-import { getErrorMessage } from '../../utils/errorUtils';
+import {ResourceDto} from '../../types/api';
+import {getErrorMessage} from '../../utils/errorUtils';
 
 const ResourcesPage: React.FC = () => {
   const [resources, setResources] = useState<ResourceDto[]>([]);
@@ -13,35 +13,33 @@ const ResourcesPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const loadResources = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiService.getResources();
+        setResources(data);
+      } catch (err) {
+        setError(getErrorMessage(err));
+        console.error('Error loading resources:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadResources();
-  }, [showArchived]);
 
-  const loadResources = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiService.getResources();
+  }, []);
 
-      // Фильтруем ресурсы в зависимости от режима просмотра
-      const filteredData = showArchived
-        ? data.filter(resource => !resource.isActive)
-        : data.filter(resource => resource.isActive);
-
-      setResources(filteredData);
-    } catch (err) {
-      setError(getErrorMessage(err));
-      console.error('Error loading resources:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredResources = useMemo(() => {
+    return showArchived ? resources.filter(resource => !resource.isActive) : resources.filter(resource => resource.isActive);
+  }, [resources, showArchived]);
 
   const handleAddResource = () => {
     navigate('/resources/add');
   };
 
   const handleToggleArchived = () => {
-    setShowArchived(!showArchived);
+    setShowArchived(prev => !prev);
   };
 
   const handleResourceClick = (resourceId: string) => {
@@ -108,14 +106,14 @@ const ResourcesPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {resources.length === 0 ? (
+              {filteredResources.length === 0 ? (
                 <tr>
                   <td className="text-center text-muted py-4">
                     {showArchived ? 'Архивные ресурсы не найдены' : 'Ресурсы не найдены'}
                   </td>
                 </tr>
               ) : (
-                resources.map((resource) => (
+                filteredResources.map((resource) => (
                   <tr
                     key={resource.id}
                     onClick={() => handleResourceClick(resource.id)}

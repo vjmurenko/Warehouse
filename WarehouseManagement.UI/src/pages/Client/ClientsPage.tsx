@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
@@ -12,28 +12,28 @@ const ClientsPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const loadClients = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiService.getClients();
+        setClients(data);
+      } catch (err) {
+        setError('Ошибка при загрузке клиентов');
+        console.error('Error loading clients:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadClients();
-  }, [showArchived]);
+  }, []);
 
-  const loadClients = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await apiService.getClients();
-
-      // Filter clients based on view mode
-      const filteredData = showArchived
-        ? data.filter(client => !client.isActive)
-        : data.filter(client => client.isActive);
-
-      setClients(filteredData);
-    } catch (err) {
-      setError('Ошибка при загрузке клиентов');
-      console.error('Error loading clients:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredClients = useMemo(() =>{
+    return showArchived
+        ? clients.filter(client => !client.isActive)
+        : clients.filter(client => client.isActive);
+  }, [showArchived, clients]);
 
   const handleAddClient = () => {
     navigate('/clients/add');
@@ -108,14 +108,14 @@ const ClientsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {clients.length === 0 ? (
+              {filteredClients.length === 0 ? (
                 <tr>
                   <td colSpan={2} className="text-center text-muted py-4">
                     {showArchived ? 'Архивных клиентов не найдено' : 'Клиентов не найдено'}
                   </td>
                 </tr>
               ) : (
-                clients.map((client) => (
+                filteredClients.map((client) => (
                   <tr
                     key={client.id}
                     onClick={() => handleClientClick(client.id)}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { Container, Row, Col, Button, Table, Alert, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import apiService from '../../services/api';
@@ -12,38 +12,35 @@ const UnitsOfMeasurePage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadUnits();
-  }, [showArchived]);
+    const loadUnits = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiService.getUnitsOfMeasure();
+        setUnits(data);
+      } catch (err) {
+        setError(`Error loading units of measure: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+     loadUnits();
+  }, []);
 
-  const loadUnits = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      console.log('Fetching units of measure...');
-      const data = await apiService.getUnitsOfMeasure();
-      console.log('Units data received:', data);
 
-      // Filter units based on view mode
-      const filteredData = showArchived
-        ? data.filter(unit => !unit.isActive)
-        : data.filter(unit => unit.isActive);
 
-      console.log('Filtered units data:', filteredData);
-      setUnits(filteredData);
-    } catch (err) {
-      console.error('Error loading units of measure:', err);
-      setError(`Error loading units of measure: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const filteredUnits = useMemo(() => {
+    return  showArchived
+        ? units.filter(unit => !unit.isActive)
+        : units.filter(unit => unit.isActive);
+  },[units, showArchived]);
 
   const handleAddUnit = () => {
     navigate('/units/add');
   };
 
   const handleToggleArchived = () => {
-    setShowArchived(!showArchived);
+    setShowArchived(prev => !prev);
   };
 
   const handleUnitClick = (unitId: string) => {
@@ -117,7 +114,7 @@ const UnitsOfMeasurePage: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                units.map((unit) => (
+                filteredUnits.map((unit) => (
                   <tr
                     key={unit.id}
                     onClick={() => handleUnitClick(unit.id)}

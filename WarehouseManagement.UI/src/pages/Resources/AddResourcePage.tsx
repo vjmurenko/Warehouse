@@ -13,8 +13,9 @@ const AddResourcePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.name.trim()) {
+
+    const trimedName = formData.name.trim();
+    if (!trimedName) {
       return;
     }
 
@@ -22,7 +23,7 @@ const AddResourcePage: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
       
-      const createDto: CreateResourceDto = { name: formData.name.trim() };
+      const createDto: CreateResourceDto = { name: trimedName };
       await apiService.createResource(createDto);
 
       navigate('/resources');

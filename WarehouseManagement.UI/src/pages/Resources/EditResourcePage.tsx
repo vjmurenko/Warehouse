@@ -15,26 +15,27 @@ const EditResourcePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
+
+    const loadResource = async (resourceId: string) => {
+      try {
+        setLoading(true);
+        setError(null);
+        const foundResource = await apiService.getResourceById(resourceId);
+
+        setResource(foundResource);
+        setFormData({ name: foundResource.name });
+      } catch (err) {
+        setError(getErrorMessage(err));
+        console.error('Error loading resource:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (id) {
       loadResource(id);
     }
   }, [id]);
-
-  const loadResource = async (resourceId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const foundResource = await apiService.getResourceById(resourceId);
-
-      setResource(foundResource);
-      setFormData({ name: foundResource.name });
-    } catch (err) {
-      setError(getErrorMessage(err));
-      console.error('Error loading resource:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSave = async () => {
     if (!resource || !formData.name.trim()) {
@@ -48,8 +49,7 @@ const EditResourcePage: React.FC = () => {
       await apiService.updateResource(resource.id, { name: formData.name.trim() });
       navigate('/resources');
     } catch (err) {
-      console.error('Error updating resource:', err);
-      
+
       if (isDuplicateEntityError(err)) {
         setError('Ресурс с таким названием уже существует.');
       } else {
@@ -74,8 +74,7 @@ const EditResourcePage: React.FC = () => {
      await apiService.deleteResource(resource.id);
      navigate('/resources');
     } catch (err) {
-      console.error('Error deleting resource:', err);
-      
+
       if (isEntityInUseError(err)) {
         setError('Невозможно удалить этот ресурс, поскольку он используется в документах.');
       } else {
@@ -102,7 +101,6 @@ const EditResourcePage: React.FC = () => {
 
       navigate('/resources');
     } catch (err) {
-      console.error('Error archiving resource:', err);
       setError(getErrorMessage(err));
     } finally {
       setIsSubmitting(false);

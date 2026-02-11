@@ -15,6 +15,23 @@ const EditClientPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    const loadClient = async (clientId: string) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await apiService.getClientById(clientId);
+        setClient(data);
+        setName(data.name);
+        setAddress(data.address);
+
+      } catch (err) {
+        setError('Не удалось загрузить данные клиента');
+        console.error('Error loading client:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (id) {
       loadClient(id);
     } else {
@@ -23,22 +40,7 @@ const EditClientPage: React.FC = () => {
     }
   }, [id]);
 
-  const loadClient = async (clientId: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const data = await apiService.getClientById(clientId);
-      setClient(data);
-      setName(data.name);
-      setAddress(data.address);
-    } catch (err) {
-      setError('Не удалось загрузить данные клиента');
-      console.error('Error loading client:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +48,16 @@ const EditClientPage: React.FC = () => {
     if (!id || !client) {
       return;
     }
-    
-    if (!name.trim()) {
+
+    const trimmedName = name.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedName) {
       setError('Название обязательно');
       return;
     }
     
-    if (!address.trim()) {
+    if (!trimmedAddress) {
       setError('Адрес обязателен');
       return;
     }
@@ -62,14 +67,13 @@ const EditClientPage: React.FC = () => {
       setError(null);
       
       await apiService.updateClient(id, {
-        name: name.trim(),
-        address: address.trim()
+        name: trimmedName,
+        address: trimmedAddress
       });
       
       navigate('/clients');
     } catch (err: any) {
       setError(err.message || 'Не удалось обновить клиента');
-      console.error('Error updating client:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +97,6 @@ const EditClientPage: React.FC = () => {
       navigate('/clients');
     } catch (err: any) {
       setError(err.message || `Не удалось ${client.isActive ? 'архивировать' : 'активировать'} клиента`);
-      console.error(`Error ${client.isActive ? 'archiving' : 'activating'} client:`, err);
     } finally {
       setIsSubmitting(false);
     }

@@ -12,13 +12,16 @@ const AddClientPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!name.trim()) {
+
+    const trimmedName = name.trim();
+    const trimmedAddress = address.trim();
+
+    if (!trimmedName) {
       setError('Название обязательно');
       return;
     }
     
-    if (!address.trim()) {
+    if (!trimmedAddress) {
       setError('Адрес обязателен');
       return;
     }
@@ -28,8 +31,8 @@ const AddClientPage: React.FC = () => {
       setError(null);
       
       await apiService.createClient({
-        name: name.trim(),
-        address: address.trim()
+        name: trimmedName,
+        address: trimmedAddress,
       });
       
       navigate('/clients');
