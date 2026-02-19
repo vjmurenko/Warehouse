@@ -11,8 +11,6 @@ const EditReceiptPage: React.FC = () => {
   const [number, setNumber] = useState<string>('');
   const [date, setDate] = useState<string>('');
   const [resources, setResources] = useState<ReceiptResourceItem[]>([]);
-  const [originalResources, setOriginalResources] = useState<ReceiptResourceItem[]>([]); // Store original resources for conditional validation
-  
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +44,6 @@ const EditReceiptPage: React.FC = () => {
         quantity: item.quantity
       }));
       setResources(loadedResources);
-      setOriginalResources(loadedResources); // Store original resources for conditional validation
     } catch (err) {
       setError('Не удалось загрузить документ поступления');
       console.error('Ошибка при загрузке документа поступления:', err);
@@ -231,7 +228,6 @@ const EditReceiptPage: React.FC = () => {
               resources={resources}
               onResourcesChange={setResources}
               disabled={isSubmitting}
-              existingResources={originalResources}
             />
           </Card.Body>
         </Card>

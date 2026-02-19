@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { Button, Table, FormControl } from 'react-bootstrap';
 import Select from 'react-select';
 import { ResourceDto, UnitOfMeasureDto } from '../types/api';
@@ -17,43 +17,54 @@ interface ReceiptResourcesProps {
   resources: ReceiptResourceItem[];
   onResourcesChange: (resources: ReceiptResourceItem[]) => void;
   disabled?: boolean;
-  existingResources?: ReceiptResourceItem[]; // Resources that were in the original document (for edit mode)
 }
 
 const ReceiptResources: React.FC<ReceiptResourcesProps> = ({ 
   resources, 
   onResourcesChange, 
-  disabled = false,
-  existingResources = []
+  disabled = false
 }) => {
-  const [availableResources, setAvailableResources] = useState<ResourceDto[]>([]);
-  const [availableUnits, setAvailableUnits] = useState<UnitOfMeasureDto[]>([]);
-  const [allResources, setAllResources] = useState<ResourceDto[]>([]); // Include archived resources for existing items
-  const [allUnits, setAllUnits] = useState<UnitOfMeasureDto[]>([]); // Include archived units for existing items
+  const [activeResources, setActiveResources] = useState<ResourceDto[]>([]);
+  const [activeUnits, setActiveUnits] = useState<UnitOfMeasureDto[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-
+  const [initialResourcesSnapshot] = useState(resources);
   useEffect(() => {
-    const loadData = async () => {
+    const loadActiveData = async () => {
       try {
-        const [activeResourcesData, allResourcesData, activeUnitsData, allUnitsData] = await Promise.all([
+        const [resourcesData, unitsData] = await Promise.all([
           apiService.getActiveResources(),
-          apiService.getResources(),
           apiService.getActiveUnitsOfMeasure(),
-          apiService.getUnitsOfMeasure()
         ]);
-        setAvailableResources(activeResourcesData);
-        setAllResources(allResourcesData);
-        setAvailableUnits(activeUnitsData);
-        setAllUnits(allUnitsData);
+        setActiveResources(resourcesData);
+        setActiveUnits(unitsData);
       } catch (error) {
-        console.error('Error loading reference data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    loadActiveData();
   }, []);
+
+  const unitsOptions = useMemo(() => {
+      const options =  activeUnits.map(c => ({value: c.id, label: c.name || ''}));
+      initialResourcesSnapshot.forEach(s => {
+        if (!options.some(o => o.value === s.unitId)){
+          options.push({value: s.unitId, label: s.unitName || ''})
+        }
+      })
+    return options;
+  }, [activeUnits, initialResourcesSnapshot]);
+
+  const resourcesOptions = useMemo(() => {
+    const options =  activeResources.map(c => ({value: c.id, label: c.name || ''}));
+    initialResourcesSnapshot.forEach(s => {
+      if (!options.some(o => o.value === s.resourceId)){
+        options.push({value: s.resourceId, label: s.resourceName || ''});
+      }
+    })
+    return options;
+  }, [activeResources, initialResourcesSnapshot])
 
   const handleAddResource = () => {
     onResourcesChange([...resources, {
@@ -69,24 +80,19 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
     onResourcesChange(updated);
   };
 
-  const handleResourceChange = (index: number, field: keyof ReceiptResourceItem, value: any) => {
+  const handleResourceChange = (index: number, field: keyof ReceiptResourceItem, value: any, label?: any) => {
     const updated = [...resources];
-    
     if (field === 'resourceId') {
-      // Find resource from all resources (including archived)
-      const resource = allResources.find(r => r.id === value);
       updated[index] = {
         ...updated[index],
         resourceId: value,
-        resourceName: resource?.name
+        resourceName: label
       };
     } else if (field === 'unitId') {
-      // Find unit from all units (including archived)
-      const unit = allUnits.find(u => u.id === value);
       updated[index] = {
         ...updated[index],
         unitId: value,
-        unitName: unit?.name
+        unitName: label
       };
     } else {
       updated[index] = {
@@ -101,38 +107,6 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
   if (loading) {
     return <div>Загрузка ресурсов...</div>;
   }
-
-  const isExistingResource = (resourceId: string): boolean => {
-    return existingResources.some(er => er.resourceId === resourceId);
-  };
-
-  const isExistingUnit = (unitId: string): boolean => {
-    return existingResources.some(er => er.unitId === unitId);
-  };
-
-  const getResourceOptionsForRow = (currentResourceId: string) => {
-    // Include archived resources if they are currently selected or were in the original document
-    const resourcesToShow = allResources.filter(r => 
-      r.isActive || r.id === currentResourceId || isExistingResource(r.id)
-    );
-    
-    return resourcesToShow.map(r => ({
-      value: r.id,
-      label: r.name
-    }));
-  };
-
-  const getUnitOptionsForRow = (currentUnitId: string) => {
-    // Include archived units if they are currently selected or were in the original document
-    const unitsToShow = allUnits.filter(u => 
-      u.isActive || u.id === currentUnitId || isExistingUnit(u.id)
-    );
-
-    return unitsToShow.map(u => ({
-      value: u.id,
-      label: u.name
-    }));
-  };
 
   return (
     <div>
@@ -158,25 +132,22 @@ const ReceiptResources: React.FC<ReceiptResourcesProps> = ({
             </tr>
           ) : (
             resources.map((item, index) => {
-              const resourceOptionsForRow = getResourceOptionsForRow(item.resourceId);
-              const unitOptionsForRow = getUnitOptionsForRow(item.unitId);
-              
               return (
               <tr key={index}>
                 <td>
                   <Select
-                    options={resourceOptionsForRow}
-                    value={resourceOptionsForRow.find(opt => opt.value === item.resourceId)}
-                    onChange={(selected) => handleResourceChange(index, 'resourceId', selected?.value || '')}
+                    options={resourcesOptions}
+                    value={resourcesOptions.find(opt => opt.value === item.resourceId)}
+                    onChange={(selected) => handleResourceChange(index, 'resourceId', selected?.value || '', selected?.label || '')}
                     isDisabled={disabled}
                     placeholder="Выберите ресурс..."
                   />
                 </td>
                 <td>
                   <Select
-                    options={unitOptionsForRow}
-                    value={unitOptionsForRow.find(opt => opt.value === item.unitId)}
-                    onChange={(selected) => handleResourceChange(index, 'unitId', selected?.value || '')}
+                    options={unitsOptions}
+                    value={unitsOptions.find(opt => opt.value === item.unitId)}
+                    onChange={(selected) => handleResourceChange(index, 'unitId', selected?.value || '', selected?.label || '')}
                     isDisabled={disabled}
                     placeholder="Выберите единицу измерения..."
                   />

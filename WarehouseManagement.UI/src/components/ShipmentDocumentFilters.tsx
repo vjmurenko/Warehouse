@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import { Form, Row, Col, Button, Card } from 'react-bootstrap';
 import Select from 'react-select';
 import {
@@ -20,7 +20,7 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
   const [toDate, setToDate] = useState<string>('');
   const [selectedResources, setSelectedResources] = useState<SelectOption[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<SelectOption[]>([]);
-  const [selectedShipmentDocuments, setSelectedDocumentNumbers] = useState<SelectOption[]>([]);
+  const [selectedDocumentNumber, setSelectedDocumentNumbers] = useState<SelectOption[]>([]);
   const [selectedClients, setSelectedClients] = useState<SelectOption[]>([])
   
   const [resources, setResources] = useState<ResourceDto[]>([]);
@@ -60,7 +60,7 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
     const filters: DocumentFilters = {
       fromDate: fromDate || undefined,
       toDate: toDate || undefined,
-      documentNumbers: selectedShipmentDocuments.map(c => c.value),
+      documentNumbers: selectedDocumentNumber.map(c => c.value),
       resourceIds: selectedResources.map(r => r.value),
       unitIds: selectedUnits.map(u => u.value), 
       clientIds: selectedClients.map(c => c.value)
@@ -80,25 +80,25 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
     onFiltersChange({});
   };
 
-  const receiptNumbersOptions: SelectOption[] = shipmentDocuments.map(receipt => ({
+  const receiptNumbersOptions: SelectOption[] = useMemo(() =>shipmentDocuments.map(receipt => ({
     value: receipt.number,
     label: receipt.number
-  }))
+  })), [shipmentDocuments] )
 
-  const resourceOptions: SelectOption[] = resources.map(resource => ({
+  const resourceOptions: SelectOption[] = useMemo(() =>resources.map(resource => ({
     value: resource.id,
     label: resource.name
-  }));
+  })), [resources] );
 
-  const unitOptions: SelectOption[] = units.map(unit => ({
+  const unitOptions: SelectOption[] = useMemo(() => units.map(unit => ({
     value: unit.id,
     label: unit.name
-  }));
+  })), [units])
 
-  const clientOptions: SelectOption[] = clients.map(client => ({
+  const clientOptions: SelectOption[] = useMemo(() => clients.map(client => ({
     value: client.id,
     label: client.name
-  }))
+  })), [clients] );
 
   return (
     <Card className="mb-4">
@@ -131,7 +131,7 @@ const ShipmentDocumentFilterComponent: React.FC<DocumentFiltersProps> = ({ onFil
                 <Select
                   isMulti
                   options={receiptNumbersOptions}
-                  value={selectedShipmentDocuments}
+                  value={selectedDocumentNumber}
                   onChange={(selected) => setSelectedDocumentNumbers(selected as SelectOption[])}
                   placeholder="ВЫберите номер отгрузки"
                   isDisabled={isLoading}

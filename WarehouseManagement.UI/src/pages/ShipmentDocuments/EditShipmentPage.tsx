@@ -302,20 +302,11 @@ const EditShipmentPage: React.FC = () => {
               onResourcesChange={setResources}
               disabled={isSubmitting || isSigned}
               isSigned={isSigned}
-              existingDocumentResources={shipment?.resources?.map(r => ({
-                id: r.id,
-                resourceId: r.resourceId,
-                resourceName: r.resourceName,
-                unitId: r.unitId,
-                unitName: r.unitName,
-                quantity: r.quantity
-              })) || []}
             />
           </Card.Body>
         </Card>
         <div className="d-flex gap-2">
           {isSigned ? (
-            // If document is signed, show only Revoke button
             <>
               <Button variant="warning" onClick={handleRevoke} disabled={isSubmitting}>
                 {isSubmitting ? 'Отзыв...' : 'Отозвать'}
@@ -325,7 +316,6 @@ const EditShipmentPage: React.FC = () => {
               </Button>
             </>
           ) : (
-            // If document is not signed, show Save, Save & Sign, Delete buttons
             <>
               <Button 
                 variant="primary" 

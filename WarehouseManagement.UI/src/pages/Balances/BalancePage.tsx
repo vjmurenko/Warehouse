@@ -12,39 +12,37 @@ const BalancePage: React.FC = () => {
   const [filters, setFilters] = useState<BalanceFiltersType>({ resourceIds: [], unitIds: [] });
 
   useEffect(() => {
-    loadBalances();
-  }, []);
 
-  const loadBalances = async (appliedFilters?: BalanceFiltersType) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const filtersToUse = appliedFilters || filters;
-      let data: BalanceDto[];
-      
-      if (filtersToUse.resourceIds.length > 0 || filtersToUse.unitIds.length > 0) {
-        data = await apiService.getFilteredBalances(
-          filtersToUse.resourceIds,
-          filtersToUse.unitIds
-        );
-      } else {
-        data = await apiService.getBalances();
-      }
-      
-      setBalances(data);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error loading balance data';
-      setError(errorMessage);
-      console.error('Failed to load balances:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const loadBalances = async () => {
+          try {
+              setLoading(true);
+              setError(null);
+
+              let data: BalanceDto[];
+
+              if (filters.resourceIds.length > 0 || filters.unitIds.length > 0) {
+                  data = await apiService.getFilteredBalances(
+                      filters.resourceIds,
+                      filters.unitIds
+                  );
+              } else {
+                  data = await apiService.getBalances();
+              }
+
+              setBalances(data);
+          } catch (err) {
+              const errorMessage = err instanceof Error ? err.message : 'Error loading balance data';
+              setError(errorMessage);
+              console.error('Failed to load balances:', err);
+          } finally {
+              setLoading(false);
+          }
+      };
+    loadBalances();
+  }, [filters]);
 
   const handleFiltersChange = (newFilters: BalanceFiltersType) => {
     setFilters(newFilters);
-    loadBalances(newFilters);
   };
   
   return (

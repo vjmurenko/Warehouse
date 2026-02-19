@@ -21,7 +21,6 @@ public sealed class CreateShipmentCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         await ValidateClient(command.ClientId, ctx: ctx);
-        await ValidateResources(command.Resources, ctx);
        
         var documentId = Guid.NewGuid();
 
@@ -49,11 +48,7 @@ public sealed class CreateShipmentCommandHandler(
         return shipmentDocument.Id;
     }
     
-    private async Task ValidateResources(List<ShipmentResourceDto> resources, CancellationToken ctx)
-    {
-        await referenceValidationService.ValidateResourcesAsync(resources.Select(r => r.ResourceId), ctx);
-        await referenceValidationService.ValidateUnitsAsync(resources.Select(r => r.UnitId), ctx);
-    }
+
     
     private async Task ValidateClient(Guid clientId, CancellationToken ctx = default)
     {

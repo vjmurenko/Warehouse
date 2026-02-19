@@ -78,8 +78,6 @@ export interface BalanceDto {
   unitOfMeasureId: string;
   unitOfMeasureName: string;
   quantity: number;
-  createdAt: string;
-  updatedAt?: string;
 }
 
 export interface ResourceDto {

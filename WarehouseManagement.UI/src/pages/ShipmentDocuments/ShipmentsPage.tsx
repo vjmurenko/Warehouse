@@ -13,31 +13,32 @@ const ShipmentsPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    loadShipments();
-  }, []);
+    const loadShipments = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const loadShipments = async (appliedFilters?: DocumentFiltersType) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const filtersToUse = appliedFilters || filters;
-      const data = filtersToUse.fromDate || filtersToUse.toDate || 
-                  filtersToUse.documentNumbers?.length || 
-                  filtersToUse.resourceIds?.length || 
-                  filtersToUse.unitIds?.length || 
-                  filtersToUse.clientIds?.length
-        ? await apiService.getFilteredShipmentDocuments(filtersToUse)
-        : await apiService.getShipmentDocuments();
-      
-      setShipments(data);
-    } catch (err) {
-      setError('Ошибка при загрузке документов отгрузки');
-      console.error('Error loading shipments:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        const filtersToUse =  filters;
+        const data = filtersToUse.fromDate || filtersToUse.toDate ||
+        filtersToUse.documentNumbers?.length ||
+        filtersToUse.resourceIds?.length ||
+        filtersToUse.unitIds?.length ||
+        filtersToUse.clientIds?.length
+            ? await apiService.getFilteredShipmentDocuments(filtersToUse)
+            : await apiService.getShipmentDocuments();
+
+        setShipments(data);
+      } catch (err) {
+        setError('Ошибка при загрузке документов отгрузки');
+        console.error('Error loading shipments:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadShipments();
+  }, [filters]);
+
+
 
   const handleAddShipment = () => {
     navigate('/shipments/add');
@@ -49,7 +50,6 @@ const ShipmentsPage: React.FC = () => {
 
   const handleFiltersChange = (newFilters: DocumentFiltersType) => {
     setFilters(newFilters);
-    loadShipments(newFilters);
   };
 
   const formatDate = (dateString: string) => {
