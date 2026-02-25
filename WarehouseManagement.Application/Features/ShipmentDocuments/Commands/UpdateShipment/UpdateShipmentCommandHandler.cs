@@ -1,7 +1,6 @@
 using MediatR;
 using WarehouseManagement.Application.Common.Interfaces;
 using WarehouseManagement.Application.Services.Interfaces;
-using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 using WarehouseManagement.Domain.Aggregates.ReferenceAggregates;
 using WarehouseManagement.Domain.Aggregates.ShipmentAggregate;
@@ -10,7 +9,6 @@ namespace WarehouseManagement.Application.Features.ShipmentDocuments.Commands.Up
 
 public sealed class UpdateShipmentCommandHandler(
     IShipmentRepository shipmentRepository,
-    IReferenceValidationService referenceValidationService,
     IReferenceRepository<Client> clientRepository,
     IBalanceService balanceService,
     IUnitOfWork unitOfWork) : IRequestHandler<UpdateShipmentCommand, Unit>
@@ -28,7 +26,6 @@ public sealed class UpdateShipmentCommandHandler(
             throw new InvalidOperationException($"Документ с номером {command.Number} уже существует");
 
         await ValidateClient(command.ClientId, document.ClientId, ctx);
-        await ValidateShipmentResourcesForUpdate(command.Resources, document, ctx);
 
         var newResources = command.Resources.Select(c => ShipmentResource.Create(command.Id, c.ResourceId, c.UnitId, c.Quantity)).ToList();
         
@@ -48,24 +45,6 @@ public sealed class UpdateShipmentCommandHandler(
         await unitOfWork.SaveChangesAsync(ctx);
 
         return Unit.Value;
-    }
-    
-     private async Task ValidateShipmentResourcesForUpdate(
-        List<ShipmentResourceDto> updatedShipmentResources,
-        ShipmentDocument currentDocument,
-        CancellationToken ctx)
-    {
-        var resourcesForExclude = new List<ShipmentResourceDto>();
-        
-            resourcesForExclude.AddRange(currentDocument.ShipmentResources
-                .Select(c => new ShipmentResourceDto(c.ResourceId, c.UnitOfMeasureId, c.Quantity)));
-            
-        var resourcesToValidate = updatedShipmentResources
-            .Where(u => !resourcesForExclude.Any(r => r.UnitId == u.UnitId && r.ResourceId == u.ResourceId))
-            .ToList();
-        
-        await referenceValidationService.ValidateResourcesAsync(resourcesToValidate.Select(c => c.ResourceId), ctx);
-        await referenceValidationService.ValidateUnitsAsync(resourcesToValidate.Select(c => c.UnitId), ctx);
     }
 
     private async Task ValidateClient(Guid clientId, Guid? currentClient, CancellationToken ctx)

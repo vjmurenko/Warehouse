@@ -15,10 +15,10 @@ public sealed class GetBalancesQueryHandler(WarehouseDbContext context) : IReque
             .AsSplitQuery()
             .AsQueryable();
 
-        if (request.ResourceIds is not null && request.ResourceIds.Count > 0)
+        if (request.ResourceIds is {Count: > 0})
             query = query.Where(b => request.ResourceIds.Contains(b.ResourceId));
 
-        if (request.UnitIds is not null && request.UnitIds.Count > 0)
+        if (request.UnitIds is {Count: > 0})
             query = query.Where(b => request.UnitIds.Contains(b.UnitOfMeasureId));
 
         return await query

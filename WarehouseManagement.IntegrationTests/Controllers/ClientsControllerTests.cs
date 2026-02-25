@@ -1,10 +1,10 @@
 using System.Net;
 using System.Net.Http.Json;
-using WarehouseManagement.Application.Dtos.Client;
+using WarehouseManagement.Application.Features.References.DTOs.Client;
 using WarehouseManagement.IntegrationTests.Infrastructure;
 using WarehouseManagement.Web;
-using CreateClientRequest = WarehouseManagement.Application.Dtos.Client.CreateClientRequest;
-using UpdateClientRequest = WarehouseManagement.Application.Dtos.Client.UpdateClientRequest;
+using CreateClientRequest = WarehouseManagement.Application.Features.References.DTOs.Client.CreateClientRequest;
+using UpdateClientRequest = WarehouseManagement.Application.Features.References.DTOs.Client.UpdateClientRequest;
 
 namespace WarehouseManagement.IntegrationTests.Controllers;
 

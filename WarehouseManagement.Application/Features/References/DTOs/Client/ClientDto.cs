@@ -1,4 +1,4 @@
-﻿namespace WarehouseManagement.Application.Dtos.Client;
+﻿namespace WarehouseManagement.Application.Features.References.DTOs.Client;
 
 public record ClientDto(
     Guid Id,

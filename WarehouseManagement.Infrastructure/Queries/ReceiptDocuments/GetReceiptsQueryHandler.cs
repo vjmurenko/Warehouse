@@ -17,31 +17,27 @@ public sealed class GetReceiptsQueryHandler(WarehouseDbContext context) : IReque
             
         if (request.FromDate.HasValue)
         {
-            var fromDateUtc = request.FromDate.Value.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(request.FromDate.Value, DateTimeKind.Utc)
-                : request.FromDate.Value.ToUniversalTime();
+            var fromDateUtc = request.FromDate.Value.ToUniversalTime();
             query = query.Where(r => r.Date >= fromDateUtc);
         }
 
         if (request.ToDate.HasValue)
         {
-            var toDateUtc = request.ToDate.Value.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(request.ToDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                : request.ToDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
-            query = query.Where(r => r.Date <= toDateUtc);
+            var toDateUtc = request.ToDate.Value.Date.AddDays(1).ToUniversalTime();
+            query = query.Where(r => r.Date < toDateUtc);
         }
 
-        if (request.DocumentNumbers is not null && request.DocumentNumbers.Any())
+        if (request.DocumentNumbers is {Count: > 0})
         {
             query = query.Where(r => request.DocumentNumbers.Contains(r.Number));
         }
 
-        if (request.ResourceIds is not null && request.ResourceIds.Any())
+        if (request.ResourceIds is {Count: > 0})
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => request.ResourceIds.Contains(rr.ResourceId)));
         }
 
-        if (request.UnitIds is not null && request.UnitIds.Any())
+        if (request.UnitIds is {Count: > 0})
         {
             query = query.Where(r => r.ReceiptResources.Any(rr => request.UnitIds.Contains(rr.UnitOfMeasureId)));
         }

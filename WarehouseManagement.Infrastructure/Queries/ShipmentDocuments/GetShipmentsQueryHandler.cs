@@ -17,36 +17,32 @@ public sealed class GetShipmentsQueryHandler(WarehouseDbContext context) : IRequ
 
         if (request.FromDate.HasValue)
         {
-            var fromDateUtc = request.FromDate.Value.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(request.FromDate.Value, DateTimeKind.Utc)
-                : request.FromDate.Value.ToUniversalTime();
+            var fromDateUtc =  request.FromDate.Value.ToUniversalTime();
             query = query.Where(s => s.Date >= fromDateUtc);
         }
 
         if (request.ToDate.HasValue)
         {
-            var toDateUtc = request.ToDate.Value.Kind == DateTimeKind.Unspecified
-                ? DateTime.SpecifyKind(request.ToDate.Value.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc)
-                : request.ToDate.Value.Date.AddDays(1).AddTicks(-1).ToUniversalTime();
+            var toDateUtc = request.ToDate.Value.Date.AddDays(1).ToUniversalTime();
             query = query.Where(s => s.Date <= toDateUtc);
         }
 
-        if (request.DocumentNumbers is not null && request.DocumentNumbers.Any())
+        if (request.DocumentNumbers is {Count: > 0})
         {
             query = query.Where(s => request.DocumentNumbers.Contains(s.Number));
         }
 
-        if (request.ClientIds is not null && request.ClientIds.Any())
+        if (request.ClientIds is {Count: > 0})
         {
             query = query.Where(s => request.ClientIds.Contains(s.ClientId));
         }
 
-        if (request.ResourceIds is not null && request.ResourceIds.Any())
+        if (request.ResourceIds is {Count: > 0})
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => request.ResourceIds.Contains(sr.ResourceId)));
         }
 
-        if (request.UnitIds is not null && request.UnitIds.Any())
+        if (request.UnitIds is {Count: > 0})
         {
             query = query.Where(s => s.ShipmentResources.Any(sr => request.UnitIds.Contains(sr.UnitOfMeasureId)));
         }

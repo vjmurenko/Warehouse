@@ -1,9 +1,10 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using WarehouseManagement.Application.Features.ShipmentDocuments.DTOs;
+using WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipmentById;
 using WarehouseManagement.Infrastructure.Data;
 
-namespace WarehouseManagement.Application.Features.ShipmentDocuments.Queries.GetShipmentById;
+namespace WarehouseManagement.Infrastructure.Queries.ShipmentDocuments;
 
 public sealed class GetShipmentByIdQueryHandler(WarehouseDbContext context) : IRequestHandler<GetShipmentByIdQuery, ShipmentDocumentDto?>
 {

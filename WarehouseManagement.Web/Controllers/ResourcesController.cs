@@ -1,10 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WarehouseManagement.Application.Dtos.Resource;
 using WarehouseManagement.Application.Features.References.Commands;
 using WarehouseManagement.Application.Features.References.Commands.Create;
 using WarehouseManagement.Application.Features.References.Commands.Delete;
 using WarehouseManagement.Application.Features.References.Commands.Update;
+using WarehouseManagement.Application.Features.References.DTOs.Resource;
 using WarehouseManagement.Application.Features.References.Queries;
 using WarehouseManagement.Domain.Aggregates.NamedAggregates;
 
